@@ -1,7 +1,7 @@
 // src/pages/Intro.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../app.css'; // Ensure global styles are included
+ // Ensure global styles are included
 
 function Intro() {
   const [showContent, setShowContent] = useState(false);
