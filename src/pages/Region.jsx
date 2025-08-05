@@ -1,7 +1,8 @@
 import React, { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import hoverSound from "../assets/hover.mp3";
-import "../app.css"; // Ensure CSS is linked
+import "../../app.css";
+
 
 const Region = () => {
   const navigate = useNavigate();
