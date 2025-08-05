@@ -1,10 +1,13 @@
-// src/pages/ESEA.jsx
+import '../styles/esea.css';
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/esea.css';
+import "../app.css";
+
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
-import "../app.css"; // Make sure app.css includes the ESEA styles
+// REMOVE this line if app.css is already imported in App.jsx
+// import ".,./styles/app.css";
+
 
 const questions = [
   {

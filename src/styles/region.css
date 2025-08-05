@@ -1,194 +1,89 @@
-/* Base Styling */
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f0f4f8;
-    color: #4a5568;
-}
-
-/* Login Container with animated background */
-.login-container {
-    font-family: 'Inter', sans-serif;
-    width: 100%;
+/* Global layout */
+.region-page {
     min-height: 100vh;
+    background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    background: linear-gradient(135deg, #e0e7ed, #d9e0e8, #e0e7ed, #cdd5e0);
-    background-size: 400% 400%;
-    animation: login-gradientFlow 25s ease infinite;
-    padding: 1rem;
-    overflow: hidden;
-    position: relative;
-}
-
-/* Background Gradient Animation */
-@keyframes login-gradientFlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-
-/* Floating abstract shapes */
-.login-container::before,
-.login-container::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-    filter: blur(60px);
-    z-index: 0;
-    pointer-events: none;
-}
-
-.login-container::before {
-    width: 60vw;
-    height: 60vw;
-    top: -10vw;
-    left: -15vw;
-    animation: floatShape1 20s ease-in-out infinite alternate;
-}
-
-.login-container::after {
-    width: 50vw;
-    height: 50vw;
-    bottom: -10vw;
-    right: -15vw;
-    background: radial-gradient(circle, rgba(197,220,240,0.15) 0%, rgba(197,220,240,0) 70%);
-    animation: floatShape2 25s ease-in-out infinite alternate-reverse;
-}
-
-@keyframes floatShape1 {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(10vw, 10vh); }
-}
-
-@keyframes floatShape2 {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(-10vw, -10vh); }
-}
-
-/* Login Box Styling */
-.login-box {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(30px);
-    border-radius: 28px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    padding: 2.5rem;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
-    animation: login-fadeInUp 1s ease forwards;
-    text-align: center;
-    max-width: 450px;
-    width: 100%;
-    position: relative;
-    z-index: 1;
-}
-
-/* Login Box Fade In */
-@keyframes login-fadeInUp {
-    from { opacity: 0; transform: translateY(50px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Logo Heading */
-.logo {
-    font-family: 'Poppins', sans-serif;
-    color: #4a5568;
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    text-shadow: 0 0 10px rgba(74, 85, 104, 0.4), 0 0 20px rgba(74, 85, 104, 0.2);
-}
-
-/* Subtitle */
-.subtitle {
-    color: #718096;
-    font-style: italic;
-    font-size: 1rem;
-    margin-bottom: 2rem;
-}
-
-/* Login Form Heading */
-.login-form h2 {
-    color: #4a5568;
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 2rem;
-}
-
-/* Input Fields */
-.login-form input {
-    width: 100%;
-    padding: 1rem;
-    margin-bottom: 1.25rem;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    background-color: rgba(255, 255, 255, 0.1);
-    color: #4a5568;
-    font-size: 1rem;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-/* Placeholder */
-.login-form input::placeholder {
-    color: #a0aec0;
-}
-
-/* Input Focus */
-.login-form input:focus {
-    border-color: #63b3ed;
-    background-color: rgba(255, 255, 255, 0.15);
-    box-shadow: 0 0 15px rgba(99, 179, 237, 0.4);
-}
-
-/* Submit Button */
-.login-form button {
-    width: 100%;
-    padding: 1rem;
-    background: linear-gradient(to right, #63b3ed, #4299e1);
-    border: none;
-    border-radius: 12px;
+    justify-content: center;
+    padding: 2rem;
     color: white;
-    font-weight: 600;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+  }
+  
+  /* Logout Button */
+  .logout-button {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    background: transparent;
+    border: 2px solid #ff4d4d;
+    color: #ff4d4d;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .logout-button:hover {
+    background: #ff4d4d;
+    color: white;
+    box-shadow: 0 0 10px #ff4d4d;
+  }
+  
+  /* Region container */
+  .region-container {
+    text-align: center;
+  }
+  
+  .region-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .region-username {
+    color: #00ffff;
+    font-weight: bold;
+    text-shadow: 0 0 6px #00ffff;
+  }
+  
+  .region-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+    color: #cccccc;
+  }
+  
+  /* Grid of region boxes */
+  .region-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    max-width: 900px;
+    margin: auto;
+    padding: 0 1rem;
+  }
+  
+  /* Individual region box */
+  .region-box {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 12px;
     font-size: 1.1rem;
+    font-weight: bold;
+    color: #ffffff;
     cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-/* Button Hover */
-.login-form button:hover {
-    background: linear-gradient(to right, #4299e1, #3182ce);
-    transform: scale(1.02);
-    box-shadow: 0 8px 25px rgba(66, 153, 225, 0.5);
-}
-
-/* Error or Success Message */
-.message {
-    color: #e53e3e;
-    font-size: 0.9rem;
-    margin-top: 1.5rem;
-    animation: login-fadeIn 0.4s ease-in;
-}
-
-/* Fade In Message */
-@keyframes login-fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* Toggle Mode Button (Register/Login) */
-.toggle-button {
-    margin-top: 1.8rem;
-    font-size: 0.95rem;
-    color: #63b3ed;
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: color 0.3s ease, text-shadow 0.3s ease;
-    font-weight: 500;
-}
-
-.toggle-button:hover {
-    color: #4299e1;
-    text-shadow: 0 0 10px rgba(66, 153, 225, 0.6);
-}
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-shadow: 0 0 2px #00f0ff;
+    backdrop-filter: blur(8px);
+  }
+  
+  .region-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px #00ffff88;
+    background: rgba(0, 255, 255, 0.08);
+    border-color: #00ffff44;
+  }
+  

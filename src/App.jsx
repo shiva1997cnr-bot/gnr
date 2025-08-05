@@ -1,18 +1,9 @@
 
 import React from "react";
 
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import './styles/app.css';  // ❌ Delete this line
-import './styles/login.css';
-import './styles/intro.css';
-import './styles/region.css';
-import './styles/uscan.css';
-import './styles/we.css';
-import './styles/sa.css';
-import './styles/latam.css';
-import './styles/esea.css';
-
+// ✅ Correct CSS imports
+import "./styles/app.css";
 
 
 
