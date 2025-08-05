@@ -1,7 +1,5 @@
-import React, { useState } from "react"; 
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-import loginVisual from '../assets/login-visual.png';
 
 function Login() {
   const navigate = useNavigate();
@@ -111,13 +109,6 @@ function Login() {
       >
         {isRegistering ? "Already registered? Login" : "New user? Register"}
       </button>
-
-      {/* Enlarged Visual */}
-      <img
-        src={loginVisual}
-        alt="Login Visual"
-        className="w-[97%] max-w-[1300px] h-auto object-contain mt-2 mb-4 animate-fadeIn"
-      />
     </div>
   );
 }
