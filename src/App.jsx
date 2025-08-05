@@ -21,6 +21,7 @@ import ESEA from "./pages/ESEA";
 import AdminLogs from "./pages/AdminLogs";
 import Scores from "./pages/Scores";
 import UserID from "./pages/UserId";
+import Register from './pages/Register';
 
 
 
