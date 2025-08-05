@@ -1,7 +1,9 @@
 // src/App.jsx
 import React from "react";
+import "./app.css";
+
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import './styles/app.css';
+
 
 
 import Login from "./pages/Login";
