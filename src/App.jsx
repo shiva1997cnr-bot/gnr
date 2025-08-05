@@ -2,18 +2,20 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Login from "./pages/Login";
-import Region from "./pages/Region";
 import Intro from "./pages/Intro";
+import Region from "./pages/Region";
 import SA from "./pages/SA";
 import AFR from "./pages/AFR";
 import LATAM from "./pages/LATAM";
 import USCAN from "./pages/USCAN";
 import WE from "./pages/WE";
 import ESEA from "./pages/ESEA";
-import UserID from "./pages/UserId";
-import Register from "./pages/Register";
-import Scores from "./pages/Scores";
 import AdminLogs from "./pages/AdminLogs";
+import Scores from "./pages/Scores";
+import UserID from "./pages/UserId";
+
+
+
 
 
 
@@ -32,10 +34,12 @@ const router = createBrowserRouter([
   { path: "/uscan", element: <USCAN /> },
   { path: "/we", element: <WE /> },
   { path: "/esea", element: <ESEA /> },
-  { path: "/userid", element: <UserID /> },
   { path: "/register", element: <Register /> },
-  { path: "/scores", element: <Scores /> },
   { path: "/adminlogs", element: <AdminLogs /> },
+  { path: "/scores", element: <Scores /> },
+  { path: "/userid", element: <UserID /> },
+  
+ 
   
 
   
