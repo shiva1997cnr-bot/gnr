@@ -1,0 +1,144 @@
+/* src/pages/we.css */
+
+/* Main container for the WE quiz page */
+.we-container {
+    text-align: center;
+    min-height: 100vh; /* Ensure it takes full viewport height */
+    width: 100%; /* Full width */
+    padding: 2rem; /* Consistent padding */
+    background-color: #1b1f3a; /* Dark blue background */
+    color: white; /* White text for contrast */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Specific font */
+}
+
+/* The central quiz box */
+.we-box {
+    background-color: rgba(26, 24, 24, 0.75); /* Semi-transparent dark background */
+    padding: 2rem;
+    border-radius: 2rem; /* Large rounded corners */
+    max-width: 700px; /* Maximum width for the box */
+    width: 100%; /* Ensure responsiveness */
+    text-align: center;
+}
+
+/* Styles for the question text */
+.we-question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+/* Container for the answer options */
+.we-options {
+    display: flex;
+    flex-direction: column; /* Stack options vertically */
+    gap: 0.7rem; /* Space between options */
+}
+
+/* Individual answer option button/div */
+.we-option {
+    padding: 0.8rem;
+    background-color: white; /* White background for options */
+    color: black; /* Black text for options */
+    border-radius: 4rem; /* Pill shape */
+    border-left: 6px solid transparent; /* Left border for visual effect */
+    text-align: left; /* Align text to the left */
+    font-weight: 500;
+    transition: all 0.3s ease; /* Smooth transitions for hover and state changes */
+    cursor: pointer;
+}
+
+/* Hover effect for options */
+.we-option:hover {
+    background-color: #2196f3; /* Blue background on hover */
+    color: white; /* White text on hover */
+}
+
+/* Style for the correct answer when selected */
+.we-option.correct {
+    background-color: #4caf50; /* Green background */
+    color: white;
+}
+
+/* Style for an incorrect answer when selected */
+.we-option.incorrect {
+    background-color: #f44336; /* Red background */
+    color: white;
+}
+
+/* Footer section (e.g., for timer or navigation buttons) */
+.we-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between; /* Space out content */
+    align-items: center;
+    color: #ccc; /* Light grey text */
+}
+
+/* Styles for buttons within the footer (e.g., Next, Submit) */
+.we-footer button {
+    background-color: #2563eb; /* Blue background */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+/* Heading for the quiz result section */
+.we-result h2 {
+    color: #e50914; /* Netflix red */
+}
+
+/* Style for the score display */
+.we-score {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+}
+
+/* Responsive tweaks for smaller screens */
+@media screen and (max-width: 640px) {
+    .we-box {
+        padding: 1.5rem; /* Smaller padding on mobile */
+    }
+
+    .we-option {
+        font-size: 0.95rem; /* Smaller font size for options */
+    }
+
+    .we-footer {
+        flex-direction: column; /* Stack footer items vertically */
+        gap: 1rem; /* Space between stacked items */
+    }
+}
+
+/* Styles for pass/fail text in the result section */
+.we-result .pass {
+    color: #48bb78; /* Tailwind green-500 */
+    font-weight: bold;
+}
+
+.we-result .fail {
+    color: #ef4444; /* Tailwind red-500 */
+    font-weight: bold;
+}
+
+/* Style for the return button in the result section */
+.we-footer-btn {
+    background-color: #2563eb; /* Blue background */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.we-footer-btn:hover {
+    background-color: #1d4ed8; /* Darker blue on hover */
+}

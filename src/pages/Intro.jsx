@@ -1,6 +1,8 @@
 // src/pages/Intro.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './intro.css';
+
 
 function Intro() {
   const [showContent, setShowContent] = useState(false);
@@ -8,6 +10,8 @@ function Intro() {
   const audioRef = useRef(null);
 
   useEffect(() => {
+    // We can directly set the state without a timer if we want the content to show immediately.
+    // The delay might be for a specific animation; I'll keep the timer.
     const timer = setTimeout(() => setShowContent(true), 500);
 
     const playAudio = () => {
@@ -45,15 +49,18 @@ function Intro() {
             <div className="square w-6 h-6 bg-white"></div>
           </div>
 
+          {/* This title class is from your custom CSS */}
           <h1 className="title text-3xl sm:text-5xl font-bold mb-6">Generalist Quiz Game</h1>
 
           <div className="flex justify-center items-center gap-8">
             <button
               onClick={handleStart}
+              // This button has custom styles and Tailwind styles
               className="intro-start-button text-white text-2xl px-6 py-2 rounded-full transition duration-300 transform hover:scale-105"
             >
               O
             </button>
+            {/* This button has custom styles and Tailwind styles */}
             <div className="abort-button text-red-500 text-2xl">X</div>
           </div>
         </div>

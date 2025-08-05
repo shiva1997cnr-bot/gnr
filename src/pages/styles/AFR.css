@@ -1,0 +1,119 @@
+/* src/pages/afr.css */
+
+/* ===== AFR REGION STYLES ===== */
+
+/* Main container for the AFR quiz page */
+.afr-container {
+    text-align: center;
+    min-height: 100vh; /* Ensure it takes full viewport height */
+    width: 100%;
+    padding: 2rem; /* Consistent padding */
+    background-color: black; /* Dark background */
+    color: white; /* White text for contrast */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Specific font */
+}
+
+/* The central quiz box */
+.afr-box {
+    background-color: rgba(26, 24, 24, 0.75); /* Semi-transparent dark background */
+    padding: 2rem;
+    border-radius: 2rem; /* Large rounded corners */
+    max-width: 700px; /* Maximum width for the box */
+    width: 100%; /* Ensure responsiveness */
+    text-align: center;
+}
+
+/* Styles for the question text */
+.afr-question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+/* Container for the answer options */
+.afr-options {
+    display: flex;
+    flex-direction: column; /* Stack options vertically */
+    gap: 0.7rem; /* Space between options */
+}
+
+/* Individual answer option button/div */
+.afr-option {
+    padding: 0.8rem;
+    background-color: white; /* White background for options */
+    color: black; /* Black text for options */
+    border-radius: 4rem; /* Pill shape */
+    border-left: 6px solid transparent; /* Left border for visual effect */
+    text-align: left; /* Align text to the left */
+    font-weight: 500;
+    transition: all 0.3s ease; /* Smooth transitions for hover and state changes */
+    cursor: pointer;
+}
+
+/* Hover effect for options */
+.afr-option:hover {
+    background-color: #2196f3; /* Blue background on hover */
+    color: white; /* White text on hover */
+}
+
+/* Style for the correct answer when selected */
+.afr-option.correct {
+    background-color: #4caf50; /* Green background */
+    color: white;
+}
+
+/* Style for an incorrect answer when selected */
+.afr-option.incorrect {
+    background-color: #f44336; /* Red background */
+    color: white;
+}
+
+/* Footer section (e.g., for timer or navigation buttons) */
+.afr-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between; /* Space out content */
+    align-items: center;
+    color: #ccc; /* Light grey text */
+}
+
+/* Styles for buttons within the footer (e.g., Next, Submit) */
+.afr-footer button {
+    background-color: #2563eb; /* Blue background */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+/* Heading for the quiz result section */
+.afr-result h2 {
+    color: #e50914; /* Netflix red */
+}
+
+/* Style for the score display */
+.afr-score {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+}
+
+/* Responsive tweaks for smaller screens */
+@media screen and (max-width: 640px) {
+    .afr-box {
+        padding: 1.5rem; /* Smaller padding on mobile */
+    }
+
+    .afr-option {
+        font-size: 0.95rem; /* Smaller font size for options */
+    }
+
+    .afr-footer {
+        flex-direction: column; /* Stack footer items vertically */
+        gap: 1rem; /* Space between stacked items */
+    }
+}

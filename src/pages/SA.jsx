@@ -1,6 +1,7 @@
 // src/pages/SA.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import './styles/sa.css';
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 

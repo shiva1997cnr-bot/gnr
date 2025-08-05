@@ -1,0 +1,111 @@
+/* src/pages/esea.css */
+
+/* ESEA Quiz Container */
+.esea-container {
+    text-align: center;
+    min-height: 100vh; /* Ensure it takes full viewport height */
+    width: 100%; /* Full width */
+    padding: 2rem; /* Consistent padding */
+    background-color: black; /* Dark background */
+    color: white; /* White text for contrast */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Quiz Box */
+.esea-box {
+    width: 100%;
+    max-width: 600px; /* Maximum width for the quiz box */
+    background: white; /* White background for the box */
+    border-radius: 1rem; /* Rounded corners */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* Soft shadow */
+    padding: 2rem;
+    text-align: center;
+    color: #00796b; /* Teal dark for default text within the box */
+}
+
+/* Question Text */
+.esea-question {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #00796b; /* Teal dark */
+}
+
+/* Options Container */
+.esea-options {
+    display: flex;
+    flex-direction: column; /* Stack options vertically */
+    gap: 0.75rem; /* Space between options */
+    margin-top: 1rem;
+}
+
+/* Individual Option Button */
+.esea-option {
+    padding: 0.75rem 1rem;
+    border: 2px solid #b2dfdb; /* Light teal border */
+    border-radius: 0.5rem; /* Slightly rounded corners */
+    background-color: #f0fdfa; /* Very light teal background */
+    cursor: pointer;
+    transition: all 0.2s ease-in-out; /* Smooth transitions */
+    text-align: left; /* Align text to the left */
+    font-weight: 500;
+    color: #4a5568; /* Dark grey text */
+}
+
+.esea-option:hover {
+    background-color: #b2dfdb; /* Lighter teal on hover */
+    color: #2d3748; /* Darker text on hover */
+}
+
+/* Correct Answer Style */
+.esea-option.correct {
+    background-color: #4caf50; /* Green background */
+    color: white;
+    border-color: #388e3c; /* Darker green border */
+}
+
+/* Incorrect Answer Style */
+.esea-option.incorrect {
+    background-color: #f44336; /* Red background */
+    color: white;
+    border-color: #d32f2f; /* Darker red border */
+}
+
+/* Footer (Time or Buttons) */
+.esea-footer {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #616161; /* Grey text */
+}
+
+/* Result Box Styling */
+.esea-result h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #00796b; /* Teal dark */
+}
+
+.esea-score {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+/* Result Button */
+.esea-box button {
+    background-color: #00796b; /* Teal dark background */
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.esea-box button:hover {
+    background-color: #004d40; /* Darker teal on hover */
+}

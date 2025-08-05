@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
+import './styles/region.css';
 import { useNavigate } from "react-router-dom";
 import hoverSound from "../assets/hover.mp3";
 

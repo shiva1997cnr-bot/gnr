@@ -1,0 +1,129 @@
+/* src/pages/sa.css */
+
+/* Main container for the SA quiz page */
+.sa-container {
+    text-align: center;
+    min-height: 100vh; /* Ensure it takes full viewport height */
+    width: 100%; /* Full width */
+    padding: 2rem; /* Consistent padding */
+    background-color: #1b1f3a; /* Dark blue background */
+    color: white; /* White text for contrast */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Specific font */
+}
+
+/* The central quiz box */
+.sa-box {
+    background-color: rgba(20, 20, 20, 0.8); /* Semi-transparent dark background */
+    padding: 2rem;
+    border-radius: 2rem; /* Large rounded corners */
+    max-width: 700px; /* Maximum width for the box */
+    width: 100%; /* Ensure responsiveness */
+    text-align: center;
+}
+
+/* Title for the quiz */
+.sa-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: #e91e63; /* Pinkish-red color */
+}
+
+/* Timer display */
+.sa-timer {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: #ccc; /* Light grey text */
+}
+
+/* Styles for the question text */
+.sa-question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+/* Container for the answer options */
+.sa-options {
+    display: flex;
+    flex-direction: column; /* Stack options vertically */
+    gap: 0.7rem; /* Space between options */
+}
+
+/* Individual answer option button */
+.sa-option {
+    padding: 0.8rem;
+    background-color: white; /* White background for options */
+    color: black; /* Black text for options */
+    border-radius: 4rem; /* Pill shape */
+    border-left: 6px solid transparent; /* Left border for visual effect */
+    text-align: left; /* Align text to the left */
+    font-weight: 500;
+    transition: all 0.3s ease; /* Smooth transitions for hover and state changes */
+    cursor: pointer;
+    border: none; /* Remove default button border */
+}
+
+/* Hover effect for options */
+.sa-option:hover {
+    background-color: #673ab7; /* Purple background on hover */
+    color: white; /* White text on hover */
+}
+
+/* Style for the correct answer when selected */
+.sa-option.correct {
+    background-color: #4caf50; /* Green background */
+    color: white;
+}
+
+/* Style for an incorrect answer when selected */
+.sa-option.incorrect {
+    background-color: #f44336; /* Red background */
+    color: white;
+}
+
+/* Result section styling */
+.sa-result {
+    text-align: center;
+}
+
+.sa-result h2 {
+    color: #e91e63; /* Pinkish-red color */
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+}
+
+.sa-result p {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+}
+
+/* Styles for pass/fail text */
+.sa-result .text-pass {
+    color: #48bb78; /* Tailwind green-500 */
+    font-weight: bold;
+}
+
+.sa-result .text-fail {
+    color: #ef4444; /* Tailwind red-500 */
+    font-weight: bold;
+}
+
+/* Return to Region button */
+.sa-return {
+    background-color: #512da8; /* Darker purple background */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sa-return:hover {
+    background-color: #4527a0; /* Even darker purple on hover */
+}

@@ -1,0 +1,101 @@
+/* src/pages/latam.css */
+
+/* Main container for the LATAM quiz page */
+.latam-container {
+    text-align: center;
+    min-height: 100vh; /* Ensure it takes full viewport height */
+    width: 100%; /* Full width */
+    padding: 2rem; /* Consistent padding */
+    background-color: #013220; /* Dark green background */
+    color: white; /* White text for contrast */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Specific font */
+}
+
+/* The central quiz box */
+.latam-box {
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark background */
+    padding: 2rem;
+    border-radius: 2rem; /* Large rounded corners */
+    max-width: 700px; /* Maximum width for the box */
+    width: 100%; /* Ensure responsiveness */
+    text-align: center;
+}
+
+/* Styles for the question text */
+.latam-question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+/* Container for the answer options */
+.latam-options {
+    display: flex;
+    flex-direction: column; /* Stack options vertically */
+    gap: 0.7rem; /* Space between options */
+}
+
+/* Individual answer option button/div */
+.latam-option {
+    padding: 0.8rem;
+    background-color: white; /* White background for options */
+    color: black; /* Black text for options */
+    border-radius: 4rem; /* Pill shape */
+    border-left: 6px solid transparent; /* Left border for visual effect */
+    text-align: left; /* Align text to the left */
+    font-weight: 500;
+    transition: all 0.3s ease; /* Smooth transitions for hover and state changes */
+    cursor: pointer;
+}
+
+/* Hover effect for options */
+.latam-option:hover {
+    background-color: #28a745; /* Green background on hover */
+    color: white; /* White text on hover */
+}
+
+/* Style for the correct answer when selected */
+.latam-option.correct {
+    background-color: #4caf50; /* Green background */
+    color: white;
+}
+
+/* Style for an incorrect answer when selected */
+.latam-option.incorrect {
+    background-color: #f44336; /* Red background */
+    color: white;
+}
+
+/* Footer section (e.g., for timer or navigation buttons) */
+.latam-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between; /* Space out content */
+    align-items: center;
+    color: #ccc; /* Light grey text */
+}
+
+/* Styles for buttons within the footer (e.g., Next, Submit) */
+.latam-footer button {
+    background-color: #006400; /* Dark green background */
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+/* Heading for the quiz result section */
+.latam-result h2 {
+    color: #ff6347; /* Tomato color */
+}
+
+/* Style for the score display */
+.latam-score {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+}

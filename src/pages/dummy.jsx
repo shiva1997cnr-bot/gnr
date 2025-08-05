@@ -1,13 +1,1245 @@
-{ path: "/", element: <Lo /> },
-  { path: "/intro", element: <Int /> },
-  { path: "/region", element: <Region /> },
-  { path: "/sa", element: <SA /> },
-  { path: "/afr", element: <AFR /> },
-  { path: "/latam", element: <LATAM /> },
-  { path: "/uscan", element: <USCAN /> },
-  { path: "/we", element: <WE /> },
-  { path: "/esea", element: <ESEA /> },
-  { path: "/userid", element: <UserId /> },
-  { path: "/register", element: <Register /> },
-  { path: "/scores", element: <Scores /> },
-  { path: "/adminlogs", element: <AdminLogs /> },
+
+
+/* Home.module.css */
+.pageContainer {
+    font-family: 'Poppins', sans-serif;
+    text-align: left;
+    
+  }
+  
+  
+  .intro-start-button {
+    background-color: transparent;
+    color: rgb(42, 54, 165);
+    border: none;
+    font-size: 78px;
+    cursor: pointer;
+    position: absolute;
+    top: 425px;
+    left: 520px;
+    opacity: 0;
+    transform: translateY(40px);
+    animation: fadeInO 1s ease forwards;
+    animation-delay: 5.2s;
+    transition: text-shadow 0.4s ease;
+  }
+  
+  .intro-start-button:hover {
+    background-color: #0763ff;
+    text-shadow: 0 0 20px #0a5fff;
+    box-shadow: 0 0 20px #0a5fff;
+    transform: scale(1.05);
+  }
+  .logout-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px 8px;
+    font-size: 12px;
+    background-color: transparent;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease-in-out;
+  }
+  
+  .logout-button:hover {
+    opacity: 1;
+    background-color: #f5f5f5;
+  }
+  
+  /* Animation keyframes */
+  @keyframes fadeInO {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+    
+    
+  
+  .intro-start-button:hover {
+    background-color: transparent;
+    text-shadow: 0 0 20px #0a5fff;
+    box-shadow: 0 0 20px transparent;
+    transform: scale(1.05);
+  }
+  
+  
+  
+  /* Hover Effects */
+  .intro-start-button:hover {
+    text-shadow: 0 0 20px #0541af; /* blue glow */
+  }
+  
+  .abort-button:hover {
+    text-shadow: 0 0 20px #f84d4d;
+  }
+  
+  
+  
+  @keyframes floatIn {
+    from { transform: translateY(0px); }
+    to { transform: translateY(12px); }
+  }
+  
+  
+  
+  /* Buttons */
+  button {
+    padding: 10px 22px;
+    border-radius: 999px;
+    border: 1px solid #e50914aa; /* Netflix red */
+    background-color: transparent;
+    color: #fff;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin: 10px;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    background-color: #e50914; /* Netflix red hover */
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 0 15px #e5091477;
+  }
+  
+  /* Correct & Wrong Answer Styles */
+  .correct-answer {
+    background-color: #2ecc71 !important;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .wrong-answer {
+    background-color: #e74c3c !important;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .disabled {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  .region-page {
+    height: 00vh;
+    width: 100%;
+    background: url('/world-map.png') no-repeat center center;
+    background-size: cover;
+    background-blend-mode: multiply;
+    background-color: #000000; /* dark base */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  /* Container */
+  .container {
+    text-align: absolute;
+    animation: fadeIn 1.2s ease-out both;
+  }
+  
+  /* Symbols Layout */
+  .symbols {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    left: -200px;
+    top: -0px;
+    gap: 60px;
+    margin-bottom: 60px;
+    position: relative;
+    height: 150px;
+  }
+  
+  /* Hollow Circle (center) */
+  .circle {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    left: 300px;
+    top: -10px;
+    border: 6px solid white;
+    border-radius: 50%;
+    opacity: 0;
+    animation: circleAppear 1.8s ease-out 0.2s forwards;
+    z-index: 2;
+    
+  }
+  
+  /* Hollow Square (left of circle) */
+  .square {
+    width: 100px;
+    height: 100px;
+    border: 6px solid white;
+    border-radius: 20px;
+    position: absolute;
+    left: -25px;
+    top: -10px;
+    opacity: 0;
+    animation: slidein 1
+  ;
+    animation: fadeInScale 2s ease-out 1s forwards;
+  }
+  .square ::after {
+    width: 100px;
+    height: 100px;position: absolute; 
+    right: 200px;
+    top: 10px;
+    border: 6px solid white;
+    border-radius: 20px;
+    border-bottom: 100px solid rgb(248, 16, 171);position: absolute;
+    left: -140px;
+    top: 0;
+    opacity: 0;
+    animation: fadeoutScale 3s ease-out 1s;
+  }
+  
+  /* Hollow Triangle (right of circle, from circle center) */
+  .triangle {
+    width: 0;
+    height: 0;
+    border-left: 60px solid transparent;
+    border-right: 60px solid transparent;
+    border-bottom: 100px solid rgb(255, 255, 255);
+    position: absolute;
+    left: 140px;
+    top: 0;
+    opacity: 0;
+    animation: fadeInScale 1s ease-out 2s forwards;
+  }
+  
+  .triangle::after {
+    content: "";
+    position: absolute;
+    top: 12px;
+    left: -45px;
+    width: 0;
+    height: 0;
+    border-left: 45px solid transparent;
+    border-right: 45px solid transparent;
+    animation: fadeOutScale delay 5s ease-out 2s forwards;
+    border-bottom: 78px solid #f70b66;
+    
+  }
+  
+  /* Title */
+  .title {
+    font-size: 48px;
+    font-weight: bold;
+    position: absolute;
+    left: 430px;
+    top: 330px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    opacity: 0;
+    animation: fadeInText 2s ease-in-out 3.2s forwards;
+  }
+  
+  /* Button Layout - aligns under center circle */
+  .button-row {
+    display: absolute;
+    position: absolute;
+    top: 12000px;
+    left: 45px;
+    gap: 40px;
+    margin-top: 20px;
+  }
+  
+  /* Start (O) Button */
+  /* START BUTTON (◯) */
+  .start-button {
+    width: auto;
+    height: auto;
+    border: none; /* no white border/circle */
+    background-color: transparent;
+    color: #0c6eaf;
+    font-size: 78px;
+    font-weight: bold;
+    position: absolute;
+    top: 400px;
+    left: 450px;
+    cursor: pointer;
+    opacity: 0;
+    animation: fadeInUp 1s ease-in 5.2s forwards;
+    outline: none;         /* prevent focus ring */
+    -webkit-tap-highlight-color: transparent; /* remove tap flash on mobile */
+  }
+  
+  .start-button:focus,
+  .start-button:active {
+    outline: none;
+    box-shadow: none; /* remove glow or highlight on click */
+  }
+  
+  /* ABORT BUTTON (✖️) */
+  .abort-button {
+    border: none;
+    background-color: transparent;
+    color: #fa2b2b;
+    font-size: 118px;
+    font-weight: bold;
+    position: absolute;
+    top: 460px;
+    left: 740px;
+    cursor: not-allowed;
+    opacity: 0;
+    animation: fadeInUp 1s ease-in 5.5s forwards;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .abort-button:hover {
+    text-shadow: 0 0 15px rgba(248, 113, 113, 0.8); /* soft glow, not box shadow */
+  }
+  
+  
+  /* Abort (X) Button */
+  .abort-button {
+    width: 70px;
+    height: 70px;
+    border: none;
+    border-radius: 0%;
+    background-color: transparent;
+    color: #fa2b2b;
+    font-size: 78px;
+    font-weight: bold;
+    position: absolute;
+    top: 440px;
+    left: 750px;
+    cursor: not-allowed;
+    transition: box-shadow 0.4s ease;
+    opacity: 0;
+    animation: fadeInUp 1s ease-in 5.5s forwards;
+  }
+  
+  /* Hover Effects */
+  .start-button:hover {
+    text-shadow: 0 0 20px #0541af;
+  }
+  
+  .abort-button:hover {
+    text-shadow: 0 0 20px #f84d4d;
+  }
+  
+  /* Animations */
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes fadeInScale {
+    from { opacity: 0; transform: scale(0.3); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes fadeInText {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes circleAppear {
+    0% { opacity: 0; transform: scale(0.3); }
+    100% { opacity: 1; transform: scale(1); }
+  }@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .animate-fadeIn {
+    animation: fadeIn 5s ease-out both;
+  }
+  @keyframes fadeInUp {
+    0% {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  /* Base style for X and O */
+  .symbol-text {
+    font-size: 100px;
+    font-weight: bold;
+    font-family: monospace;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    animation-timing-function: steps(2, start);
+  }
+  
+  /* X in Blue Flicker */
+  .flicker-x {
+    color: blue;
+    animation-name: flickerX;
+  }
+  
+  /* O in Red Flicker */
+  .flicker-o {
+    color: red;
+    animation-name: flickerO;
+  }
+  
+  /* Flicker animation keyframes */
+  @keyframes flickerX {
+    0%, 100% { opacity: 1; text-shadow: 0 0 8px #00f, 0 0 15px #00f; }
+    50% { opacity: 0.3; text-shadow: 0 0 2px #00f; }
+  }
+  
+  @keyframes flickerO {
+    0%, 100% { opacity: 1; text-shadow: 0 0 8px #f00, 0 0 15px #f00; }
+    50% { opacity: 0.3; text-shadow: 0 0 2px #f00; }
+  }
+  /* region.css */
+  
+  /* Full-screen region background */
+  .region-page {
+    height: 100vh;
+    padding: 0rem;
+    width: 100%;
+    background: url('/world-map.png') no-repeat center center;
+    background-size: flex;
+    background-color: #3d3c3c; /* fallback */
+    background-blend-mode: multiply;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow-y: auto;
+    padding: rem;
+  }
+  
+  /* Main content box */
+  .region-container {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+  
+  /* Headings */
+  .region-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+  
+  .region-username {
+    color: #e50914;
+  }
+  
+  .region-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Grid of regions */
+  .region-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.5rem;
+    justify-items: center;
+  }
+  
+  /* Individual region box */
+  .region-box {
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: .5rem 1rem;
+    border: 2px solid #e50914;
+    border-radius: 70px;
+    font-size: 1rem;
+    font-weight: 50;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .region-box:hover {
+    background-color: #e50914;
+    color: rgb(243, 239, 239);
+    transform: scale(1.05);
+    border-color: #fd179d;
+  }
+  
+  /* Logout button styling */
+  .logout-button {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background-color: #e50914;
+    color: white;
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 1px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .logout-button:hover {
+    background-color: #c40812;
+  }
+  /* uscan.css — Only for USCAN component */
+  
+  /* === USCAN PAGE STYLES ONLY === */
+  
+  /* === USCAN PAGE STYLES ONLY === */
+  
+  .uscan-container {
+    text-align: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: 2rem;
+    background-color: black;
+    
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .uscan-box {
+    background-color: rgba(26, 24, 24, 0.75);
+    padding: 2rem;
+    border-radius: 2rem;
+    max-width: 700px;
+    width: 35%;
+    text-align: center;
+  }
+  
+  .uscan-question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .uscan-options {
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+  }
+  
+  .uscan-option {
+    padding: .8rem;
+    background-color: white;
+    color: black;
+    border-radius: 4rem;
+    border-left: 6px solid transparent;
+    text-align: left;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .uscan-option:hover {
+    background-color: #2196f3;
+    color: white;
+  }
+  
+  .uscan-option.correct {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .uscan-option.incorrect {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .uscan-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ccc;
+  }
+  
+  .uscan-footer button {
+    background-color: #2563eb;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .uscan-result h2 {
+    color: #e50914;
+  }
+  
+  .uscan-score {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+  }
+  
+  /* Responsive tweaks */
+  @media screen and (max-width: 640px) {
+    .uscan-box {
+      padding: 1.5rem;
+    }
+  
+    .uscan-option {
+      font-size: 0.95rem;
+    }
+  
+    .uscan-footer {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+  /* ===== AFR REGION STYLES ===== */
+  
+  .afr-container {
+    text-align: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: 2rem;
+    background-color: black;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .afr-box {
+    background-color: rgba(26, 24, 24, 0.75);
+    padding: 2rem;
+    border-radius: 2rem;
+    max-width: 700px;
+    width: 40%;
+    text-align: center;
+  }
+  
+  .afr-question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .afr-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  
+  .afr-option {
+    padding: 0.8rem;
+    background-color: white;
+    color: black;
+    border-radius: 4rem;
+    border-left: 6px solid transparent;
+    text-align: left;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .afr-option:hover {
+    background-color: #2196f3;
+    color: white;
+  }
+  
+  .afr-option.correct {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .afr-option.incorrect {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .afr-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ccc;
+  }
+  
+  .afr-footer button {
+    background-color: #2563eb;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .afr-result h2 {
+    color: #e50914;
+  }
+  
+  .afr-score {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+  }
+  
+  /* Responsive tweaks */
+  @media screen and (max-width: 640px) {
+    .afr-box {
+      padding: 1.5rem;
+    }
+  
+    .afr-option {
+      font-size: 0.95rem;
+    }
+  
+    .afr-footer {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+  /* ESEA Quiz Container */
+  .esea-container {
+    text-align: center;
+    min-height: 100vh;
+    width: 40%;
+    padding: 28rem;
+    background-color: black;
+    color: #216e68;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  /* Quiz Box */
+  .esea-box {
+    width: 100%;
+    max-width: 600px;
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  /* Question Text */
+  .esea-question {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #00796b; /* Teal dark */
+  }
+  
+  /* Options Container */
+  .esea-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  
+  /* Individual Option */
+  .esea-option {
+    padding: 0.75rem 1rem;
+    border: 2px solid #b2dfdb;
+    border-radius: 0.5rem;
+    background-color: #f0fdfa;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    text-align: left;
+    font-weight: 500;
+  }
+  
+  .esea-option:hover {
+    background-color: #b2dfdb;
+  }
+  
+  /* Correct Answer */
+  .esea-option.correct {
+    background-color: #4caf50;
+    color: white;
+    border-color: #388e3c;
+  }
+  
+  /* Incorrect Answer */
+  .esea-option.incorrect {
+    background-color: #f44336;
+    color: white;
+    border-color: #d32f2f;
+  }
+  
+  /* Footer (Time or Buttons) */
+  .esea-footer {
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    color: #616161;
+  }
+  
+  /* Result Box */
+  .esea-result h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    color: #00796b;
+  }
+  
+  .esea-score {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Result Button */
+  .esea-box button {
+    background-color: #00796b;
+    color: white;
+    padding: 0.6rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .esea-box button:hover {
+    background-color: #004d40;
+  }
+  .latam-container {
+    text-align: center;
+    min-height: 100vh;
+    width: 40%;
+    padding: 28rem;
+    background-color: #013220;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .latam-box {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 2rem;
+    border-radius: 2rem;
+    max-width: 700px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .latam-question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .latam-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  
+  .latam-option {
+    padding: 0.8rem;
+    background-color: white;
+    color: black;
+    border-radius: 4rem;
+    border-left: 6px solid transparent;
+    text-align: left;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .latam-option:hover {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .latam-option.correct {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .latam-option.incorrect {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .latam-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ccc;
+  }
+  
+  .latam-footer button {
+    background-color: #006400;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .latam-result h2 {
+    color: #ff6347;
+  }
+  
+  .latam-score {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+  }
+  .sa-container {
+    text-align: center;
+    min-height: 100vh;
+    width: 40%;
+    padding: 28rem;
+    background-color: #1b1f3a;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .sa-box {
+    background-color: rgba(20, 20, 20, 0.8);
+    padding: 2rem;
+    border-radius: 2rem;
+    max-width: 700px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .sa-question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .sa-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  
+  .sa-option {
+    padding: 0.8rem;
+    background-color: white;
+    color: black;
+    border-radius: 4rem;
+    border-left: 6px solid transparent;
+    text-align: left;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .sa-option:hover {
+    background-color: #673ab7;
+    color: white;
+  }
+  
+  .sa-option.correct {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .sa-option.incorrect {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .sa-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ccc;
+  }
+  
+  .sa-footer button {
+    background-color: #512da8;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .sa-result h2 {
+    color: #e91e63;
+  }
+  
+  .sa-score {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+  }
+  .we-container {
+    text-align: center;
+    min-height: 100vh;
+    width: 40%;
+    padding: 28rem;
+    background-color: #1b1f3a;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .we-box {
+    background-color: rgba(26, 24, 24, 0.75);
+    padding: 2rem;
+    border-radius: 2rem;
+    max-width: 700px;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .we-question {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+  
+  .we-options {
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+  }
+  
+  .we-option {
+    padding: .8rem;
+    background-color: white;
+    color: black;
+    border-radius: 4rem;
+    border-left: 6px solid transparent;
+    text-align: left;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .we-option:hover {
+    background-color: #2196f3;
+    color: white;
+  }
+  
+  .we-option.correct {
+    background-color: #4caf50;
+    color: white;
+  }
+  
+  .we-option.incorrect {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  .we-footer {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #ccc;
+  }
+  
+  .we-footer button {
+    background-color: #2563eb;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.4rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .we-result h2 {
+    color: #e50914;
+  }
+  
+  .we-score {
+    font-size: 1.25rem;
+    margin: 1rem 0;
+  }
+  
+  /* Responsive tweaks */
+  @media screen and (max-width: 640px) {
+    .we-box {
+      padding: 1.5rem;
+    }
+  
+    .we-option {
+      font-size: 0.95rem;
+    }
+  
+    .we-footer {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  }
+  
+  
+  
+  
+  .login-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    width: 100%;
+    max-width: 420px;
+    padding: 2rem;
+    height: 100vh;
+    display: flex;
+    text-align: center;
+    min-height: 100vh;
+    width: 40%;
+    padding: 30rem;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #0f0f0f, #1c1c1c, #121212); /* Netflix dark gradient */
+    background-size: 400% 400%;
+    animation: login-gradientFlow 15s ease infinite;
+  }
+  
+  @keyframes login-gradientFlow {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+  
+  .login-box {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 2rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    animation: login-fadeInUp 1s ease;
+    text-align: center;
+  }
+  
+  @keyframes login-fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  
+  
+  .subtitle {
+    color: #bae6fd;
+    font-style: italic;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .login-form h2 {
+    color: #e0f2fe;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .login-form input {
+    width: 100%;
+    padding: 0.75rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #e0f2fe;
+    font-size: 0.95rem;
+    outline: none;
+    transition: all 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .login-form input::placeholder {
+    color: #94a3b8;
+  }
+  
+  .login-form input:focus {
+    border-color: #0ea5e9;
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  .login-form button {
+    width: 100%;
+    padding: 0.75rem;
+    background: linear-gradient(to right, #06b6d4, #3b82f6);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .login-form button:hover {
+    background: linear-gradient(to right, #0ea5e9, #2563eb);
+    transform: scale(1.03);
+  }
+  
+  .message {
+    color: #f87171;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    animation: login-fadeIn 0.4s ease-in;
+  }
+  
+  @keyframes login-fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .toggle-button {
+    margin-top: 1.2rem;
+    font-size: 0.9rem;
+    color: #7dd3fc;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  
+  .toggle-button:hover {
+    color: #38bdf8;
+  }
+  

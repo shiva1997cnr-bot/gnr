@@ -1,6 +1,7 @@
 // src/pages/LATAM.jsx
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import './styles/latam.css';
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 
