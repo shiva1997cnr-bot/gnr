@@ -1,7 +1,7 @@
 // src/pages/ESEA.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import './styles/esea.css';
+import '../styles/esea.css';
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 import "../app.css"; // Make sure app.css includes the ESEA styles

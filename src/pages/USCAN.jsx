@@ -1,7 +1,7 @@
 // src/pages/USCAN.jsx  
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import './styles/uscan.css';
+import '../styles/uscan.css';
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 

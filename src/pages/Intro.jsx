@@ -1,7 +1,8 @@
 // src/pages/Intro.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './intro.css';
+import '../styles/intro.css';
+
 
 
 function Intro() {
