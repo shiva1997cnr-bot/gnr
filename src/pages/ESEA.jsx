@@ -1,7 +1,9 @@
+// src/pages/ESEA.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
+import "../app.css"; // Make sure app.css includes the ESEA styles
 
 const questions = [
   {
@@ -99,10 +101,11 @@ function ESEA() {
   }, [time, selected, showScore]);
 
   const handleOption = (option) => {
+    if (selected) return;
+
     setSelected(option);
     const isCorrect = option === questions[current].answer;
 
-    // Play appropriate sound
     const sound = new Audio(isCorrect ? correctSound : wrongSound);
     sound.play();
 
@@ -122,40 +125,42 @@ function ESEA() {
       setTime(30);
     } else {
       setShowScore(true);
+
+      const employeeId = localStorage.getItem("employeeId") || "default";
+      const scores = JSON.parse(localStorage.getItem("scores")) || {};
+      if (!scores[employeeId]) scores[employeeId] = {};
+      scores[employeeId]["ESEA"] = score;
+      localStorage.setItem("scores", JSON.stringify(scores));
     }
   };
 
-  const getOptionStyle = (option) => {
-    if (!selected) return "bg-white hover:bg-blue-100";
-    if (option === questions[current].answer) return "bg-green-300 text-white";
-    if (option === selected) return "bg-red-300 text-white";
-    return "bg-white";
+  const getOptionClass = (option) => {
+    if (!selected) return "esea-option";
+    if (option === questions[current].answer) return "esea-option correct";
+    if (option === selected) return "esea-option incorrect";
+    return "esea-option";
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-blue-50 p-4">
-      <div className="bg-white p-6 rounded-xl shadow-md w-full max-w-xl">
+    <div className="esea-container">
+      <div className="esea-box">
         {!showScore ? (
           <>
-            <h2 className="text-xl font-bold mb-4">
-              ESEA Region Quiz 🇯🇵 🇦🇺 🇻🇳
-            </h2>
+            <h2 className="esea-question">ESEA Region Quiz 🇯🇵 🇦🇺 🇻🇳</h2>
             <div className="flex justify-between mb-2">
               <span>
                 Question {current + 1} / {questions.length}
               </span>
-              <span>Time: {time}s</span>
+              <span>⏱ {time}s</span>
             </div>
-            <p className="font-semibold mb-4">
-              {questions[current].question}
-            </p>
-            <div className="space-y-2">
+            <p className="font-semibold mb-3">{questions[current].question}</p>
+            <div className="esea-options">
               {questions[current].options.map((option, index) => (
                 <button
                   key={index}
                   onClick={() => handleOption(option)}
                   disabled={!!selected}
-                  className={`w-full text-left p-2 rounded-md border transition duration-300 ${getOptionStyle(option)}`}
+                  className={getOptionClass(option)}
                 >
                   {option}
                 </button>
@@ -163,16 +168,16 @@ function ESEA() {
             </div>
           </>
         ) : (
-          <div className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Quiz Completed ✅</h2>
-            <p className="text-xl mb-2">
+          <div className="esea-result">
+            <h2>✅ Quiz Completed!</h2>
+            <p className="esea-score">
               Your Score: {score} / {questions.length}
             </p>
-            <button
-              onClick={() => navigate("/region")}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Return to Region
+            <p className={score >= 8 ? "text-green-600" : "text-red-600"}>
+              {score >= 8 ? "Passed ✅" : "Failed ❌"}
+            </p>
+            <button onClick={() => navigate("/region")}>
+              Return to Region Selection
             </button>
           </div>
         )}

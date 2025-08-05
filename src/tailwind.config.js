@@ -38,4 +38,4 @@ module.exports = {
   },
   plugins: [],
 };
-<h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl">Generalist Quiz Game</h1>
+

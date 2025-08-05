@@ -63,13 +63,12 @@ function WE() {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [quizFinished, setQuizFinished] = useState(false);
-
   const navigate = useNavigate();
 
   useEffect(() => {
     if (quizFinished) return;
     if (timeLeft === 0) handleNext();
-    const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearTimeout(timer);
   }, [timeLeft, currentQ, quizFinished]);
 
@@ -78,14 +77,14 @@ function WE() {
     setSelected(option);
 
     const isCorrect = option === questions[currentQ].answer;
-    if (isCorrect) setScore(score + 1);
+    if (isCorrect) setScore((prev) => prev + 1);
 
     const audio = new Audio(isCorrect ? correctSound : wrongSound);
     audio.play();
 
     setTimeout(() => {
       handleNext();
-    }, 1500); // ⏱ delay before moving to next
+    }, 1500);
   };
 
   const handleNext = () => {
@@ -96,7 +95,6 @@ function WE() {
     } else {
       setQuizFinished(true);
 
-      // 💾 Save score under employeeId in localStorage
       const employeeId = localStorage.getItem("employeeId") || "default";
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
       if (!scores[employeeId]) scores[employeeId] = {};
@@ -108,26 +106,26 @@ function WE() {
   const isPassed = (score / questions.length) * 100 >= 80;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-300 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-xl text-center">
+    <div className="we-container">
+      <div className="we-box">
         {!quizFinished ? (
           <>
-            <h2 className="text-xl font-semibold mb-4">Western Europe Region Quiz</h2>
-            <div className="text-sm mb-2 text-gray-600">Time Left: {timeLeft}s</div>
-            <h3 className="text-lg font-medium mb-3">{questions[currentQ].question}</h3>
-            <div className="grid gap-2">
+            <h2 className="we-question">Western Europe Region Quiz</h2>
+            <div className="we-timer">Time Left: {timeLeft}s</div>
+            <h3 className="we-question">{questions[currentQ].question}</h3>
+            <div className="we-options">
               {questions[currentQ].options.map((option, i) => (
                 <button
                   key={i}
                   onClick={() => handleOptionClick(option)}
-                  className={`py-2 px-4 rounded-lg border transition-all duration-300 ${
+                  className={`we-option ${
                     selected
                       ? option === questions[currentQ].answer
-                        ? "bg-green-500 text-white"
+                        ? "correct"
                         : option === selected
-                        ? "bg-red-500 text-white"
-                        : "bg-gray-200"
-                      : "bg-blue-100 hover:bg-blue-200"
+                        ? "incorrect"
+                        : ""
+                      : ""
                   }`}
                   disabled={!!selected}
                 >
@@ -137,16 +135,13 @@ function WE() {
             </div>
           </>
         ) : (
-          <div>
-            <h2 className="text-2xl font-bold mb-2">Quiz Completed 🎉</h2>
-            <p className="text-lg mb-1">Your Score: {score} / {questions.length}</p>
-            <p className={`text-md font-semibold ${isPassed ? "text-green-700" : "text-red-600"}`}>
+          <div className="we-result">
+            <h2>Quiz Completed 🎉</h2>
+            <p className="we-score">Your Score: {score} / {questions.length}</p>
+            <p className={isPassed ? "pass" : "fail"}>
               {isPassed ? "Passed ✅" : "Failed ❌"}
             </p>
-            <button
-              onClick={() => navigate("/region")}
-              className="mt-6 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-            >
+            <button onClick={() => navigate("/region")} className="we-footer-btn">
               Return to Region Selection
             </button>
           </div>

@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 
+
 const questions = [
   {
     question: "Who is the current Head of State of Nigeria (2025)?",
@@ -109,58 +110,50 @@ function AFR() {
   const isPassed = (score / questions.length) * 100 >= 80;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-yellow-50 p-4">
-      <h1 className="text-3xl font-bold mb-6">🌍 Welcome to Africa Quiz</h1>
-
+    <div className="afr-container">
       {!quizFinished ? (
-        <div className="w-full max-w-xl bg-white p-6 rounded-xl shadow-md">
-          <h2 className="text-lg font-semibold mb-2">
+        <div className="afr-box">
+          <div className="afr-question">
             Question {currentQ + 1} of {questions.length}
-          </h2>
-          <p className="mb-4 text-gray-700">{questions[currentQ].question}</p>
-
-          <div className="space-y-3">
+          </div>
+          <div className="afr-question">{questions[currentQ].question}</div>
+          <div className="afr-options">
             {questions[currentQ].options.map((option, index) => {
               const isCorrect = selected && option === questions[currentQ].answer;
               const isWrong = selected === option && option !== questions[currentQ].answer;
               return (
-                <button
+                <div
                   key={index}
-                  className={`w-full p-2 rounded-lg border text-left transition-colors ${
+                  className={`afr-option ${
                     selected
                       ? isCorrect
-                        ? "bg-green-300 border-green-500 text-white"
+                        ? "correct"
                         : isWrong
-                        ? "bg-red-300 border-red-500 text-white"
-                        : "bg-gray-100 border-gray-300"
-                      : "bg-gray-100 border-gray-300 hover:bg-yellow-100"
+                        ? "incorrect"
+                        : ""
+                      : ""
                   }`}
                   onClick={() => handleOptionClick(option)}
-                  disabled={!!selected}
                 >
                   {option}
-                </button>
+                </div>
               );
             })}
           </div>
-
-          <div className="mt-4 flex justify-between items-center">
-            <p className="text-sm text-gray-500">⏱ Time Left: {timeLeft}s</p>
+          <div className="afr-footer">
+            <span>⏱ Time Left: {timeLeft}s</span>
           </div>
         </div>
       ) : (
-        <div className="bg-white p-6 rounded-xl shadow-md text-center">
-          <h2 className="text-2xl font-bold mb-4">✅ Quiz Complete!</h2>
-          <p className="text-lg mb-2">Your Score: {score} / {questions.length}</p>
-          <p className={`text-lg font-semibold ${isPassed ? "text-green-600" : "text-red-600"}`}>
+        <div className="afr-box afr-result">
+          <h2>✅ Quiz Complete!</h2>
+          <div className="afr-score">
+            Your Score: {score} / {questions.length}
+          </div>
+          <div className={isPassed ? "text-green-500" : "text-red-500"}>
             {isPassed ? "Passed ✅" : "Failed ❌"}
-          </p>
-          <button
-            onClick={() => navigate("/region")}
-            className="mt-4 bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-          >
-            Return to Region Selection
-          </button>
+          </div>
+          <button onClick={() => navigate("/region")}>Return to Region Selection</button>
         </div>
       )}
     </div>

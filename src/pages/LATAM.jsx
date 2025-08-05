@@ -63,7 +63,6 @@ function LATAM() {
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -99,7 +98,6 @@ function LATAM() {
     } else {
       setQuizFinished(true);
 
-      // 💾 Save score under employeeId
       const employeeId = localStorage.getItem("employeeId") || "default";
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
       if (!scores[employeeId]) scores[employeeId] = {};
@@ -111,52 +109,53 @@ function LATAM() {
   const isPassed = (score / questions.length) * 100 >= 80;
 
   return (
-    <div className="min-h-screen bg-red-100 flex flex-col items-center justify-center p-6">
-      <h1 className="text-3xl font-bold mb-4">LATAM Quiz 🌎</h1>
-      {quizFinished ? (
-        <div className="text-center">
-          <h2 className="text-2xl mb-2">Your Score: {score} / {questions.length}</h2>
-          <p className={`text-lg font-semibold ${isPassed ? "text-green-700" : "text-red-600"}`}>
-            {isPassed ? "Passed ✅" : "Failed ❌"}
-          </p>
-          <button
-            onClick={() => navigate("/region")}
-            className="mt-6 px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Return to Region
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="text-xl font-semibold mb-2">
-            Question {currentQ + 1} of {questions.length}
+    <div className="latam-container">
+      <div className="latam-box">
+        <h1 className="text-3xl font-bold mb-4">LATAM Quiz 🌎</h1>
+
+        {quizFinished ? (
+          <div className="latam-result">
+            <h2>Your Score: {score} / {questions.length}</h2>
+            <p className={`latam-score ${isPassed ? "text-green-500" : "text-red-500"}`}>
+              {isPassed ? "Passed ✅" : "Failed ❌"}
+            </p>
+            <button className="latam-footer-button" onClick={() => navigate("/region")}>
+              Return to Region
+            </button>
           </div>
-          <div className="text-lg font-bold text-red-700 mb-4">Time Left: {timeLeft}s</div>
-          <div className="text-xl font-medium mb-6">
-            {questions[currentQ].question}
-          </div>
-          <div className="grid grid-cols-1 gap-3 w-full max-w-xl">
-            {questions[currentQ].options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleOptionClick(option)}
-                className={`p-3 rounded border transition-colors ${
-                  selected
-                    ? option === questions[currentQ].answer
-                      ? "bg-green-500 text-white"
-                      : option === selected
-                      ? "bg-red-500 text-white"
-                      : "bg-gray-200"
-                    : "bg-white hover:bg-red-200"
-                }`}
-                disabled={!!selected}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+        ) : (
+          <>
+            <div className="latam-question">
+              Question {currentQ + 1} of {questions.length}
+            </div>
+            <div className="latam-score">Time Left: {timeLeft}s</div>
+            <div className="latam-question">{questions[currentQ].question}</div>
+
+            <div className="latam-options">
+              {questions[currentQ].options.map((option, idx) => {
+                let className = "latam-option";
+                if (selected) {
+                  if (option === questions[currentQ].answer) {
+                    className += " correct";
+                  } else if (option === selected) {
+                    className += " incorrect";
+                  }
+                }
+
+                return (
+                  <div
+                    key={idx}
+                    className={className}
+                    onClick={() => handleOptionClick(option)}
+                  >
+                    {option}
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

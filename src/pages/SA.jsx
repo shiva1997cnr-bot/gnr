@@ -83,7 +83,7 @@ function SA() {
 
     setTimeout(() => {
       handleNext();
-    }, 1500); // ⏱ wait 1.5s before moving to next
+    }, 1500);
   };
 
   const handleNext = () => {
@@ -95,7 +95,6 @@ function SA() {
     } else {
       setShowScore(true);
 
-      // Save to localStorage by employeeId
       const employeeId = localStorage.getItem("employeeId") || "default";
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
       if (!scores[employeeId]) scores[employeeId] = {};
@@ -107,50 +106,49 @@ function SA() {
   const isPassed = (score / questions.length) * 100 >= 80;
 
   return (
-    <div className="h-screen bg-orange-100 flex flex-col items-center justify-center p-4">
-      {!showScore ? (
-        <div className="w-full max-w-xl text-center">
-          <h1 className="text-2xl font-bold mb-4">South Asia Quiz 🌏</h1>
-          <div className="mb-2 text-lg font-medium">Time Left: {timeLeft}s</div>
-          <h2 className="text-xl font-semibold mb-4">
-            {questions[currentQuestion].question}
-          </h2>
-          <div className="grid grid-cols-1 gap-3">
-            {questions[currentQuestion].options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleOptionClick(option)}
-                className={`px-4 py-2 rounded-lg text-white transition-all duration-300 ${
-                  selectedOption
-                    ? option === questions[currentQuestion].answer
-                      ? "bg-green-600"
-                      : option === selectedOption
-                      ? "bg-red-500"
-                      : "bg-gray-300 text-black"
-                    : "bg-orange-500 hover:bg-orange-600"
-                }`}
-                disabled={!!selectedOption}
-              >
-                {option}
-              </button>
-            ))}
+    <div className="sa-container">
+      <div className="sa-box">
+        {!showScore ? (
+          <>
+            <h1 className="sa-title">South Asia Quiz 🌏</h1>
+            <div className="sa-timer">Time Left: {timeLeft}s</div>
+            <h2 className="sa-question">{questions[currentQuestion].question}</h2>
+            <div className="sa-options">
+              {questions[currentQuestion].options.map((option, index) => {
+                let className = "sa-option";
+                if (selectedOption) {
+                  if (option === questions[currentQuestion].answer) {
+                    className += " correct";
+                  } else if (option === selectedOption) {
+                    className += " incorrect";
+                  }
+                }
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleOptionClick(option)}
+                    className={className}
+                    disabled={!!selectedOption}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        ) : (
+          <div className="sa-result">
+            <h2>Quiz Completed 🎉</h2>
+            <p>Your Score: {score} / {questions.length}</p>
+            <p className={`sa-score ${isPassed ? "text-pass" : "text-fail"}`}>
+              {isPassed ? "Great! You Passed ✅" : "Oops! You didn't pass ❌"}
+            </p>
+            <button onClick={() => navigate("/region")} className="sa-return">
+              Return to Region
+            </button>
           </div>
-        </div>
-      ) : (
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">Quiz Completed 🎉</h2>
-          <p className="mb-2 text-xl">Your Score: {score} / {questions.length}</p>
-          <p className={`text-lg font-semibold mb-6 ${isPassed ? "text-green-700" : "text-red-600"}`}>
-            {isPassed ? "Great! You Passed ✅" : "Oops! You didn't pass ❌"}
-          </p>
-          <button
-            onClick={() => navigate("/region")}
-            className="mt-4 px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            Return to Region
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

@@ -1,11 +1,12 @@
-// src/pages/USCAN.jsx
+// src/pages/USCAN.jsx  
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 
+import { logActivity } from "../utils/activityLogger"; // ✅ Added
+
 const questions = [
-  // (Same questions array)
   {
     question: "Who is the current Head of State for Canada?",
     options: ["Justin Trudeau", "King Charles III", "Joe Biden", "Pierre Poilievre"],
@@ -171,7 +172,6 @@ function USCAN() {
 
   const saveScore = () => {
     const employeeId = localStorage.getItem("employeeId") || "default";
-    const percent = (score / questions.length) * 100;
 
     const scores = JSON.parse(localStorage.getItem("scores")) || {};
     const register = JSON.parse(localStorage.getItem("register")) || {};
@@ -188,6 +188,9 @@ function USCAN() {
     localStorage.setItem("scores", JSON.stringify(scores));
     localStorage.setItem("register", JSON.stringify(register));
     localStorage.setItem("report", JSON.stringify(report));
+
+    // ✅ Activity log entry
+    logActivity("QUIZ_ATTEMPT", `USCAN Quiz | Score: ${score}/${questions.length}`);
   };
 
   const getPassFailText = () => {
@@ -196,57 +199,49 @@ function USCAN() {
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto text-center">
-      {!showResult ? (
-        <div>
-          <h2 className="text-xl font-bold mb-4">
-            Q{currentQuestion + 1}: {questions[currentQuestion].question}
-          </h2>
-          <div className="grid grid-cols-1 gap-4">
-            {questions[currentQuestion].options.map((option) => (
-              <button
-                key={option}
-                onClick={() => handleOptionClick(option)}
-                className={`p-3 rounded-lg border text-left transition-all duration-300 ${
-                  selected
-                    ? option === questions[currentQuestion].answer
-                      ? "bg-green-300"
-                      : option === selected
-                      ? "bg-red-200"
-                      : "bg-white"
-                    : "bg-white hover:bg-blue-100"
-                }`}
-                disabled={!!selected}
-              >
-                {option}
-              </button>
-            ))}
+    <div className="uscan-container">
+      <div className="uscan-box">
+        {!showResult ? (
+          <>
+            <h2 className="uscan-question">
+              Q{currentQuestion + 1}: {questions[currentQuestion].question}
+            </h2>
+            <div className="uscan-options">
+              {questions[currentQuestion].options.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => handleOptionClick(option)}
+                  className={`uscan-option ${
+                    selected
+                      ? option === questions[currentQuestion].answer
+                        ? "correct"
+                        : option === selected
+                        ? "incorrect"
+                        : ""
+                      : ""
+                  }`}
+                  disabled={!!selected}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+            <div className="uscan-footer">
+              <span>⏱ {timeLeft}s</span>
+              {selected && <button onClick={handleNext}>Next</button>}
+            </div>
+          </>
+        ) : (
+          <div className="uscan-result">
+            <h2>Quiz Completed!</h2>
+            <p className="uscan-score">Your Score: {score} / {questions.length}</p>
+            <p className="uscan-score">{getPassFailText()}</p>
+            <button onClick={() => navigate("/region")}>
+              Return to Region
+            </button>
           </div>
-          <div className="mt-4 flex justify-between items-center">
-            <span className="text-sm">⏱ {timeLeft}s</span>
-            {selected && (
-              <button
-                onClick={handleNext}
-                className="px-4 py-2 bg-blue-500 text-white rounded"
-              >
-                Next
-              </button>
-            )}
-          </div>
-        </div>
-      ) : (
-        <div>
-          <h2 className="text-2xl font-bold mb-4">Quiz Completed!</h2>
-          <p className="text-lg mb-2">Your Score: {score} / {questions.length}</p>
-          <p className="text-lg font-semibold mb-6">{getPassFailText()}</p>
-          <button
-            onClick={() => navigate("/region")}
-            className="px-4 py-2 bg-green-500 text-white rounded"
-          >
-            Return to Region
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

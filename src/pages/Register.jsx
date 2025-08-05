@@ -1,3 +1,4 @@
+// Register.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -9,19 +10,34 @@ const Register = () => {
 
   const handleRegister = (e) => {
     e.preventDefault();
+
+    if (!/^\d{4}$/.test(birthYear)) {
+      alert("Birth year must be a 4-digit number.");
+      return;
+    }
+
     const users = JSON.parse(localStorage.getItem("users")) || {};
-    users[employeeId] = { birthYear, name };
+
+    // Prevent duplicate registrations
+    if (users[employeeId]) {
+      alert("Employee ID already registered.");
+      return;
+    }
+
+    users[employeeId] = { name, birthYear };
     localStorage.setItem("users", JSON.stringify(users));
+
+    // Optionally store current user session
+    localStorage.setItem("currentUser", JSON.stringify({ employeeId, name }));
+
     navigate("/region", { state: { userName: name } });
   };
 
   return (
     <div className="h-screen bg-green-100 flex items-center justify-center">
-      <form
-        onSubmit={handleRegister}
-        className="bg-white p-8 rounded shadow-md w-96"
-      >
+      <form onSubmit={handleRegister} className="bg-white p-8 rounded shadow-md w-96">
         <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
+
         <input
           type="text"
           placeholder="Your Name"
@@ -30,6 +46,7 @@ const Register = () => {
           required
           className="w-full mb-4 p-2 border rounded"
         />
+
         <input
           type="text"
           placeholder="Employee ID"
@@ -38,6 +55,7 @@ const Register = () => {
           required
           className="w-full mb-4 p-2 border rounded"
         />
+
         <input
           type="text"
           placeholder="Birth Year"
@@ -46,6 +64,7 @@ const Register = () => {
           required
           className="w-full mb-6 p-2 border rounded"
         />
+
         <button
           type="submit"
           className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
