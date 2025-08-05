@@ -1,68 +1,89 @@
-// AdminLogs.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
-const allowedIds = ["admin123", "manager456"]; // replace with real admin IDs
-
 const AdminLogs = () => {
-  const employeeId = localStorage.getItem("employeeId");
+  const [logs, setLogs] = useState([]);
+  const navigate = useNavigate();
+  const currentUser = localStorage.getItem("employeeId");
 
-  if (!allowedIds.includes(employeeId)) {
-    return <p style={{ color: "red", fontWeight: "bold", padding: "2rem" }}>⛔ You don’t have access to view logs.</p>;
-  }
+  // Only allow access to admins
+  const allowedAdmins = ["admin123", "shiv"]; // Update this list
+  const isAdmin = allowedAdmins.includes(currentUser);
 
-  const logs = JSON.parse(localStorage.getItem("activityLogs")) || {};
+  useEffect(() => {
+    const raw = localStorage.getItem("activityLogs");
+    if (!raw) return;
 
-  const exportLogs = () => {
-    const data = [];
+    const parsed = JSON.parse(raw);
+    const flatLogs = [];
 
-    Object.entries(logs).forEach(([userId, entries]) => {
-      entries.forEach(entry => {
-        data.push({ userId, ...entry });
+    Object.entries(parsed).forEach(([employeeId, entries]) => {
+      entries.forEach((entry) => {
+        flatLogs.push({
+          employeeId,
+          timestamp: entry.timestamp,
+          action: entry.action,
+          details: entry.details,
+        });
       });
     });
 
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Activity Logs");
+    setLogs(flatLogs);
+  }, []);
 
-    XLSX.writeFile(workbook, "ActivityLogs.xlsx");
+  const downloadExcel = () => {
+    const ws = XLSX.utils.json_to_sheet(logs);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Logs");
+
+    XLSX.writeFile(wb, "ActivityLogs.xlsx");
   };
 
+  if (!isAdmin) {
+    return (
+      <div className="p-4">
+        <h2 className="text-xl font-semibold">Access Denied</h2>
+        <p>You are not authorized to view this page.</p>
+        <button onClick={() => navigate("/region")} className="mt-2 underline text-blue-600">
+          Back to Region
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ padding: "2rem", fontFamily: "Segoe UI, Tahoma, Geneva, Verdana, sans-serif" }}>
-      <h1 style={{ color: "#0ea5e9" }}>Admin Activity Logs</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Admin Activity Logs</h1>
       <button
-        onClick={exportLogs}
-        style={{
-          marginBottom: "1.5rem",
-          padding: "0.6rem 1rem",
-          borderRadius: "6px",
-          background: "#2563eb",
-          color: "white",
-          border: "none",
-          cursor: "pointer"
-        }}
+        onClick={downloadExcel}
+        className="bg-green-500 text-white px-4 py-2 rounded mb-4 hover:bg-green-600"
       >
-        📤 Export to Excel
+        📥 Export to Excel
       </button>
 
-      {Object.keys(logs).length === 0 ? (
-        <p>No logs available.</p>
-      ) : (
-        Object.entries(logs).map(([userId, entries]) => (
-          <div key={userId} style={{ marginBottom: "1rem", padding: "1rem", background: "#1e293b", borderRadius: "10px", color: "white" }}>
-            <h3>User: {userId}</h3>
-            <ul>
-              {entries.map((entry, index) => (
-                <li key={index}>
-                  <strong>{entry.timestamp}</strong>: {entry.description}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      )}
+      <div className="overflow-x-auto">
+        <table className="min-w-full border">
+          <thead>
+            <tr className="bg-gray-200">
+              <th className="p-2 border">Employee ID</th>
+              <th className="p-2 border">Timestamp</th>
+              <th className="p-2 border">Action</th>
+              <th className="p-2 border">Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {logs.map((log, idx) => (
+              <tr key={idx} className="border-t">
+                <td className="p-2 border">{log.employeeId}</td>
+                <td className="p-2 border">{log.timestamp}</td>
+                <td className="p-2 border">{log.action}</td>
+                <td className="p-2 border">{log.details}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
