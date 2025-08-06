@@ -1,7 +1,7 @@
 import '../styles/esea.css';
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "../app.css";
+import "../styles/app.css";
 
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";

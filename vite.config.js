@@ -1,12 +1,8 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  base: "./",
   plugins: [react()],
-  build: {
-    rollupOptions: {
-      external: ['./app.css']
-    }
-  }
-})
+  base: '/gnr/', // 👈 important: match your repo name
+});
