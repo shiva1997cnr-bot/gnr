@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "homepage": ".",
-
   "scripts": {
     "dev": "vite",
+    "start": "node index.js",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
