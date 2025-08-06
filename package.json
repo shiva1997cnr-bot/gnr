@@ -3,12 +3,13 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://shiva1997cnr-bot.github.io/gnr",
+  "homepage": ".",
+
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "lint": "eslint .",
+    "preview": "vite preview"
   },
   "dependencies": {
     "file-saver": "^2.0.5",

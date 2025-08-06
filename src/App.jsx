@@ -1,12 +1,6 @@
-
 import React from "react";
-
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-// ✅ Correct CSS imports
 import "./styles/app.css";
-
-
-
 
 import Login from "./pages/Login";
 import Intro from "./pages/Intro";
@@ -22,18 +16,18 @@ import Scores from "./pages/Scores";
 import UserID from "./pages/UserId";
 import Register from './pages/Register';
 
+function ErrorPage() {
+  return (
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h1 style={{ color: "red" }}>404 - Page Not Found</h1>
+      <p>Oops! The page you're looking for doesn't exist.</p>
+      <a href="/" style={{ color: "blue", textDecoration: "underline" }}>Go to Home</a>
+    </div>
+  );
+}
 
-
-
-
-
-// Import your pages
-
-
-
-// Define routes
 const router = createBrowserRouter([
-  { path: "/", element: <Login/> },
+  { path: "/", element: <Login /> },
   { path: "/intro", element: <Intro /> },
   { path: "/region", element: <Region /> },
   { path: "/sa", element: <SA /> },
@@ -46,15 +40,11 @@ const router = createBrowserRouter([
   { path: "/adminlogs", element: <AdminLogs /> },
   { path: "/scores", element: <Scores /> },
   { path: "/userid", element: <UserID /> },
-  
- 
-  
-
-  
+  { path: "*", element: <ErrorPage /> }, // 👈 404 fallback route
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return <RouterProvider router={router} fallbackElement={<ErrorPage />} />;
 }
 
 export default App;

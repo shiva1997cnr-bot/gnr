@@ -23,7 +23,7 @@ const Region = () => {
     { code: "we", label: "Western Europe" },
     { code: "latam", label: "Latin America" },
     { code: "afr", label: "Africa" },
-    { code: "esea", label: "East & Southeast Asia" },
+    { code: "esea", label: "ESEA" },
   ];
 
   const handleRegionClick = (regionCode) => {

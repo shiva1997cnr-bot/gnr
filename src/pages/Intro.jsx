@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import '../styles/intro.css';
 
 
-
 function Intro() {
   const [showContent, setShowContent] = useState(false);
   const navigate = useNavigate();

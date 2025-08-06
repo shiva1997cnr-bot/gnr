@@ -1,92 +1,100 @@
-body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #000;
-    color: #fff;
-}
-
-/* Animation Keyframes */
-@keyframes fadeInScaleAndMoveCircle {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-}
-
-@keyframes fadeInScaleAndMoveTriangle {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-    100% { opacity: 1; transform: translate(calc(-50% - 120px), -50%) scale(1); }
-}
-
-@keyframes fadeInScaleAndMoveSquare {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.3); }
-    100% { opacity: 1; transform: translate(calc(-50% + 120px), -50%) scale(1); }
-}
-
-@keyframes fadeOut {
-    to { opacity: 0; }
-}
-
-@keyframes fadeInUpSoft {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Animation Classes */
-.animate-circle {
-    animation: fadeInScaleAndMoveCircle 2s ease-out 0.5s forwards;
-}
-.animate-triangle {
-    animation: fadeInScaleAndMoveTriangle 2s ease-out 0.9s forwards;
-}
-.animate-square {
-    animation: fadeInScaleAndMoveSquare 2s ease-out 1.4s forwards;
-}
-.fade-out-element {
-    animation: fadeOut 2s ease-out forwards;
-}
-.animate-reveal {
-    animation: fadeInUpSoft 1.5s ease-out forwards;
-}
-
-/* Start Button */
-.start-button {
-    background-color: transparent;
-    color: #3b82f6;
-    border: 2px solid #3b82f6;
-    transition: all 0.3s ease;
-}
-.start-button:hover {
-    background-color: #3b82f6;
-    color: white;
-    box-shadow: 0 0 25px #3b82f6;
-    transform: scale(1.05);
-}
-
-/* Abort Button */
-.abort-button {
-    color: #ef4444;
-    border: 2px solid #ef4444;
-    cursor: not-allowed;
-}
-.abort-button:hover {
-    background-color: #ef4444;
-    color: white;
-    box-shadow: 0 0 25px #ef4444;
-    transform: scale(1.05);
-}
-
-/* Region Buttons */
-.region-button {
-    background-color: rgba(255, 255, 255, 0.1);
-    border: 1px solid #e50914;
-    transition: all 0.3s ease;
-}
-.region-button:hover {
-    background-color: #e50914;
-    transform: scale(1.05);
-    box-shadow: 0 0 15px #e50914;
-}
-
-/* Soft glow for text */
-.soft-glow-text {
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.6),
-                 0 0 15px rgba(255, 255, 255, 0.3);
-}
+/* Base styles */
+.intro-page {
+    position: relative;
+    overflow: hidden;
+    
+  }
+  
+  /* === SYMBOLS ANIMATION === */
+  
+  .symbols {
+    opacity: 0;
+    position: static;
+    top: 20%;
+    transform: translateY(-100px);
+    animation: symbolsEnter 1.5s ease-out forwards;
+    animation-delay: 0.3s;
+  }
+  
+  @keyframes symbolsEnter {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Fade out the symbols after showing */
+  .symbols {
+    animation: symbolsEnter 1.5s ease-out forwards,
+               symbolsExit 1.5s ease-in forwards;
+    animation-delay: 0.3s, 2.3s;
+  }
+  
+  @keyframes symbolsExit {
+    to {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+  }
+  
+  /* === TITLE ANIMATION === */
+  .title {
+    opacity: 0;
+    transform: scale(0.8);
+    animation: titleFadeIn 1.5s ease forwards;
+    animation-delay: 3.5s;
+  }
+  
+  @keyframes titleFadeIn {
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  /* === BUTTON ANIMATION === */
+  .intro-start-button,
+  .abort-button {
+    opacity: 0;
+    transform: scale(0.5);
+    animation: buttonsFadeIn 1.2s ease forwards;
+    animation-delay: 5s;
+  }
+  
+  @keyframes buttonsFadeIn {
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  /* === SYMBOL SHAPES === */
+  
+  .circle {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    right: 19rem;
+    top: 40rem;
+    border-radius: 50%;
+    background-color: rgb(15, 2, 2);
+  }
+  
+  .square {
+    width: 30px;
+    height: 30px;
+    right: 50%;
+    top: 50%;
+    background-color: rgb(14, 2, 2);
+  }
+  
+  .triangle {
+    width: 0;
+    height: 0;
+    right: 19%;
+    top: 10%;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 26px solid rgb(8, 1, 1);
+  }
+  

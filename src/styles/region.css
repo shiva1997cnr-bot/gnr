@@ -1,89 +1,91 @@
-/* Global layout */
 .region-page {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #0f0f0f, #1a1a1a);
+    height: 100vh;
+    padding: 0rem;
+    width: 100%;
+    background: url('/world-map.png') no-repeat center center;
+    background-size: flex;
+    background-color: #3d3a3a; /* fallback */
+    background-blend-mode: multiply;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    padding: 2rem;
-    color: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    align-items: center;
     position: relative;
+    overflow-y: auto;
+    padding: rem;
   }
   
-  /* Logout Button */
-  .logout-button {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    background: transparent;
-    border: 2px solid #ff4d4d;
-    color: #ff4d4d;
-    padding: 8px 16px;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .logout-button:hover {
-    background: #ff4d4d;
-    color: white;
-    box-shadow: 0 0 10px #ff4d4d;
-  }
-  
-  /* Region container */
+  /* Main content box */
   .region-container {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 800px;
+    width: 100%;
     text-align: center;
+    color: white;
+    box-shadow: 0 0 40px rgba(0,0,0,0.5);
   }
   
+  /* Headings */
   .region-title {
     font-size: 2.5rem;
-    margin-bottom: 0.5rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
   }
   
   .region-username {
-    color: #00ffff;
-    font-weight: bold;
-    text-shadow: 0 0 6px #00ffff;
+    color: #e50914;
   }
   
   .region-subtitle {
     font-size: 1.5rem;
-    margin-bottom: 2rem;
-    color: #cccccc;
+    margin-bottom: 4rem;
   }
   
-  /* Grid of region boxes */
+  /* Grid of regions */
   .region-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 20px;
-    max-width: 900px;
-    margin: auto;
-    padding: 0 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.9rem;
+    justify-items: center;
   }
   
   /* Individual region box */
   .region-box {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 12px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    color: #ffffff;
+    background-color: rgba(243, 162, 162, 0.1);
+    padding: .2rem 1.3rem;
+    border: 2px solid #e50914;
+    border-radius: 80px;
+    font-size: 1rem;
+    font-weight: 50;
+    text-align: unset;
+    color: #fff;
     cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    text-shadow: 0 0 2px #00f0ff;
-    backdrop-filter: blur(8px);
+    transition: all 0.3s ease-in-out;
   }
   
   .region-box:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 0 15px #00ffff88;
-    background: rgba(0, 255, 255, 0.08);
-    border-color: #00ffff44;
+    background-color: #e50914;
+    color: rgb(243, 239, 239);
+    transform: scale(1.05);
+    border-color: #fd179d;
   }
   
+  /* Logout button styling */
+  .logout-button {
+    position: absolute;
+    top: 1rem;
+    left: 80rem;
+    background-color:  rgba(50, 47, 59, 0.6);
+    color: white;
+    font-size: 0.9rem;
+    padding: 6px 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .logout-button:hover {
+    background-color: #c40812;
+  }
