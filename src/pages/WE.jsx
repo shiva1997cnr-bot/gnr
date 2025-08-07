@@ -1,9 +1,9 @@
-// src/pages/WE.jsx
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/we.css';
+import "../styles/we.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
+import { saveQuizResult } from "../utils/firestoreUtils";
 
 const questions = [
   {
@@ -64,6 +64,7 @@ function WE() {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
   const [quizFinished, setQuizFinished] = useState(false);
+  const [startTime] = useState(Date.now());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -88,7 +89,7 @@ function WE() {
     }, 1500);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQ + 1 < questions.length) {
       setCurrentQ(currentQ + 1);
       setSelected(null);
@@ -96,11 +97,19 @@ function WE() {
     } else {
       setQuizFinished(true);
 
-      const employeeId = localStorage.getItem("employeeId") || "default";
-      const scores = JSON.parse(localStorage.getItem("scores")) || {};
-      if (!scores[employeeId]) scores[employeeId] = {};
-      scores[employeeId]["WE"] = score;
-      localStorage.setItem("scores", JSON.stringify(scores));
+      const endTime = Date.now();
+      const timeSpent = Math.floor((endTime - startTime) / 1000); // in seconds
+
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (!user || !user.username) {
+        console.error("User not found");
+        return;
+      }
+
+      const username = user.username;
+      const regionKey = "we";
+
+      await saveQuizResult(username, regionKey, score, timeSpent); // ✅ Updated
     }
   };
 

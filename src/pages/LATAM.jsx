@@ -1,7 +1,8 @@
 // src/pages/LATAM.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/latam.css';
+import { saveQuizResult } from "../utils/firestoreUtils";
+import "../styles/latam.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 
@@ -64,24 +65,25 @@ function LATAM() {
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const startTime = useRef(Date.now());
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (quizFinished) return;
+    if (quizFinished || selected !== null) return;
     if (timeLeft === 0) {
       handleNext();
       return;
     }
     const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, currentQ, quizFinished]);
+  }, [timeLeft, selected, quizFinished]);
 
   const handleOptionClick = (option) => {
     if (selected) return;
     setSelected(option);
 
     const isCorrect = option === questions[currentQ].answer;
-    if (isCorrect) setScore(score + 1);
+    if (isCorrect) setScore((prev) => prev + 1);
 
     const audio = new Audio(isCorrect ? correctSound : wrongSound);
     audio.play();
@@ -91,7 +93,7 @@ function LATAM() {
     }, 1500);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQ + 1 < questions.length) {
       setCurrentQ(currentQ + 1);
       setSelected(null);
@@ -99,10 +101,24 @@ function LATAM() {
     } else {
       setQuizFinished(true);
 
-      const employeeId = localStorage.getItem("employeeId") || "default";
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (!user || !user.username) {
+        console.error("❌ Username not found in localStorage");
+        return;
+      }
+
+      const username = user.username;
+      const regionKey = "latam";
+      const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
+
+      // ✅ Fixed: Pass arguments correctly
+      await saveQuizResult(username, regionKey, score, timeSpent);
+      console.log(`✅ LATAM result saved for ${username}`);
+
+      // ✅ Optional local storage update
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
-      if (!scores[employeeId]) scores[employeeId] = {};
-      scores[employeeId]["LATAM"] = score;
+      if (!scores[username]) scores[username] = {};
+      scores[username]["LATAM"] = score;
       localStorage.setItem("scores", JSON.stringify(scores));
     }
   };

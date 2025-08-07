@@ -1,11 +1,10 @@
-// src/pages/USCAN.jsx  
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/uscan.css';
+import "../styles/uscan.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
-
-import { logActivity } from "../utils/activityLogger"; // ✅ Added
+import { saveQuizResult } from "../utils/firestoreUtils";
+import { logActivity } from "../utils/activityLogger";
 
 const questions = [
   {
@@ -40,12 +39,22 @@ const questions = [
   },
   {
     question: "What is the CIA?",
-    options: ["Canadian Intelligence Agency", "Central Intelligence Agency", "Council of International Affairs", "Commonwealth Intelligence Agency"],
+    options: [
+      "Canadian Intelligence Agency",
+      "Central Intelligence Agency",
+      "Council of International Affairs",
+      "Commonwealth Intelligence Agency",
+    ],
     answer: "Central Intelligence Agency",
   },
   {
     question: "What is the CSIS in Canada?",
-    options: ["Canadian Security Intelligence Service", "Central Service of Internal Security", "Canada Secret Information Sector", "Commonwealth Surveillance Intelligence Service"],
+    options: [
+      "Canadian Security Intelligence Service",
+      "Central Service of Internal Security",
+      "Canada Secret Information Sector",
+      "Commonwealth Surveillance Intelligence Service",
+    ],
     answer: "Canadian Security Intelligence Service",
   },
   {
@@ -125,7 +134,12 @@ const questions = [
   },
   {
     question: "What is the House of Representatives?",
-    options: ["US Senate", "Canadian Parliament", "Lower house of US Congress", "Upper house of Canadian Parliament"],
+    options: [
+      "US Senate",
+      "Canadian Parliament",
+      "Lower house of US Congress",
+      "Upper house of Canadian Parliament",
+    ],
     answer: "Lower house of US Congress",
   },
   {
@@ -141,56 +155,57 @@ function USCAN() {
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const startTime = useRef(Date.now());
   const navigate = useNavigate();
 
   useEffect(() => {
     if (timeLeft === 0) handleNext();
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft]);
+    const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft, currentQuestion, selected]);
 
   const handleOptionClick = (option) => {
     if (selected) return;
-    setSelected(option);
 
+    setSelected(option);
     const correct = option === questions[currentQuestion].answer;
-    if (correct) setScore(score + 1);
+    if (correct) setScore((prev) => prev + 1);
 
     const audio = new Audio(correct ? correctSound : wrongSound);
     audio.play();
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQuestion + 1 < questions.length) {
-      setCurrentQuestion(currentQuestion + 1);
+      setCurrentQuestion((prev) => prev + 1);
       setSelected(null);
       setTimeLeft(30);
     } else {
       setShowResult(true);
-      saveScore();
+      await saveScore();
     }
   };
 
-  const saveScore = () => {
-    const employeeId = localStorage.getItem("employeeId") || "default";
+  const saveScore = async () => {
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    const username = user?.username;
+
+    if (!username) {
+      console.error("❌ Username not found in localStorage");
+      return;
+    }
+
+    const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
+    const regionKey = "uscan";
+
+    // ✅ Correct usage
+    await saveQuizResult(username, regionKey, score, timeSpent);
 
     const scores = JSON.parse(localStorage.getItem("scores")) || {};
-    const register = JSON.parse(localStorage.getItem("register")) || {};
-    const report = JSON.parse(localStorage.getItem("report")) || {};
-
-    if (!scores[employeeId]) scores[employeeId] = {};
-    if (!register[employeeId]) register[employeeId] = {};
-    if (!report[employeeId]) report[employeeId] = {};
-
-    scores[employeeId]["USCAN"] = score;
-    register[employeeId]["USCAN"] = score;
-    report[employeeId]["USCAN"] = score;
-
+    if (!scores[username]) scores[username] = {};
+    scores[username]["USCAN"] = score;
     localStorage.setItem("scores", JSON.stringify(scores));
-    localStorage.setItem("register", JSON.stringify(register));
-    localStorage.setItem("report", JSON.stringify(report));
 
-    // ✅ Activity log entry
     logActivity("QUIZ_ATTEMPT", `USCAN Quiz | Score: ${score}/${questions.length}`);
   };
 
@@ -208,9 +223,9 @@ function USCAN() {
               Q{currentQuestion + 1}: {questions[currentQuestion].question}
             </h2>
             <div className="uscan-options">
-              {questions[currentQuestion].options.map((option) => (
+              {questions[currentQuestion].options.map((option, index) => (
                 <button
-                  key={option}
+                  key={index}
                   onClick={() => handleOptionClick(option)}
                   className={`uscan-option ${
                     selected

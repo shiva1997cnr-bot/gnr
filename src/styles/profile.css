@@ -1,0 +1,179 @@
+/* --- Color Palette & Fonts --- */
+:root {
+    --primary-bg: #ac0e4a; /* Soft gray */
+    --secondary-bg: #b9b4b4; /* Off-white */
+    --text-color: #424242; /* Darker gray */
+    --accent-excellent: #81c784; /* Muted green */
+    --accent-impressive: #64b5f6; /* Softer blue */
+    --accent-improvement: #ffe082; /* Pale yellow */
+    --button-color: #42a5f5; /* Calmer blue */
+    --button-hover: #2979ff;
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--primary-bg), #d6d6d6);
+    color: var(--text-color);
+    min-height: 100vh;
+  }
+  
+  /* --- Container & Basic Layout --- */
+  .profile-container {
+    max-width: 800px;
+    margin: 4rem auto;
+    padding: 2.5rem;
+    background: var(--secondary-bg);
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .profile-header {
+    margin-bottom: 2rem;
+  }
+  
+  .animated-name {
+    font-size: 2.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.8px;
+    color: var(--text-color);
+    animation: textReveal 1s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+  }
+  
+  .subtitle {
+    font-size: 1rem;
+    font-style: italic;
+    color: #757575;
+  }
+  
+  /* --- Loading State --- */
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 3rem 0;
+  }
+  
+  .spinner {
+    border: 4px solid rgba(0, 0, 0, 0.05);
+    border-top: 4px solid var(--accent-impressive);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+  
+  .loading-text {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    color: #757575;
+  }
+  
+  .no-scores {
+    font-size: 1.1rem;
+    font-style: italic;
+    padding: 2rem;
+    color: #757575;
+  }
+  
+  /* --- Score Table --- */
+  .score-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto 2rem auto;
+    border-radius: 8px;
+    overflow: hidden; /* Ensures border-radius applies to table */
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.03);
+  }
+  
+  .score-table th, .score-table td {
+    padding: 0.8rem 1rem;
+    text-align: left;
+  }
+  
+  .score-table th {
+    font-weight: 500;
+    color: #fff;
+    background-color: #78909c; /* Muted blue-gray */
+    border-bottom: 1px solid #b0bec5;
+  }
+  
+  .score-table td {
+    background-color: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.2s ease-in-out;
+  }
+  
+  .score-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .score-table tbody tr:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .feedback-cell {
+    position: relative;
+    font-weight: 400;
+  }
+  
+  .feedback-cell .feedback-icon {
+    display: inline-block;
+    margin-left: 5px;
+    animation: subtleBounce 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards;
+  }
+  
+  @keyframes subtleBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-2px) scale(1.05); }
+  }
+  
+  /* --- Button --- */
+  .profile-return {
+    background-color: var(--button-color);
+    color: #fff;
+    border: none;
+    padding: 0.7rem 1.6rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    margin-top: 2rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+  
+  .profile-return:hover {
+    background-color: var(--button-hover);
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* --- Animations --- */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes textReveal {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  /* Staggered row animation */
+  .score-table tbody tr {
+    opacity: 0;
+    animation: rowSlideFadeIn 0.4s ease-out forwards;
+  }
+  
+  @keyframes rowSlideFadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }

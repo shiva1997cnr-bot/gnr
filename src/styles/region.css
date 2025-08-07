@@ -89,3 +89,64 @@
   .logout-button:hover {
     background-color: #c40812;
   }
+
+  .region-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .profile-circle {
+    width: 50px;
+    height: 50px;
+    position: absolute;
+    left: 5%;
+    top: 5%;
+    border-radius: 50%;
+    background-color: #ffffff22;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: 0.3s ease;
+  }
+  
+  .profile-circle:hover {
+    background-color: #ffffff44;
+  }
+  /* --- Admin Export Button --- */
+.admin-export {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.export-button {
+  background-color: #4caf50; /* A pleasant green for success/download */
+  color: #ffffff;
+  position: absolute;
+  right: 10%;
+  top: 80%;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.export-button:hover {
+  background-color: #388e3c; /* Darker green on hover */
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.export-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}

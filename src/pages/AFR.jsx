@@ -1,10 +1,10 @@
 // src/pages/AFR.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/afr.css';
+import "../styles/afr.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
-
+import { saveQuizResult } from "../utils/firestoreUtils";
 
 const questions = [
   {
@@ -65,6 +65,7 @@ function AFR() {
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const startTime = useRef(Date.now());
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -92,7 +93,7 @@ function AFR() {
     }, 1500);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentQ + 1 < questions.length) {
       setCurrentQ(currentQ + 1);
       setSelected(null);
@@ -100,10 +101,24 @@ function AFR() {
     } else {
       setQuizFinished(true);
 
-      const employeeId = localStorage.getItem("employeeId") || "default";
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      const username = user?.username;
+      if (!username) {
+        console.error("❌ Username not found in localStorage");
+        return;
+      }
+
+      const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
+      const regionKey = "afr";
+
+      // ✅ CORRECTED FUNCTION CALL
+      await saveQuizResult(username, regionKey, score, timeSpent);
+      console.log(`✅ Result saved for ${username}`);
+
+      // Optional: also store locally
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
-      if (!scores[employeeId]) scores[employeeId] = {};
-      scores[employeeId]["AFR"] = score;
+      if (!scores[username]) scores[username] = {};
+      scores[username]["AFR"] = score;
       localStorage.setItem("scores", JSON.stringify(scores));
     }
   };

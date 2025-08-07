@@ -1,198 +1,226 @@
 /* login.css - Glassmorphism Modern Login UI */
 
 body {
-    font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-    background-color: #88878a;
-    color: #f1f4f8;
-  }
-  
-  .login-container {
-    font-family: 'Inter', sans-serif;
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(#e3e0e6,#c9bff7   );
-    background-size: 400% 400%;
-    animation: login-gradientFlow 25s ease infinite;
-    padding: 1rem;
-    overflow: hidden;
-    position: relative;
-  }
-  
-  @keyframes login-gradientFlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  
-  .login-container::before,
-  .login-container::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-    filter: blur(60px);
-    z-index: 0;
-    pointer-events: none;
-  }
-  
-  .login-container::before {
-    width: 60vw;
-    height: 60vw;
-    top: -10vw;
-    left: -15vw;
-    animation: floatShape1 20s ease-in-out infinite alternate;
-  }
-  
-  .login-container::after {
-    width: 50vw;
-    height: 50vw;
-    bottom: -10vw;
-    right: -15vw;
-    background: radial-gradient(circle, rgba(197,220,240,0.15) 0%, rgba(197,220,240,0) 70%);
-    animation: floatShape2 25s ease-in-out infinite alternate-reverse;
-  }
-  
-  @keyframes floatShape1 {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(10vw, 10vh); }
-  }
-  
-  @keyframes floatShape2 {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(-10vw, -10vh); }
-  }
-  
-  .login-box {
-    position: absolute;
-    right: 20%;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(30px);
-    border-radius: 28px;
-    border: 1px solid rgba(216, 14, 14, 0.25);
-    padding: .4rem;
-    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
-    animation: login-fadeInUp 1s ease forwards;
-    text-align: center;
-    max-width: 450px;
-    width: 26%;
-    height: 30vh
-    
-    
-    z-index: 1;
-  }
-  
-  @keyframes login-fadeInUp {
-    from { opacity: 0; transform: translateY(50px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  .logo {
-    font-family: 'Poppins', sans-serif;
-    color: #000000;
-    font-size: 3rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    text-shadow: 0 0 10px rgba(74, 85, 104, 0.4), 0 0 20px rgba(74, 85, 104, 0.2);
-  }
-  
-  .subtitle {
-    color: #0d1cf1;
-    font-style: normal;
-    font-size: 1rem;
-    margin-bottom: 2rem;
-  }
-  
-  .login-form h2 {
-    color: #1a1c20;
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 2rem;
-  }
-  
-  .login-form input {
-    width: 75%;
-    padding: 1rem;
-    margin-bottom: 1.25rem;
-    border-radius: 28px;
-    border: 1px solid rgba(5, 28, 128, 0.3);
-    background-color: rgba(8, 1, 1, 0.1);
-    color: #00060f;
-    font-size: 1rem;
-    outline: none;
-    transition: all 0.3s ease;
-  }
-  
-  .login-form input::placeholder {
-    color: #000000;
-  }
-  
-  .login-form input:focus {
-    border-color: #000000;
-    background-color: rgba(78, 97, 116, 0.15);
-    box-shadow: 0 0 15px rgba(237, 182, 99, 0.4);
-  }
-  
-  .login-form button {
-    width: 45%;
-    padding: .6rem;
-    background: linear-gradient(to right, #bfd119, #cbce0e);
-    border: none;
-    border-radius: 18px;
-    color: rgb(10, 2, 2);
-    font-weight: 600;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  }
-  
-  .login-form button:hover {
-    background: linear-gradient(to right, #b7e142, #b1e636);
-    transform: scale(1.02);
-    box-shadow: 0 8px 25px rgba(145, 143, 28, 0.514);
-  }
-  
-  .message {
-    color: #e53e3e;
-    font-size: 0.9rem;
-    margin-top: 1.5rem;
-    animation: login-fadeIn 0.4s ease-in;
-  }
-  
-  @keyframes login-fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  
-  .toggle-button {
-    margin-top: 1.8rem;
-    font-size: 1rem;
-    color: #0a0a02;
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: color 0.3s ease, text-shadow 0.3s ease;
-    font-weight: 500;
-  }
-  
-  .toggle-button:hover {
-    color: #e20b2f;
-    text-shadow: 0 0 10px rgba(235, 81, 209, 0.6);
-  }
-  /* Specific styling for the welcome message */
+  font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+  background-color: #88878a;
+  color: #f1f4f8;
+}
 
+.login-container {
+  font-family: 'Inter', sans-serif;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(#e3e0e6,#c9bff7);
+  background-size: 400% 400%;
+  animation: login-gradientFlow 25s ease infinite;
+  padding: 1rem;
+  overflow: hidden;
+  position: relative;
+}
+
+@keyframes login-gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.login-container::before,
+.login-container::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  filter: blur(60px);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.login-container::before {
+  width: 60vw;
+  height: 60vw;
+  top: -10vw;
+  left: -15vw;
+  animation: floatShape1 20s ease-in-out infinite alternate;
+}
+
+.login-container::after {
+  width: 50vw;
+  height: 50vw;
+  bottom: -10vw;
+  right: -15vw;
+  background: radial-gradient(circle, rgba(197,220,240,0.15) 0%, rgba(197,220,240,0) 70%);
+  animation: floatShape2 25s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes floatShape1 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(10vw, 10vh); }
+}
+
+@keyframes floatShape2 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-10vw, -10vh); }
+}
+
+.login-box {
+  position: absolute;
+  right: 20%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(30px);
+  border-radius: 28px;
+  border: 1px solid rgba(216, 14, 14, 0.25);
+  padding: 3rem;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3);
+  animation: login-fadeInUp 1s ease forwards;
+  text-align: center;
+  max-width: 450px;
+  width: 26%;
+  height: auto; /* Changed to auto to accommodate variable content */
+  min-height: 40vh;
+  z-index: 1;
+}
+
+@keyframes login-fadeInUp {
+  from { opacity: 0; transform: translateY(50px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Style for the Login/Register heading (with emoji) */
+.login-form .logo {
+  
+  font-size: 3rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  margin-top: 0.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: #100330;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  animation: popIn 0.5s ease-out;
+}
+
+/* Optional pop animation */
+@keyframes popIn {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+.logo {
+  font-family: 'Poppins', sans-serif;
+  color: #000000;
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  text-shadow: 0 0 10px rgba(74, 85, 104, 0.4), 0 0 20px rgba(74, 85, 104, 0.2);
+}
+
+.subtitle {
+  color: #0d1cf1;
+  font-style: normal;
+  font-size: 1rem;
+  margin-bottom: 2rem;
+}
+
+.login-form h2 {
+  color: #1a1c20;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+}
+
+.login-form input {
+  width: 105%;
+  padding: 1rem;
+  margin-bottom: 2.25rem;
+  border-radius: 28px;
+  border: 1px solid rgba(5, 28, 128, 0.3);
+  background-color: rgba(8, 1, 1, 0.1);
+  color: #00060f;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.login-form input::placeholder {
+  color: #000000;
+}
+
+.login-form input:focus {
+  border-color: #000000;
+  background-color: rgba(78, 97, 116, 0.15);
+  box-shadow: 0 0 15px rgba(237, 182, 99, 0.4);
+}
+
+.login-form button {
+  width: 45%;
+  padding: .6rem;
+  background: linear-gradient(to right, #bfd119, #cbce0e);
+  border: none;
+  border-radius: 18px;
+  color: rgb(10, 2, 2);
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.login-form button:hover {
+  background: linear-gradient(to right, #b7e142, #b1e636);
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(145, 143, 28, 0.514);
+}
+
+.message {
+  color: #e53e3e;
+  font-size: 0.9rem;
+  margin-top: 1.5rem;
+  animation: login-fadeIn 0.4s ease-in;
+}
+
+@keyframes login-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.toggle-text {
+  margin-top: 15px;
+  color: #050101cc;
+  text-align: center;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+
+ 
+
+.toggle-text:hover  {
+  color: #e20b2f;
+  text-shadow: 0 0 5px rgba(235, 81, 209, 0.6);
+}
+/* Specific styling for the welcome message */
 
 .main-content {
   display: flex;
-  gap: 40px; /* Adjust this value to change the spacing between the boxes */
-  align-items: flex-start; /* Aligns the tops of the login box and tests box */
-  margin-top: 20px; /* Adds some space between the intro text and the boxes */
+  gap: 40px;
+  align-items: flex-start;
+  margin-top: 20px;
 }
 
 /* ======================================================= */
-/* 2. Styles for the Animated Introductory Text          */
+/* 2. Styles for the Animated Introductory Text */
 /* ======================================================= */
 
 /* Keyframe animation for a smooth fade-in effect */
@@ -210,25 +238,25 @@ body {
 /* Container for the welcome messages, centered above the boxes */
 .text-content {
   text-align: center;
-  margin-bottom: 20px; /* Space between the text and the main content boxes */
+  margin-bottom: 20px;
 }
 
 /* Style for the organization name "Generalist" */
 .org-name {
   position: fixed;
-  right: 64%;
+  right: 54%;
   top: 10%;
-  font-family: 'Roboto', sans-serif; /* A slim, Google-like font */
+  font-family: 'Roboto', sans-serif;
   width: 40%;
   font-weight: 300;
   font-size: 5rem;
-  color: #5f6368; 
+  color: #5f6368;
   background: linear-gradient(to right, #f8b195, #f67280, #c06c84, #6c5b7b);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent;/* A subtle gray */
+  color: transparent;
   margin: 0;
-  opacity: 0; /* Starts invisible */
+  opacity: 0;
   animation: fadeIn 1s ease-in-out forwards;
 }
 
@@ -241,28 +269,22 @@ body {
   font-size: 4rem;
   color: #202124;
   margin-top: 10px;
-  opacity: 0; /* Starts invisible */
+  opacity: 0;
   animation: fadeIn 1s ease-in-out forwards;
-  animation-delay: 1.5s; /* Delay for sequential animation */
+  animation-delay: 1.5s;
 }
 
 /* Style for the sub-note "We're excited..." */
 .sub-note {
   position: fixed;
   left: 11%;
-  top:69%;
+  top: 69%;
   font-family: 'Roboto', sans-serif;
   font-weight: 300;
   font-size: 1.5rem;
   color: #07080a;
   margin-top: 5px;
-  opacity: 0; /* Starts invisible */
+  opacity: 0;
   animation: fadeIn 1s ease-in-out forwards;
-  animation-delay: 3s; /* Delay for sequential animation */
+  animation-delay: 2s;
 }
-
-/* ======================================================= */
-/* 3. Styles for the new "Tests" container              */
-/* ======================================================= */
-
-/* The new box on the right side of the login form */

@@ -1,77 +1,138 @@
-// Register.jsx
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '../firebase';
+import { AuthContext } from '../App';
+import CryptoJS from 'crypto-js';
+import '../styles/login.css'; // Reuse login styles
 
 const Register = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [employeeId, setEmployeeId] = useState("");
-  const [birthYear, setBirthYear] = useState("");
+  const { setUser } = useContext(AuthContext);
 
-  const handleRegister = (e) => {
+  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const isStrongPassword = (pwd) => {
+    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    return strongRegex.test(pwd);
+  };
+
+  const hashPassword = (pwd) => CryptoJS.SHA256(pwd).toString();
+
+  const handleRegister = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
 
-    if (!/^\d{4}$/.test(birthYear)) {
-      alert("Birth year must be a 4-digit number.");
-      return;
+    try {
+      if (!username || !firstName || !lastName || !password) {
+        setError('Please fill in all fields.');
+        setLoading(false);
+        return;
+      }
+
+      if (!isStrongPassword(password)) {
+        setError('Password must be at least 8 characters, include uppercase, lowercase, number, and special symbol.');
+        setLoading(false);
+        return;
+      }
+
+      // ✅ Append @gmail.com if not already there
+      const emailUsername = username.includes('@') ? username : `${username}@gmail.com`;
+
+      const userRef = doc(db, 'users', emailUsername);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        setError('Username already taken.');
+        setLoading(false);
+        return;
+      }
+
+      const passwordHash = hashPassword(password);
+
+      await setDoc(userRef, {
+        firstName,
+        lastName,
+        passwordHash
+      });
+
+      // ✅ Save in localStorage
+      localStorage.setItem('currentUser', JSON.stringify({ username: formattedUsername, firstName, lastName }));
+      setUser({ username: formattedUsername, firstName, lastName });
+
+      navigate('/region');
+
+    } catch (err) {
+      console.error('Registration error:', err);
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    const users = JSON.parse(localStorage.getItem("users")) || {};
-
-    // Prevent duplicate registrations
-    if (users[employeeId]) {
-      alert("Employee ID already registered.");
-      return;
-    }
-
-    users[employeeId] = { name, birthYear };
-    localStorage.setItem("users", JSON.stringify(users));
-
-    // Optionally store current user session
-    localStorage.setItem("currentUser", JSON.stringify({ employeeId, name }));
-
-    navigate("/region", { state: { userName: name } });
   };
 
   return (
-    <div className="h-screen bg-green-100 flex items-center justify-center">
-      <form onSubmit={handleRegister} className="bg-white p-8 rounded shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-6 text-center">Register</h2>
+    <div className="login-container">
+      <div className="org-name">Generalist</div>
+      <div className="welcome-note">Welcome Aboard</div>
+      <div className="sub-note">Let’s help you get started</div>
 
-        <input
-          type="text"
-          placeholder="Your Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="w-full mb-4 p-2 border rounded"
-        />
+      <div className="login-box" style={{ height: 'auto', minHeight: '40vh' }}>
+        <div className="login-form">
+          <h2 className="logo">Register</h2>
+          <p className="subtitle">Create your account</p>
 
-        <input
-          type="text"
-          placeholder="Employee ID"
-          value={employeeId}
-          onChange={(e) => setEmployeeId(e.target.value)}
-          required
-          className="w-full mb-4 p-2 border rounded"
-        />
+          <form onSubmit={handleRegister}>
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.trim())}
+              required
+              className="login-form input"
+            />
+            <input
+              type="text"
+              placeholder="First Name"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              className="login-form input"
+            />
+            <input
+              type="text"
+              placeholder="Last Name"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              className="login-form input"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="login-form input"
+            />
 
-        <input
-          type="text"
-          placeholder="Birth Year"
-          value={birthYear}
-          onChange={(e) => setBirthYear(e.target.value)}
-          required
-          className="w-full mb-6 p-2 border rounded"
-        />
+            {error && <p className="message">{error}</p>}
 
-        <button
-          type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
-        >
-          Register
-        </button>
-      </form>
+            <button type="submit" className="login-form button" disabled={loading}>
+              {loading ? 'Registering...' : 'Register'}
+            </button>
+          </form>
+
+          <button onClick={() => navigate('/')} className="toggle-button">
+            Already have an account? Login here
+          </button>
+        </div>
+      </div>
     </div>
   );
 };

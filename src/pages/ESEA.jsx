@@ -1,13 +1,12 @@
-import '../styles/esea.css';
-import React, { useState, useEffect } from "react";
+// src/pages/ESEA.jsx
+import "../styles/esea.css";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/app.css";
 
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
-// REMOVE this line if app.css is already imported in App.jsx
-// import ".,./styles/app.css";
-
+import { saveQuizResult } from "../utils/firestoreUtils";
 
 const questions = [
   {
@@ -89,6 +88,7 @@ function ESEA() {
   const [time, setTime] = useState(30);
   const [showScore, setShowScore] = useState(false);
   const navigate = useNavigate();
+  const startTime = useRef(Date.now());
 
   useEffect(() => {
     if (selected !== null || showScore) return;
@@ -122,7 +122,7 @@ function ESEA() {
     }, 1500);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (current < questions.length - 1) {
       setCurrent(current + 1);
       setSelected(null);
@@ -130,10 +130,23 @@ function ESEA() {
     } else {
       setShowScore(true);
 
-      const employeeId = localStorage.getItem("employeeId") || "default";
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (!user || !user.username) {
+        console.error("❌ User not found in localStorage.");
+        return;
+      }
+
+      const username = user.username;
+      const regionKey = "esea";
+      const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
+
+      // ✅ Corrected function call
+      await saveQuizResult(username, regionKey, score, timeSpent);
+
+      // ✅ Optional: Store score locally for Profile page
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
-      if (!scores[employeeId]) scores[employeeId] = {};
-      scores[employeeId]["ESEA"] = score;
+      if (!scores[username]) scores[username] = {};
+      scores[username]["ESEA"] = score;
       localStorage.setItem("scores", JSON.stringify(scores));
     }
   };
@@ -152,9 +165,7 @@ function ESEA() {
           <>
             <h2 className="esea-question">ESEA Region Quiz 🇯🇵 🇦🇺 🇻🇳</h2>
             <div className="flex justify-between mb-2">
-              <span>
-                Question {current + 1} / {questions.length}
-              </span>
+              <span>Question {current + 1} / {questions.length}</span>
               <span>⏱ {time}s</span>
             </div>
             <p className="font-semibold mb-3">{questions[current].question}</p>

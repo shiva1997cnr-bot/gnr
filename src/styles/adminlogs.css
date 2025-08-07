@@ -1,0 +1,24 @@
+.admin-page {
+    text-align: center;
+    padding: 2rem;
+    background: #f4f4f4;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+  }
+  
+  .export-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .export-button:hover {
+    background-color: #005fa3;
+  }
+  

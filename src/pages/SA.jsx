@@ -1,9 +1,10 @@
 // src/pages/SA.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import '../styles/sa.css';
+import "../styles/sa.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
+import { saveQuizResult } from "../utils/firestoreUtils";
 
 const questions = [
   {
@@ -59,25 +60,30 @@ const questions = [
 ];
 
 function SA() {
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
+  const [currentQ, setCurrentQ] = useState(0);
+  const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
-  const [showScore, setShowScore] = useState(false);
+  const [quizFinished, setQuizFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const startTime = useRef(Date.now());
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (timeLeft === 0) handleNext();
-    const timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    return () => clearInterval(timer);
-  }, [timeLeft]);
+    if (quizFinished || selected !== null) return;
+    if (timeLeft === 0) {
+      handleNext();
+      return;
+    }
+    const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [timeLeft, selected, quizFinished]);
 
   const handleOptionClick = (option) => {
-    if (selectedOption) return;
-    setSelectedOption(option);
+    if (selected) return;
+    setSelected(option);
 
-    const isCorrect = option === questions[currentQuestion].answer;
-    if (isCorrect) setScore(score + 1);
+    const isCorrect = option === questions[currentQ].answer;
+    if (isCorrect) setScore((prev) => prev + 1);
 
     const audio = new Audio(isCorrect ? correctSound : wrongSound);
     audio.play();
@@ -87,19 +93,32 @@ function SA() {
     }, 1500);
   };
 
-  const handleNext = () => {
-    const next = currentQuestion + 1;
-    if (next < questions.length) {
-      setCurrentQuestion(next);
-      setSelectedOption(null);
+  const handleNext = async () => {
+    if (currentQ + 1 < questions.length) {
+      setCurrentQ(currentQ + 1);
+      setSelected(null);
       setTimeLeft(30);
     } else {
-      setShowScore(true);
+      setQuizFinished(true);
 
-      const employeeId = localStorage.getItem("employeeId") || "default";
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (!user || !user.username) {
+        console.error("❌ Username not found in localStorage");
+        return;
+      }
+
+      const username = user.username;
+      const regionKey = "sa";
+      const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
+
+      // ✅ Save to Firestore
+      await saveQuizResult(username, regionKey, score, timeSpent);
+      console.log(`✅ SA result saved for ${username}`);
+
+      // ✅ Optionally save locally
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
-      if (!scores[employeeId]) scores[employeeId] = {};
-      scores[employeeId]["SA"] = score;
+      if (!scores[username]) scores[username] = {};
+      scores[username]["SA"] = score;
       localStorage.setItem("scores", JSON.stringify(scores));
     }
   };
@@ -109,45 +128,49 @@ function SA() {
   return (
     <div className="sa-container">
       <div className="sa-box">
-        {!showScore ? (
+        <h1 className="text-3xl font-bold mb-4">South Asia Quiz 🌏</h1>
+
+        {quizFinished ? (
+          <div className="sa-result">
+            <h2>Your Score: {score} / {questions.length}</h2>
+            <p className={`sa-score ${isPassed ? "text-green-500" : "text-red-500"}`}>
+              {isPassed ? "Passed ✅" : "Failed ❌"}
+            </p>
+            <button className="sa-footer-button" onClick={() => navigate("/region")}>
+              Return to Region
+            </button>
+          </div>
+        ) : (
           <>
-            <h1 className="sa-title">South Asia Quiz 🌏</h1>
-            <div className="sa-timer">Time Left: {timeLeft}s</div>
-            <h2 className="sa-question">{questions[currentQuestion].question}</h2>
+            <div className="sa-question">
+              Question {currentQ + 1} of {questions.length}
+            </div>
+            <div className="sa-score">Time Left: {timeLeft}s</div>
+            <div className="sa-question">{questions[currentQ].question}</div>
+
             <div className="sa-options">
-              {questions[currentQuestion].options.map((option, index) => {
+              {questions[currentQ].options.map((option, idx) => {
                 let className = "sa-option";
-                if (selectedOption) {
-                  if (option === questions[currentQuestion].answer) {
+                if (selected) {
+                  if (option === questions[currentQ].answer) {
                     className += " correct";
-                  } else if (option === selectedOption) {
+                  } else if (option === selected) {
                     className += " incorrect";
                   }
                 }
+
                 return (
-                  <button
-                    key={index}
-                    onClick={() => handleOptionClick(option)}
+                  <div
+                    key={idx}
                     className={className}
-                    disabled={!!selectedOption}
+                    onClick={() => handleOptionClick(option)}
                   >
                     {option}
-                  </button>
+                  </div>
                 );
               })}
             </div>
           </>
-        ) : (
-          <div className="sa-result">
-            <h2>Quiz Completed 🎉</h2>
-            <p>Your Score: {score} / {questions.length}</p>
-            <p className={`sa-score ${isPassed ? "text-pass" : "text-fail"}`}>
-              {isPassed ? "Great! You Passed ✅" : "Oops! You didn't pass ❌"}
-            </p>
-            <button onClick={() => navigate("/region")} className="sa-return">
-              Return to Region
-            </button>
-          </div>
         )}
       </div>
     </div>
