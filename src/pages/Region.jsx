@@ -4,17 +4,25 @@ import { useNavigate } from "react-router-dom";
 import hoverSound from "../assets/hover.mp3";
 import * as XLSX from "xlsx";
 import { getAllUserScores } from "../utils/firestoreUtils";
+import Leaderboard from './Leaderboard';
 
 const Region = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("User");
+  const [bgLoaded, setBgLoaded] = useState(false);
   const audioRef = useRef(new Audio(hoverSound));
 
+  // Preload background image
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/region/world-map.webp';
+    img.onload = () => setBgLoaded(true);
+  }, []);
+
+  // Load user from localStorage
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-
     if (currentUser) {
-      // Prefer firstName, fallback to username
       if (currentUser.firstName) {
         setUserName(currentUser.firstName);
       } else if (currentUser.username) {
@@ -58,12 +66,10 @@ const Region = () => {
   const handleExportScores = async () => {
     try {
       const data = await getAllUserScores();
-
       if (data.length === 0) {
         alert("No scores available to export.");
         return;
       }
-
       const worksheet = XLSX.utils.json_to_sheet(data);
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "AllUserScores");
@@ -75,7 +81,18 @@ const Region = () => {
   };
 
   return (
-    <div className="region-page">
+    <div
+      className="region-page"
+      style={{
+        backgroundImage: bgLoaded ? "url('/region/world-map.webp')" : "none",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundColor: '#3d3a3a',
+        backgroundBlendMode: 'multiply',
+        transition: 'background-image 0.6s ease-in-out',
+      }}
+    >
       <div className="region-header">
         <button className="logout-button" onClick={handleLogout}>
           Logout
@@ -92,7 +109,7 @@ const Region = () => {
 
       <div className="region-container">
         <h1 className="region-title">
-          Welcome, <span className="region-username">{userName}</span>!
+          Welcome, <span className="region-username animated-welcome">{userName}</span>!
         </h1>
         <h2 className="region-subtitle">Select Your Region</h2>
 
@@ -108,9 +125,12 @@ const Region = () => {
             </div>
           ))}
         </div>
+
+        <div className="leaderboard-wrapper">
+          <Leaderboard />
+        </div>
       </div>
 
-      {/* Admin download button - moved outside region-container */}
       {isAdmin && (
         <div className="admin-export">
           <button className="export-button" onClick={handleExportScores}>

@@ -2,11 +2,14 @@
 import "../styles/esea.css";
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 import "../styles/app.css";
 
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 import { saveQuizResult } from "../utils/firestoreUtils";
+import dayjs from "dayjs";
 
 const questions = [
   {
@@ -87,11 +90,50 @@ function ESEA() {
   const [score, setScore] = useState(0);
   const [time, setTime] = useState(30);
   const [showScore, setShowScore] = useState(false);
+  const [quizBlocked, setQuizBlocked] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const startTime = useRef(Date.now());
 
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const username = user?.username;
+  const regionKey = "esea";
+
+  // ⛔ Check if already attempted this month
   useEffect(() => {
-    if (selected !== null || showScore) return;
+    const checkAttempt = async () => {
+      if (!username) {
+        setLoading(false);
+        return;
+      }
+
+      const userRef = doc(db, "users", username);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        setLoading(false);
+        return;
+      }
+
+      const data = snap.data();
+      const isAdmin = data.role === "admin";
+      const prevAttempt = data?.scores?.[regionKey];
+
+      const currentMonth = dayjs().format("YYYY-MM");
+      const attemptMonth = prevAttempt?.date ? dayjs(prevAttempt.date).format("YYYY-MM") : null;
+
+      if (!isAdmin && currentMonth === attemptMonth) {
+        setQuizBlocked(true);
+      }
+
+      setLoading(false);
+    };
+
+    checkAttempt();
+  }, [username]);
+
+  // ⏳ Timer countdown
+  useEffect(() => {
+    if (selected !== null || showScore || quizBlocked) return;
 
     const timer = setTimeout(() => {
       if (time > 0) {
@@ -102,7 +144,7 @@ function ESEA() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [time, selected, showScore]);
+  }, [time, selected, showScore, quizBlocked]);
 
   const handleOption = (option) => {
     if (selected) return;
@@ -130,20 +172,11 @@ function ESEA() {
     } else {
       setShowScore(true);
 
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (!user || !user.username) {
-        console.error("❌ User not found in localStorage.");
-        return;
-      }
+      if (!username) return;
 
-      const username = user.username;
-      const regionKey = "esea";
       const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
-
-      // ✅ Corrected function call
       await saveQuizResult(username, regionKey, score, timeSpent);
 
-      // ✅ Optional: Store score locally for Profile page
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
       if (!scores[username]) scores[username] = {};
       scores[username]["ESEA"] = score;
@@ -157,6 +190,25 @@ function ESEA() {
     if (option === selected) return "esea-option incorrect";
     return "esea-option";
   };
+
+  const isPassed = (score / questions.length) * 100 >= 80;
+
+  if (loading) return <p className="esea-box">Loading...</p>;
+
+  if (quizBlocked) {
+    return (
+      <div className="esea-container">
+        <div className="esea-box esea-result">
+          <h2 className="text-red-500 text-xl font-bold mb-4">⛔ Quiz Already Taken</h2>
+          <p className="mb-4">You've already taken the <strong>ESEA</strong> quiz this month.</p>
+          <p>Try again next month!</p>
+          <button onClick={() => navigate("/region")}>
+            🔙 Return to Region
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="esea-container">
@@ -188,8 +240,8 @@ function ESEA() {
             <p className="esea-score">
               Your Score: {score} / {questions.length}
             </p>
-            <p className={score >= 8 ? "text-green-600" : "text-red-600"}>
-              {score >= 8 ? "Passed ✅" : "Failed ❌"}
+            <p className={isPassed ? "text-green-600" : "text-red-600"}>
+              {isPassed ? "Passed ✅" : "Failed ❌"}
             </p>
             <button onClick={() => navigate("/region")}>
               Return to Region Selection

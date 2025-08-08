@@ -1,124 +1,186 @@
-.region-page {
-    height: 100vh;
-    padding: 0rem;
-    width: 100%;
-    background: url('/world-map.png') no-repeat center center;
-    background-size: flex;
-    background-color: #3d3a3a; /* fallback */
-    background-blend-mode: multiply;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    overflow-y: auto;
-    padding: rem;
-  }
-  
-  /* Main content box */
-  .region-container {
-    background-color: rgba(0, 0, 0, 0.6);
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 800px;
-    width: 100%;
-    text-align: center;
-    color: white;
-    box-shadow: 0 0 40px rgba(0,0,0,0.5);
-  }
-  
-  /* Headings */
-  .region-title {
-    font-size: 2.5rem;
-    font-weight: bold;
-    margin-bottom: 1rem;
-  }
-  
-  .region-username {
-    color: #e50914;
-  }
-  
-  .region-subtitle {
-    font-size: 1.5rem;
-    margin-bottom: 4rem;
-  }
-  
-  /* Grid of regions */
-  .region-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 1.9rem;
-    justify-items: center;
-  }
-  
-  /* Individual region box */
-  .region-box {
-    background-color: rgba(243, 162, 162, 0.1);
-    padding: .2rem 1.3rem;
-    border: 2px solid #e50914;
-    border-radius: 80px;
-    font-size: 1rem;
-    font-weight: 50;
-    text-align: unset;
-    color: #fff;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .region-box:hover {
-    background-color: #e50914;
-    color: rgb(243, 239, 239);
-    transform: scale(1.05);
-    border-color: #fd179d;
-  }
-  
-  /* Logout button styling */
-  .logout-button {
-    position: absolute;
-    top: 1rem;
-    left: 80rem;
-    background-color:  rgba(50, 47, 59, 0.6);
-    color: white;
-    font-size: 0.9rem;
-    padding: 6px 10px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .logout-button:hover {
-    background-color: #c40812;
-  }
+/*
+ * Region Page Styles
+ *
+ * This CSS file defines the layout and styling for the region selection page.
+ * It includes styles for the background, main content container, headers,
+ * region grid, buttons, and a new animated welcome message.
+ */
 
-  .region-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-  }
-  
-  .profile-circle {
-    width: 50px;
-    height: 50px;
-    position: absolute;
-    left: 5%;
-    top: 5%;
-    border-radius: 50%;
-    background-color: #ffffff22;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: 0.3s ease;
-  }
-  
-  .profile-circle:hover {
-    background-color: #ffffff44;
-  }
-  /* --- Admin Export Button --- */
+ .region-page {
+  height: 100vh;
+  width: 100%;
+  background: url('/region/world-map.webp') no-repeat center center;
+  background-size: cover;
+  background-color: #3d3a3a;
+  background-blend-mode: multiply;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow-y: auto;
+}
+
+/* Main content box */
+.region-container {
+  background-color: rgba(8, 7, 7, 0.6);
+  padding: 2rem;
+  border-radius: 12px;
+  max-width: 800px;
+  width: 100%;
+  position: absolute;
+  top: 15%;
+  right: 20%;
+  text-align: center;
+  color: white;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+/* Headings */
+.region-title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* Animated Username */
+.region-username {
+  /* Applying a 4-color gradient to the text */
+  background: linear-gradient(
+    90deg,
+    #ff6b6b, /* Soft Red */
+    #ff816b, /* Soft Yellow */
+    #de73a0, /* Soft Blue */
+    #a85cff  /* Soft Green */
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+
+  /* Animation for the gradient and fade-in effect */
+  animation:
+    colorShift 8s ease-in-out infinite,
+    fadeInUp 1s ease-out forwards;
+}
+
+.region-subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 4rem;
+}
+
+/* Grid of regions */
+.region-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.9rem;
+  justify-items: center;
+}
+
+/* Individual region box */
+.region-box {
+  background-color: rgba(245, 242, 242, 0.1);
+  padding: .2rem 1.3rem;
+  border: 2px solid #e50914;
+  border-radius: 80px;
+  font-size: 1rem;
+  font-weight: 50;
+  text-align: unset;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.region-box:hover {
+  background-color: #e50914;
+  color: rgb(243, 239, 239);
+  transform: scale(1.05);
+  border-color: #fd179d;
+}
+
+/* Logout button styling */
+.logout-button {
+  position: absolute;
+  top: 1rem;
+  left: 80rem;
+  background-color: rgba(50, 47, 59, 0.6);
+  color: white;
+  font-size: 0.9rem;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: #c40812;
+}
+
+.region-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+}
+
+/* --- Profile Logo Styles --- */
+.profile-circle {
+  width: 50px;
+  height: 50px;
+  position: absolute;
+  left: 5%;
+  top: 5%;
+  border-radius: 50%;
+  background-color: #ffffff22; /* Retaining a simple, translucent background */
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.profile-circle:hover {
+  background-color: #ffffff44;
+}
+
+/* New: Gradient ring around the profile circle */
+.profile-circle::before {
+  content: '';
+  position: absolute;
+  width: 60px; /* Slightly larger than the main circle */
+  height: 60px;
+  top: -5px; /* Center it around the main circle */
+  left: -5px;
+  border-radius: 50%;
+  z-index: -1; /* Place it behind the main circle */
+  transition: 0.3s ease;
+  /* Applying the 2-color gradient to the border */
+  border: 3px solid transparent;
+  background-image: linear-gradient(
+      to bottom right,
+      #fd179d, /* Pink */
+      #a85cff  /* Purple */
+    ),
+    linear-gradient(
+      to bottom right,
+      #fd179d,
+      #a85cff
+    );
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  animation: rotateBorder 3s linear infinite;
+}
+
+/* Hover effect for the new gradient border */
+.profile-circle:hover::before {
+  box-shadow: 0 0 15px rgba(253, 23, 157, 0.6); /* Add a glow on hover */
+  transform: scale(1.1);
+}
+
+/* --- Admin Export Button --- */
 .admin-export {
   margin-top: 2rem;
   text-align: center;
@@ -128,8 +190,8 @@
   background-color: #4caf50; /* A pleasant green for success/download */
   color: #ffffff;
   position: absolute;
-  right: 10%;
-  top: 80%;
+  right: 2%;
+  top: 85%;
   border: none;
   padding: 1rem 2rem;
   border-radius: 50px;
@@ -149,4 +211,35 @@
 .export-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* --- Keyframes for animations --- */
+@keyframes colorShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Keyframes for the rotating border animation */
+@keyframes rotateBorder {
+  to {
+    transform: rotate(360deg);
+  }
 }

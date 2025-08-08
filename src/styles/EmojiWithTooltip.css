@@ -1,0 +1,29 @@
+.emoji-tooltip-wrapper {
+    position: relative;
+    margin-left: 6px;
+    display: inline-block;
+    font-size: 16px;
+    cursor: default;
+  }
+  
+  .emoji-with-count:hover + .emoji-tooltip,
+  .emoji-tooltip-wrapper:hover .emoji-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .emoji-tooltip {
+    position: absolute;
+    bottom: 130%;
+    background-color: #222;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 100;
+  }
+  

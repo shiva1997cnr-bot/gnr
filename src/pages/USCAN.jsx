@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { getDoc, doc } from "firebase/firestore";
+import { db } from "../firebase";
+
+import dayjs from "dayjs";
 import "../styles/uscan.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 import { saveQuizResult } from "../utils/firestoreUtils";
 import { logActivity } from "../utils/activityLogger";
+import LoadingScreen from "../components/LoadingScreen"; // <-- Added this line
 
 const questions = [
   {
@@ -149,14 +154,64 @@ const questions = [
   }
 ];
 
+
 function USCAN() {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [quizBlocked, setQuizBlocked] = useState(false);
+  const [loading, setLoading] = useState(true);
   const startTime = useRef(Date.now());
   const navigate = useNavigate();
+
+  const bgImages = [
+    "/us/bg1.webp",
+    "/us/bg2.webp",
+    "/us/bg3.webp",
+    "/us/bg4.webp",
+    "/us/bg5.webp",
+    "/us/bg6.webp",
+    "/us/bg7.webp",
+  ];
+  const [bgIndex, setBgIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % bgImages.length);
+    }, 9500);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const checkAttempt = async () => {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      const username = user?.username;
+      if (!username) return setLoading(false);
+
+      const userRef = doc(db, "users", username);
+      const snap = await getDoc(userRef);
+
+      if (!snap.exists()) return setLoading(false);
+      const data = snap.data();
+      const isAdmin = data.role === "admin";
+      const prevAttempt = data?.scores?.["uscan"];
+
+      const currentMonth = dayjs().format("YYYY-MM");
+      const attemptMonth = prevAttempt?.date
+        ? dayjs(prevAttempt.date).format("YYYY-MM")
+        : null;
+
+      if (!isAdmin && currentMonth === attemptMonth) {
+        setQuizBlocked(true);
+      }
+
+      setLoading(false);
+    };
+
+    checkAttempt();
+  }, []);
 
   useEffect(() => {
     if (timeLeft === 0) handleNext();
@@ -166,8 +221,8 @@ function USCAN() {
 
   const handleOptionClick = (option) => {
     if (selected) return;
-
     setSelected(option);
+
     const correct = option === questions[currentQuestion].answer;
     if (correct) setScore((prev) => prev + 1);
 
@@ -189,16 +244,11 @@ function USCAN() {
   const saveScore = async () => {
     const user = JSON.parse(localStorage.getItem("currentUser"));
     const username = user?.username;
-
-    if (!username) {
-      console.error("❌ Username not found in localStorage");
-      return;
-    }
+    if (!username) return;
 
     const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
     const regionKey = "uscan";
 
-    // ✅ Correct usage
     await saveQuizResult(username, regionKey, score, timeSpent);
 
     const scores = JSON.parse(localStorage.getItem("scores")) || {};
@@ -214,49 +264,71 @@ function USCAN() {
     return percent >= 80 ? "✅ Great! You passed." : "❌ You did not pass.";
   };
 
+  if (loading) {
+    return <LoadingScreen />;
+  }
+  if (quizBlocked)
+    return (
+      <div className="uscan-loading">
+        🚫 You have already attempted this quiz for this month.
+        <br /> Please return next month.
+      </div>
+    );
+
   return (
-    <div className="uscan-container">
-      <div className="uscan-box">
-        {!showResult ? (
-          <>
-            <h2 className="uscan-question">
-              Q{currentQuestion + 1}: {questions[currentQuestion].question}
-            </h2>
-            <div className="uscan-options">
-              {questions[currentQuestion].options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleOptionClick(option)}
-                  className={`uscan-option ${
-                    selected
-                      ? option === questions[currentQuestion].answer
-                        ? "correct"
-                        : option === selected
-                        ? "incorrect"
+    <div className="uscan-background-wrapper">
+      <div className="uscan-overlay-layer"></div>
+      {bgImages.map((src, index) => (
+        <div
+          key={index}
+          className={`bg-fade-layer ${index === bgIndex ? "visible" : ""}`}
+          style={{ backgroundImage: `url(${src})` }}
+        />
+      ))}
+
+      <div className="uscan-container">
+        <div className="uscan-box">
+          {!showResult ? (
+            <>
+              <h2 className="uscan-question">
+                Q{currentQuestion + 1}: {questions[currentQuestion].question}
+              </h2>
+              <div className="uscan-options">
+                {questions[currentQuestion].options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleOptionClick(option)}
+                    className={`uscan-option ${
+                      selected
+                        ? option === questions[currentQuestion].answer
+                          ? "correct"
+                          : option === selected
+                          ? "incorrect"
+                          : ""
                         : ""
-                      : ""
-                  }`}
-                  disabled={!!selected}
-                >
-                  {option}
-                </button>
-              ))}
+                    }`}
+                    disabled={!!selected}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+              <div className="uscan-footer">
+                <span>⏱ {timeLeft}s</span>
+                {selected && <button onClick={handleNext}>Next</button>}
+              </div>
+            </>
+          ) : (
+            <div className="uscan-result">
+              <h2>Quiz Completed!</h2>
+              <p className="uscan-score">
+                Your Score: {score} / {questions.length}
+              </p>
+              <p className="uscan-score">{getPassFailText()}</p>
+              <button onClick={() => navigate("/region")}>Return to Region</button>
             </div>
-            <div className="uscan-footer">
-              <span>⏱ {timeLeft}s</span>
-              {selected && <button onClick={handleNext}>Next</button>}
-            </div>
-          </>
-        ) : (
-          <div className="uscan-result">
-            <h2>Quiz Completed!</h2>
-            <p className="uscan-score">Your Score: {score} / {questions.length}</p>
-            <p className="uscan-score">{getPassFailText()}</p>
-            <button onClick={() => navigate("/region")}>
-              Return to Region
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

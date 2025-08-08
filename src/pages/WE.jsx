@@ -4,6 +4,9 @@ import "../styles/we.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 import { saveQuizResult } from "../utils/firestoreUtils";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
+import dayjs from "dayjs";
 
 const questions = [
   {
@@ -65,14 +68,43 @@ function WE() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [quizFinished, setQuizFinished] = useState(false);
   const [startTime] = useState(Date.now());
+  const [quizBlocked, setQuizBlocked] = useState(false);
   const navigate = useNavigate();
 
+  const regionKey = "we";
+
   useEffect(() => {
-    if (quizFinished) return;
+    const checkAttempt = async () => {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (!user || !user.username) {
+        console.error("User not found");
+        return;
+      }
+
+      const username = user.username;
+      const userRef = doc(db, "users", username);
+      const snap = await getDoc(userRef);
+      const data = snap.data();
+      const isAdmin = data?.role === "admin";
+      const prevAttempt = data?.scores?.[regionKey];
+
+      const currentMonth = dayjs().format("YYYY-MM");
+      const attemptMonth = prevAttempt?.date ? dayjs(prevAttempt.date).format("YYYY-MM") : null;
+
+      if (!isAdmin && currentMonth === attemptMonth) {
+        setQuizBlocked(true);
+      }
+    };
+
+    checkAttempt();
+  }, []);
+
+  useEffect(() => {
+    if (quizFinished || quizBlocked) return;
     if (timeLeft === 0) handleNext();
     const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, currentQ, quizFinished]);
+  }, [timeLeft, currentQ, quizFinished, quizBlocked]);
 
   const handleOptionClick = (option) => {
     if (selected) return;
@@ -98,7 +130,7 @@ function WE() {
       setQuizFinished(true);
 
       const endTime = Date.now();
-      const timeSpent = Math.floor((endTime - startTime) / 1000); // in seconds
+      const timeSpent = Math.floor((endTime - startTime) / 1000);
 
       const user = JSON.parse(localStorage.getItem("currentUser"));
       if (!user || !user.username) {
@@ -107,13 +139,25 @@ function WE() {
       }
 
       const username = user.username;
-      const regionKey = "we";
 
-      await saveQuizResult(username, regionKey, score, timeSpent); // ✅ Updated
+      await saveQuizResult(username, regionKey, score, timeSpent);
     }
   };
 
   const isPassed = (score / questions.length) * 100 >= 80;
+
+  if (quizBlocked) {
+    return (
+      <div className="we-container">
+        <div className="we-box we-blocked">
+          ⛔ You have already attempted the Western Europe quiz this month.
+          <button onClick={() => navigate("/region")} className="we-footer-btn">
+            Return to Region Selection
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="we-container">

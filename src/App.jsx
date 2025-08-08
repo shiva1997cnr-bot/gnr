@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext } from 'react';
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import "./styles/app.css";
+import "./styles/loading.css";
 
 // Pages
 import Login from "./pages/Login";
@@ -16,12 +17,12 @@ import AdminLogs from "./pages/AdminLogs";
 import Scores from "./pages/Scores";
 import UserID from "./pages/UserId";
 import Register from './pages/Register';
-
-
+import Profile from './pages/Profile';
+import Leaderboard from './pages/Leaderboard';
+import LoadingScreen from "./components/LoadingScreen";
 // Firebase
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
-import Profile from './pages/Profile';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBqimiOH3KBud7bjAy1qfZ9im16hhdJYYs",
@@ -48,15 +49,11 @@ const AuthProvider = ({ children }) => {
     const storedUser = JSON.parse(localStorage.getItem("currentUser"));
     setCurrentUser(storedUser);
     setUserId(storedUser?.uid || crypto.randomUUID());
-    setLoading(false);
+    setTimeout(() => setLoading(false), 1500); // Add delay to show loader effect
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <div className="text-xl font-semibold text-gray-700">Initializing app...</div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -105,8 +102,8 @@ const router = createBrowserRouter([
   { path: "/scores", element: <Scores /> },
   { path: "/userid", element: <UserID /> },
   { path: "/profile", element: <Profile /> },
+  { path: "/leaderboard", element: <Leaderboard /> },
   { path: "*", element: <ErrorPage /> },
-  
 ]);
 
 // --- App ---

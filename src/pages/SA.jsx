@@ -1,10 +1,13 @@
 // src/pages/SA.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 import "../styles/sa.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 import { saveQuizResult } from "../utils/firestoreUtils";
+import dayjs from "dayjs";
 
 const questions = [
   {
@@ -65,18 +68,52 @@ function SA() {
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [quizBlocked, setQuizBlocked] = useState(false);
+  const [loading, setLoading] = useState(true);
   const startTime = useRef(Date.now());
   const navigate = useNavigate();
+  const regionKey = "sa";
+
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const username = user?.username;
 
   useEffect(() => {
-    if (quizFinished || selected !== null) return;
+    const checkAttempt = async () => {
+      if (!username) return;
+
+      const userRef = doc(db, "users", username);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        setLoading(false);
+        return;
+      }
+
+      const data = snap.data();
+      const isAdmin = data.role === "admin";
+      const prevAttempt = data?.scores?.[regionKey];
+
+      const currentMonth = dayjs().format("YYYY-MM");
+      const attemptMonth = prevAttempt?.date ? dayjs(prevAttempt.date).format("YYYY-MM") : null;
+
+      if (!isAdmin && currentMonth === attemptMonth) {
+        setQuizBlocked(true);
+      }
+
+      setLoading(false);
+    };
+
+    checkAttempt();
+  }, [username]);
+
+  useEffect(() => {
+    if (quizFinished || selected !== null || quizBlocked) return;
     if (timeLeft === 0) {
       handleNext();
       return;
     }
     const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, selected, quizFinished]);
+  }, [timeLeft, selected, quizFinished, quizBlocked]);
 
   const handleOptionClick = (option) => {
     if (selected) return;
@@ -101,21 +138,11 @@ function SA() {
     } else {
       setQuizFinished(true);
 
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (!user || !user.username) {
-        console.error("❌ Username not found in localStorage");
-        return;
-      }
+      if (!username) return;
 
-      const username = user.username;
-      const regionKey = "sa";
       const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
-
-      // ✅ Save to Firestore
       await saveQuizResult(username, regionKey, score, timeSpent);
-      console.log(`✅ SA result saved for ${username}`);
 
-      // ✅ Optionally save locally
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
       if (!scores[username]) scores[username] = {};
       scores[username]["SA"] = score;
@@ -125,27 +152,32 @@ function SA() {
 
   const isPassed = (score / questions.length) * 100 >= 80;
 
+  if (loading) return <p className="sa-box">Loading...</p>;
+
+  if (quizBlocked) {
+    return (
+      <div className="sa-container">
+        <div className="sa-box sa-result">
+          <h2 className="text-red-500 text-xl font-bold mb-4">⛔ Quiz Already Taken</h2>
+          <p className="mb-4">You've already taken the <strong>South Asia</strong> quiz this month.</p>
+          <p>Try again next month!</p>
+          <button className="sa-footer-button" onClick={() => navigate("/region")}>
+            🔙 Return to Region
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="sa-container">
       <div className="sa-box">
-        <h1 className="text-3xl font-bold mb-4">South Asia Quiz 🌏</h1>
-
-        {quizFinished ? (
-          <div className="sa-result">
-            <h2>Your Score: {score} / {questions.length}</h2>
-            <p className={`sa-score ${isPassed ? "text-green-500" : "text-red-500"}`}>
-              {isPassed ? "Passed ✅" : "Failed ❌"}
-            </p>
-            <button className="sa-footer-button" onClick={() => navigate("/region")}>
-              Return to Region
-            </button>
-          </div>
-        ) : (
+        {!quizFinished ? (
           <>
             <div className="sa-question">
               Question {currentQ + 1} of {questions.length}
             </div>
-            <div className="sa-score">Time Left: {timeLeft}s</div>
+            <div className="sa-timer">⏱ Time Left: {timeLeft}s</div>
             <div className="sa-question">{questions[currentQ].question}</div>
 
             <div className="sa-options">
@@ -171,6 +203,17 @@ function SA() {
               })}
             </div>
           </>
+        ) : (
+          <div className="sa-result">
+            <h2>✅ Quiz Complete!</h2>
+            <div>Your Score: {score} / {questions.length}</div>
+            <div className={isPassed ? "text-green-500" : "text-red-500"}>
+              {isPassed ? "Passed ✅" : "Failed ❌"}
+            </div>
+            <button className="sa-footer-button" onClick={() => navigate("/region")}>
+              Return to Region
+            </button>
+          </div>
         )}
       </div>
     </div>

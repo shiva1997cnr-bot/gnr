@@ -1,119 +1,169 @@
-/* src/pages/uscan.css */
-
-/* === USCAN PAGE STYLES ONLY === */
-
-/* Main container for the USCAN quiz page */
-.uscan-container {
-    text-align: center;
-    min-height: 100vh; /* Ensure it takes full viewport height */
-    width: 100%; /* Full width */
-    padding: 2rem; /* Consistent padding */
-    background-color: black; /* Dark background */
-    color: white; /* White text for contrast */
+/* === USCAN PAGE STYLES === */
+/* Overlay layer to darken background images */
+.uscan-overlay-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);  /* Adjust the 0.6 to control darkness */
+    z-index: -7;  /* Must be higher than .bg-fade-layer but lower than content */
+  }
+  
+/* Background wrapper */
+.uscan-background-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  /* Each background image layer */
+  .bg-fade-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #3d3a3a; /* fallback color */
+    background-size: cover;
+    background-position: center;
+    opacity: 0.0;
+    transition: opacity 12s ease-in-out; /* Slower transition */
+    z-index: -8;
+  }
+  
+  /* Visible background image */
+  .bg-fade-layer.visible {
+    opacity: 1;
+  }
+  
+  /* Dark overlay layer to enhance readability */
+  .bg-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 2); /* Adjust transparency */
+    z-index: -7;
+  }
+  
+  /* Main quiz container */
+  .uscan-container {
+    position: relative;
+    z-index: 1;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Specific font */
-}
-
-/* The central quiz box */
-.uscan-box {
-    background-color: rgba(26, 24, 24, 0.75); /* Semi-transparent dark background */
+    min-height: 100vh;
+    width: 100%;
     padding: 2rem;
-    border-radius: 2rem; /* Large rounded corners */
-    max-width: 700px; /* Maximum width for the box */
-    width: 100%; /* Ensure responsiveness */
     text-align: center;
-}
-
-/* Styles for the question text */
-.uscan-question {
-    font-size: 1.25rem;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: white;
+  }
+  
+  /* Quiz box */
+  .uscan-box {
+    background-color: rgba(0, 0, 0, 0.75);
+    padding: 2rem;
+    border-radius: 2rem;
+    max-width: 800px;
+    width: 100%;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+  }
+  
+  /* Question text */
+  .uscan-question {
+    font-size: 1.4rem;
     font-weight: bold;
     margin-bottom: 1.5rem;
-}
-
-/* Container for the answer options */
-.uscan-options {
+  }
+  
+  /* Options container */
+  .uscan-options {
     display: flex;
-    flex-direction: column; /* Stack options vertically */
-    gap: 0.7rem; /* Space between options */
-}
-
-/* Individual answer option button/div */
-.uscan-option {
-    padding: 0.8rem;
-    background-color: white; /* White background for options */
-    color: black; /* Black text for options */
-    border-radius: 4rem; /* Pill shape */
-    border-left: 6px solid transparent; /* Left border for visual effect */
-    text-align: left; /* Align text to the left */
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  
+  /* Individual option */
+  .uscan-option {
+    padding: 0.8rem 1rem;
+    background-color: white;
+    color: black;
+    border-radius: 4rem;
+    border-left: 6px solid transparent;
+    text-align: left;
     font-weight: 500;
-    transition: all 0.3s ease; /* Smooth transitions for hover and state changes */
+    transition: all 0.3s ease;
     cursor: pointer;
-}
-
-/* Hover effect for options */
-.uscan-option:hover {
-    background-color: #2196f3; /* Blue background on hover */
-    color: white; /* White text on hover */
-}
-
-/* Style for the correct answer when selected */
-.uscan-option.correct {
-    background-color: #4caf50; /* Green background */
+  }
+  
+  /* Hover effect */
+  .uscan-option:hover {
+    background-color: #2196f3;
     color: white;
-}
-
-/* Style for an incorrect answer when selected */
-.uscan-option.incorrect {
-    background-color: #f44336; /* Red background */
+  }
+  
+  /* Correct/Incorrect answer styles */
+  .uscan-option.correct {
+    background-color: #4caf50;
     color: white;
-}
-
-/* Footer section (e.g., for timer or navigation buttons) */
-.uscan-footer {
+  }
+  
+  .uscan-option.incorrect {
+    background-color: #f44336;
+    color: white;
+  }
+  
+  /* Footer (e.g., for buttons/timer) */
+  .uscan-footer {
     margin-top: 1.5rem;
     display: flex;
-    justify-content: space-between; /* Space out content */
+    justify-content: space-between;
     align-items: center;
-    color: #ccc; /* Light grey text */
-}
-
-/* Styles for buttons within the footer (e.g., Next, Submit) */
-.uscan-footer button {
-    background-color: #2563eb; /* Blue background */
+    color: #ccc;
+  }
+  
+  /* Buttons in footer */
+  .uscan-footer button {
+    background-color: #2563eb;
     color: white;
     padding: 0.5rem 1rem;
     border-radius: 0.4rem;
     font-weight: 600;
     border: none;
     cursor: pointer;
-}
-
-/* Heading for the quiz result section */
-.uscan-result h2 {
-    color: #e50914; /* Netflix red */
-}
-
-/* Style for the score display */
-.uscan-score {
+  }
+  
+  /* Quiz result heading */
+  .uscan-result h2 {
+    color: #e50914;
+  }
+  
+  /* Score display */
+  .uscan-score {
     font-size: 1.25rem;
     margin: 1rem 0;
-}
-
-/* Responsive tweaks for smaller screens */
-@media screen and (max-width: 640px) {
+  }
+  
+  /* Responsive styles */
+  @media screen and (max-width: 640px) {
     .uscan-box {
-        padding: 1.5rem; /* Smaller padding on mobile */
+      padding: 1.5rem;
     }
-
+  
     .uscan-option {
-        font-size: 0.95rem; /* Smaller font size for options */
+      font-size: 0.95rem;
     }
-
+  
     .uscan-footer {
-        flex-direction: column; /* Stack footer items vertically */
-        gap: 1rem; /* Space between stacked items */
+      flex-direction: column;
+      gap: 1rem;
     }
-}
+  }
+  

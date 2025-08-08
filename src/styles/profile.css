@@ -1,5 +1,5 @@
 /* --- Color Palette & Fonts --- */
-:root {
+.profile {
     --primary-bg: #ac0e4a; /* Soft gray */
     --secondary-bg: #b9b4b4; /* Off-white */
     --text-color: #424242; /* Darker gray */

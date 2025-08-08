@@ -1,10 +1,14 @@
 // src/pages/AFR.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "../firebase";
 import "../styles/afr.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
 import { saveQuizResult } from "../utils/firestoreUtils";
+import dayjs from "dayjs";
+import LoadingScreen from "../components/LoadingScreen"; // <-- Added this line
 
 const questions = [
   {
@@ -65,18 +69,54 @@ function AFR() {
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [quizBlocked, setQuizBlocked] = useState(false);
+  const [loading, setLoading] = useState(true);
   const startTime = useRef(Date.now());
   const navigate = useNavigate();
+  const regionKey = "afr";
 
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const username = user?.username;
+
+  // ⛔️ Check if user already took the quiz this month
   useEffect(() => {
-    if (quizFinished || selected !== null) return;
+    const checkAttempt = async () => {
+      if (!username) return;
+
+      const userRef = doc(db, "users", username);
+      const snap = await getDoc(userRef);
+      if (!snap.exists()) {
+        setLoading(false);
+        return;
+      }
+
+      const data = snap.data();
+      const isAdmin = data.role === "admin";
+      const prevAttempt = data?.scores?.[regionKey];
+
+      const currentMonth = dayjs().format("YYYY-MM");
+      const attemptMonth = prevAttempt?.date ? dayjs(prevAttempt.date).format("YYYY-MM") : null;
+
+      if (!isAdmin && currentMonth === attemptMonth) {
+        setQuizBlocked(true);
+      }
+
+      setLoading(false);
+    };
+
+    checkAttempt();
+  }, [username]);
+
+  // ⏳ Timer
+  useEffect(() => {
+    if (quizFinished || selected !== null || quizBlocked) return;
     if (timeLeft === 0) {
       handleNext();
       return;
     }
     const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, currentQ, quizFinished, selected]);
+  }, [timeLeft, currentQ, quizFinished, selected, quizBlocked]);
 
   const handleOptionClick = (option) => {
     if (selected) return;
@@ -100,22 +140,11 @@ function AFR() {
       setTimeLeft(30);
     } else {
       setQuizFinished(true);
-
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      const username = user?.username;
-      if (!username) {
-        console.error("❌ Username not found in localStorage");
-        return;
-      }
+      if (!username) return;
 
       const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
-      const regionKey = "afr";
-
-      // ✅ CORRECTED FUNCTION CALL
       await saveQuizResult(username, regionKey, score, timeSpent);
-      console.log(`✅ Result saved for ${username}`);
 
-      // Optional: also store locally
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
       if (!scores[username]) scores[username] = {};
       scores[username]["AFR"] = score;
@@ -124,6 +153,23 @@ function AFR() {
   };
 
   const isPassed = (score / questions.length) * 100 >= 80;
+
+  if (loading) return <LoadingScreen />; // <-- The change is here
+
+  if (quizBlocked) {
+    return (
+      <div className="afr-container">
+        <div className="afr-box afr-blocked">
+          <h2>⛔ Quiz Already Taken</h2>
+          <p>
+            You’ve already taken the <strong>AFR quiz</strong> for this month.
+          </p>
+          <p>Try again next month!</p>
+          <button onClick={() => navigate("/region")}>🔙 Return to Region</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="afr-container">
