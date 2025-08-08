@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
+import '../styles/leaderboard.css';
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
-import '../styles/leaderboard.css';
+
 import {
   listenToReactions,
   addReaction,
