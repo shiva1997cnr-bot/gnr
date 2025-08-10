@@ -166,4 +166,83 @@
       gap: 1rem;
     }
   }
-  
+  /* Center the box on the page (keeps your background untouched) */
+.uscan-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* Glassy box */
+.uscan-box {
+  width: 100%;
+  max-width: 720px;
+  padding: 24px 28px;
+  border-radius: 16px;
+  color: #e5e7eb; /* light text */
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+/* Blocked/simple state inside the box */
+.uscan-box.uscan-blocked {
+  text-align: center;
+}
+
+.uscan-box.uscan-blocked h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fca5a5; /* soft red heading */
+  margin-bottom: 8px;
+}
+
+.uscan-box.uscan-blocked p {
+  margin: 4px 0;
+  opacity: 0.9;
+}
+
+/* Buttons in the box (including your "Return to Region") */
+.uscan-box button,
+.uscan-footer-button {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.uscan-box button:hover,
+.uscan-footer-button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
+}
+
+.uscan-box button:active,
+.uscan-footer-button:active {
+  transform: translateY(0);
+}
+
+.uscan-box button:focus-visible,
+.uscan-footer-button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* Optional: pass/fail text if you show it in USCAN results */
+.pass { color: #16a34a; font-weight: 600; }  /* green */
+.fail { color: #dc2626; font-weight: 600; }  /* red */
+
+/* Optional: center WE-style result block if you used that class */
+.we-result { text-align: center; }

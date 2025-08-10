@@ -1,68 +1,26 @@
 // src/pages/SA.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  orderBy,
+  limit,
+  query,
+  updateDoc,
+  arrayUnion,
+} from "firebase/firestore";
 import { db } from "../firebase";
-import "../styles/sa.css";
+import { saveQuizResult } from "../utils/firestoreUtils";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
-import { saveQuizResult } from "../utils/firestoreUtils";
 import dayjs from "dayjs";
-
-const questions = [
-  {
-    question: "Who is the Head of State in India?",
-    options: ["Prime Minister", "President", "King", "Chief Justice"],
-    answer: "President",
-  },
-  {
-    question: "What type of government does Pakistan have?",
-    options: ["Monarchy", "Parliamentary Republic", "Military Junta", "Theocracy"],
-    answer: "Parliamentary Republic",
-  },
-  {
-    question: "What is the name of the Parliament in Bangladesh?",
-    options: ["Jatiya Sangsad", "Lok Sabha", "Majlis", "National Assembly"],
-    answer: "Jatiya Sangsad",
-  },
-  {
-    question: "What is the capital of Sri Lanka?",
-    options: ["Kandy", "Colombo", "Galle", "Jaffna"],
-    answer: "Colombo",
-  },
-  {
-    question: "Currency of Nepal?",
-    options: ["Nepali Rupee", "Indian Rupee", "Taka", "Sri Lankan Rupee"],
-    answer: "Nepali Rupee",
-  },
-  {
-    question: "Which language is widely spoken in Afghanistan?",
-    options: ["Pashto", "Bengali", "Tamil", "Hindi"],
-    answer: "Pashto",
-  },
-  {
-    question: "Which agency is India’s primary external intelligence service?",
-    options: ["RAW", "ISI", "Mossad", "CIA"],
-    answer: "RAW",
-  },
-  {
-    question: "Recent regime change occurred in which South Asian country in 2024?",
-    options: ["Maldives", "Pakistan", "Nepal", "Sri Lanka"],
-    answer: "Pakistan",
-  },
-  {
-    question: "Which major international event is set in India in 2025?",
-    options: ["BRICS Summit", "G20", "SAARC Meet", "World Cup"],
-    answer: "BRICS Summit",
-  },
-  {
-    question: "Which South Asian country was involved in a border clash in 2025?",
-    options: ["India", "Nepal", "Bhutan", "Bangladesh"],
-    answer: "India",
-  },
-];
+import "../styles/sa.css";
 
 function SA() {
+  const [quiz, setQuiz] = useState(null);
   const [currentQ, setCurrentQ] = useState(0);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
@@ -70,56 +28,85 @@ function SA() {
   const [timeLeft, setTimeLeft] = useState(30);
   const [quizBlocked, setQuizBlocked] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [upcoming, setUpcoming] = useState(null);
   const startTime = useRef(Date.now());
   const navigate = useNavigate();
-  const regionKey = "sa";
 
+  const regionKey = "sa";
   const user = JSON.parse(localStorage.getItem("currentUser"));
   const username = user?.username;
 
   useEffect(() => {
-    const checkAttempt = async () => {
-      if (!username) return;
+    const fetchQuiz = async () => {
+      try {
+        const q = query(collection(db, regionKey), orderBy("createdAt", "desc"), limit(1));
+        const qSnap = await getDocs(q);
 
-      const userRef = doc(db, "users", username);
-      const snap = await getDoc(userRef);
-      if (!snap.exists()) {
-        setLoading(false);
-        return;
+        if (qSnap.empty) {
+          setLoading(false);
+          return;
+        }
+
+        const latestQuiz = { id: qSnap.docs[0].id, ...qSnap.docs[0].data() };
+
+        // Optional scheduled start
+        const startTimeQuiz = latestQuiz.startTime
+          ? dayjs(latestQuiz.startTime.toDate?.() || latestQuiz.startTime)
+          : null;
+        if (startTimeQuiz && startTimeQuiz.isAfter(dayjs())) {
+          setUpcoming(startTimeQuiz);
+          setLoading(false);
+          return;
+        }
+
+        // Block if already taken (admin bypass) — check multiple legacy fields
+        if (username) {
+          const userRef = doc(db, "users", username);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+            const isAdmin = data?.role === "admin";
+            const taken = data?.takenQuizzes || [];
+            const attempted = data?.attemptedQuizzes || [];
+            const attemptsMap = data?.attempts || {};
+            const already =
+              taken.includes(latestQuiz.id) ||
+              attempted.includes(latestQuiz.id) ||
+              Boolean(attemptsMap[latestQuiz.id]);
+
+            if (!isAdmin && already) {
+              setQuizBlocked(true);
+              setLoading(false);
+              return;
+            }
+          }
+        }
+
+        setQuiz(latestQuiz);
+      } catch (err) {
+        console.error("Error fetching quiz:", err);
       }
-
-      const data = snap.data();
-      const isAdmin = data.role === "admin";
-      const prevAttempt = data?.scores?.[regionKey];
-
-      const currentMonth = dayjs().format("YYYY-MM");
-      const attemptMonth = prevAttempt?.date ? dayjs(prevAttempt.date).format("YYYY-MM") : null;
-
-      if (!isAdmin && currentMonth === attemptMonth) {
-        setQuizBlocked(true);
-      }
-
       setLoading(false);
     };
 
-    checkAttempt();
+    fetchQuiz();
   }, [username]);
 
   useEffect(() => {
-    if (quizFinished || selected !== null || quizBlocked) return;
+    if (quizFinished || selected !== null || quizBlocked || upcoming) return;
     if (timeLeft === 0) {
       handleNext();
       return;
     }
     const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, selected, quizFinished, quizBlocked]);
+  }, [timeLeft, selected, quizFinished, quizBlocked, upcoming]);
 
   const handleOptionClick = (option) => {
     if (selected) return;
     setSelected(option);
 
-    const isCorrect = option === questions[currentQ].answer;
+    const isCorrect = option === quiz.questions[currentQ].answer;
     if (isCorrect) setScore((prev) => prev + 1);
 
     const audio = new Audio(isCorrect ? correctSound : wrongSound);
@@ -131,7 +118,7 @@ function SA() {
   };
 
   const handleNext = async () => {
-    if (currentQ + 1 < questions.length) {
+    if (currentQ + 1 < quiz.questions.length) {
       setCurrentQ(currentQ + 1);
       setSelected(null);
       setTimeLeft(30);
@@ -139,28 +126,65 @@ function SA() {
       setQuizFinished(true);
 
       if (!username) return;
-
       const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
-      await saveQuizResult(username, regionKey, score, timeSpent);
 
-      const scores = JSON.parse(localStorage.getItem("scores")) || {};
-      if (!scores[username]) scores[username] = {};
-      scores[username]["SA"] = score;
-      localStorage.setItem("scores", JSON.stringify(scores));
+      // save result
+      await saveQuizResult(username, quiz.id, regionKey, score, timeSpent);
+
+      // ensure next visits are blocked (compat with all schemas)
+      try {
+        const userRef = doc(db, "users", username);
+        await updateDoc(userRef, {
+          takenQuizzes: arrayUnion(quiz.id),
+          attemptedQuizzes: arrayUnion(quiz.id),
+          // If you also track a map:
+          // ["attempts." + quiz.id]: true,
+        });
+      } catch (e) {
+        console.warn("SA: failed to tag user doc with quiz id:", e);
+      }
     }
   };
 
-  const isPassed = (score / questions.length) * 100 >= 80;
+  const isPassed = quiz ? (score / quiz.questions.length) * 100 >= 80 : false;
 
   if (loading) return <p className="sa-box">Loading...</p>;
+
+  if (upcoming) {
+    return (
+      <div className="sa-container">
+        <div className="sa-box sa-result">
+          <h2>📅 Upcoming Quiz</h2>
+          <p>Next South Asia quiz will start on:</p>
+          <strong>{upcoming.format("YYYY-MM-DD HH:mm")}</strong>
+          <button className="sa-footer-button" onClick={() => navigate("/region")}>
+            🔙 Return to Region
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!quiz) {
+    return (
+      <div className="sa-container">
+        <div className="sa-box sa-result">
+          <h2>No quiz available for South Asia</h2>
+          <button className="sa-footer-button" onClick={() => navigate("/region")}>
+            🔙 Return to Region
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (quizBlocked) {
     return (
       <div className="sa-container">
         <div className="sa-box sa-result">
           <h2 className="text-red-500 text-xl font-bold mb-4">⛔ Quiz Already Taken</h2>
-          <p className="mb-4">You've already taken the <strong>South Asia</strong> quiz this month.</p>
-          <p>Try again next month!</p>
+          <p>You’ve already taken the latest South Asia quiz.</p>
+          <p>Wait for the next one to participate again.</p>
           <button className="sa-footer-button" onClick={() => navigate("/region")}>
             🔙 Return to Region
           </button>
@@ -175,22 +199,21 @@ function SA() {
         {!quizFinished ? (
           <>
             <div className="sa-question">
-              Question {currentQ + 1} of {questions.length}
+              Question {currentQ + 1} of {quiz.questions.length}
             </div>
             <div className="sa-timer">⏱ Time Left: {timeLeft}s</div>
-            <div className="sa-question">{questions[currentQ].question}</div>
+            <div className="sa-question">{quiz.questions[currentQ].question}</div>
 
             <div className="sa-options">
-              {questions[currentQ].options.map((option, idx) => {
+              {quiz.questions[currentQ].options.map((option, idx) => {
                 let className = "sa-option";
                 if (selected) {
-                  if (option === questions[currentQ].answer) {
+                  if (option === quiz.questions[currentQ].answer) {
                     className += " correct";
                   } else if (option === selected) {
                     className += " incorrect";
                   }
                 }
-
                 return (
                   <div
                     key={idx}
@@ -206,7 +229,9 @@ function SA() {
         ) : (
           <div className="sa-result">
             <h2>✅ Quiz Complete!</h2>
-            <div>Your Score: {score} / {questions.length}</div>
+            <div>
+              Your Score: {score} / {quiz.questions.length}
+            </div>
             <div className={isPassed ? "text-green-500" : "text-red-500"}>
               {isPassed ? "Passed ✅" : "Failed ❌"}
             </div>

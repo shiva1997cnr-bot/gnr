@@ -1,203 +1,294 @@
-import React, { useState, useEffect } from "react";
+// src/pages/WE.jsx
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/we.css";
+import {
+  collection,
+  getDocs,
+  query,
+  orderBy,
+  limit,
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+} from "firebase/firestore";
+import { db } from "../firebase";
+import { saveQuizResult } from "../utils/firestoreUtils";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
-import { saveQuizResult } from "../utils/firestoreUtils";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../firebase";
 import dayjs from "dayjs";
+import duration from "dayjs/plugin/duration";
+import "../styles/we.css";
 
-const questions = [
-  {
-    question: "Who is the head of state of France?",
-    options: ["Emmanuel Macron", "Olaf Scholz", "Pedro Sánchez", "Alexander Van der Bellen"],
-    answer: "Emmanuel Macron",
-  },
-  {
-    question: "What type of government does Germany have?",
-    options: ["Federal Parliamentary Republic", "Monarchy", "Presidential Republic", "Military Junta"],
-    answer: "Federal Parliamentary Republic",
-  },
-  {
-    question: "What is the Parliament of the UK called?",
-    options: ["National Assembly", "Congress", "House of Commons", "Bundestag"],
-    answer: "House of Commons",
-  },
-  {
-    question: "What is the capital of Austria?",
-    options: ["Vienna", "Zurich", "Brussels", "Oslo"],
-    answer: "Vienna",
-  },
-  {
-    question: "What is the currency used in Spain?",
-    options: ["Euro", "Pound", "Franc", "Krone"],
-    answer: "Euro",
-  },
-  {
-    question: "What are the official languages of Switzerland?",
-    options: ["German, French, Italian, Romansh", "German only", "French and German", "Italian only"],
-    answer: "German, French, Italian, Romansh",
-  },
-  {
-    question: "Which is the main intelligence agency of the UK?",
-    options: ["MI6", "CIA", "BND", "DGSE"],
-    answer: "MI6",
-  },
-  {
-    question: "Which Western European country experienced major farmer protests in 2025?",
-    options: ["Netherlands", "Italy", "Ireland", "Sweden"],
-    answer: "Netherlands",
-  },
-  {
-    question: "Which major global summit is being hosted by Italy in 2025?",
-    options: ["G7 Summit", "BRICS Summit", "UNGA", "EU Migration Forum"],
-    answer: "G7 Summit",
-  },
-  {
-    question: "Which two countries signed a defense pact in 2025?",
-    options: ["France and Germany", "UK and Sweden", "Spain and Portugal", "Austria and Hungary"],
-    answer: "UK and Sweden",
-  },
-];
+dayjs.extend(duration);
 
 function WE() {
+  const [quiz, setQuiz] = useState(null);
   const [currentQ, setCurrentQ] = useState(0);
-  const [selected, setSelected] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(null); // null=not chosen, -1=timed out, 0..n=chosen
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
-  const [quizFinished, setQuizFinished] = useState(false);
-  const [startTime] = useState(Date.now());
+  const [loading, setLoading] = useState(true);
   const [quizBlocked, setQuizBlocked] = useState(false);
-  const navigate = useNavigate();
+  const [countdown, setCountdown] = useState(null); // optional: if your docs have launchAt/startTime
+  const [showResult, setShowResult] = useState(false);
 
+  const startTime = useRef(Date.now());
+  const navigate = useNavigate();
   const regionKey = "we";
 
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const username = user?.username;
+
+  // Resolve correct option index from either schema (answer string or correctIndex)
+  const getCorrectIndex = (qObj) => {
+    if (!qObj) return -1;
+    if (typeof qObj.correctIndex === "number") return Number(qObj.correctIndex);
+    if (typeof qObj.answer === "string" && Array.isArray(qObj.options)) {
+      const ans = qObj.answer.trim();
+      const idx = qObj.options.findIndex((o) => String(o ?? "").trim() === ans);
+      return idx >= 0 ? idx : -1;
+    }
+    return -1;
+  };
+
+  // Fetch latest quiz (by createdAt desc, consistent with ESEA/LATAM), handle optional launchAt/startTime, and block if already taken
   useEffect(() => {
-    const checkAttempt = async () => {
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (!user || !user.username) {
-        console.error("User not found");
-        return;
-      }
+    const fetchLatest = async () => {
+      try {
+        // get ONLY the latest quiz
+        const qRef = query(collection(db, regionKey), orderBy("createdAt", "desc"), limit(1));
+        const snap = await getDocs(qRef);
 
-      const username = user.username;
-      const userRef = doc(db, "users", username);
-      const snap = await getDoc(userRef);
-      const data = snap.data();
-      const isAdmin = data?.role === "admin";
-      const prevAttempt = data?.scores?.[regionKey];
+        if (snap.empty) {
+          setLoading(false);
+          return;
+        }
 
-      const currentMonth = dayjs().format("YYYY-MM");
-      const attemptMonth = prevAttempt?.date ? dayjs(prevAttempt.date).format("YYYY-MM") : null;
+        const docSnap = snap.docs[0];
+        const data = docSnap.data();
+        const quizId = docSnap.id;
 
-      if (!isAdmin && currentMonth === attemptMonth) {
-        setQuizBlocked(true);
+        // Optional scheduled start support (launchAt or startTime if present)
+        const launchMoment = dayjs(
+          data.launchAt?.toDate?.() ||
+            data.launchAt ||
+            data.startTime?.toDate?.() ||
+            data.startTime
+        );
+        if (launchMoment.isValid() && dayjs().isBefore(launchMoment)) {
+          setCountdown(launchMoment.diff(dayjs(), "second"));
+          setLoading(false);
+          return;
+        }
+
+        // Block retakes (admin bypass) — check all legacy fields
+        if (username) {
+          const userRef = doc(db, "users", username);
+          const userSnap = await getDoc(userRef);
+          const userData = userSnap.exists() ? userSnap.data() : {};
+          const isAdmin = userData?.role === "admin";
+          const taken = userData?.takenQuizzes || [];
+          const attempted = userData?.attemptedQuizzes || [];
+          const attemptsMap = userData?.attempts || {};
+          const already =
+            taken.includes(quizId) ||
+            attempted.includes(quizId) ||
+            Boolean(attemptsMap[quizId]);
+          if (!isAdmin && already) {
+            setQuizBlocked(true);
+            setLoading(false);
+            return;
+          }
+        }
+
+        setQuiz({ ...data, id: quizId });
+      } catch (err) {
+        console.error("WE: error while fetching quiz:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
-    checkAttempt();
-  }, []);
+    fetchLatest();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [username]);
 
+  // Launch countdown tick (only if a future start was detected)
   useEffect(() => {
-    if (quizFinished || quizBlocked) return;
-    if (timeLeft === 0) handleNext();
-    const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [timeLeft, currentQ, quizFinished, quizBlocked]);
+    if (countdown === null) return;
+    if (countdown <= 0) {
+      window.location.reload();
+      return;
+    }
+    const t = setTimeout(() => setCountdown((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [countdown]);
 
-  const handleOptionClick = (option) => {
-    if (selected) return;
-    setSelected(option);
+  // Per-question timer
+  useEffect(() => {
+    if (!quiz || selectedIndex !== null || showResult || quizBlocked) return;
+    if (timeLeft === 0) {
+      // treat timeout as incorrect; user can press Next
+      setSelectedIndex(-1);
+      return;
+    }
+    const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [timeLeft, quiz, selectedIndex, showResult, quizBlocked]);
 
-    const isCorrect = option === questions[currentQ].answer;
-    if (isCorrect) setScore((prev) => prev + 1);
+  // Click option by INDEX (not by text)
+  const handleOptionClick = (index) => {
+    if (selectedIndex !== null) return;
+    setSelectedIndex(index);
+
+    const qObj = quiz.questions[currentQ];
+    const correctIdx = getCorrectIndex(qObj);
+    const isCorrect = index === correctIdx;
+
+    if (isCorrect) setScore((s) => s + 1);
 
     const audio = new Audio(isCorrect ? correctSound : wrongSound);
     audio.play();
-
-    setTimeout(() => {
-      handleNext();
-    }, 1500);
   };
 
   const handleNext = async () => {
-    if (currentQ + 1 < questions.length) {
-      setCurrentQ(currentQ + 1);
-      setSelected(null);
+    const nextIndex = currentQ + 1;
+    if (nextIndex < (quiz?.questions?.length || 0)) {
+      setCurrentQ(nextIndex);
+      setSelectedIndex(null);
       setTimeLeft(30);
-    } else {
-      setQuizFinished(true);
+      return;
+    }
 
-      const endTime = Date.now();
-      const timeSpent = Math.floor((endTime - startTime) / 1000);
+    // finished
+    setShowResult(true);
 
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (!user || !user.username) {
-        console.error("User not found");
-        return;
-      }
+    // save result and ensure future blocks
+    try {
+      if (!username) return;
+      const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
 
-      const username = user.username;
+      // Save result (your util)
+      await saveQuizResult(username, quiz.id, regionKey, score, timeSpent);
 
-      await saveQuizResult(username, regionKey, score, timeSpent);
+      // Ensure the next visit is blocked (compat with all schemas)
+      const userRef = doc(db, "users", username);
+      await updateDoc(userRef, {
+        takenQuizzes: arrayUnion(quiz.id),
+        attemptedQuizzes: arrayUnion(quiz.id),
+        // If you also keep a map, uncomment:
+        // ["attempts." + quiz.id]: true,
+      });
+    } catch (err) {
+      console.error("WE: error saving result / tagging user doc:", err);
     }
   };
 
-  const isPassed = (score / questions.length) * 100 >= 80;
+  const percentScore = quiz ? Math.round((score / quiz.questions.length) * 100) : 0;
+  const passed = percentScore >= 80;
 
-  if (quizBlocked) {
+  // --- UI states ---
+  if (loading)
     return (
       <div className="we-container">
-        <div className="we-box we-blocked">
-          ⛔ You have already attempted the Western Europe quiz this month.
+        <div className="we-box">Loading...</div>
+      </div>
+    );
+
+  if (countdown !== null)
+    return (
+      <div className="we-container">
+        <div className="we-box">
+          <h2>⏳ New Quiz Coming Soon!</h2>
+          <p>Starts in: {dayjs.duration(countdown, "seconds").format("HH:mm:ss")}</p>
           <button onClick={() => navigate("/region")} className="we-footer-btn">
-            Return to Region Selection
+            ← Return
           </button>
         </div>
       </div>
     );
-  }
+
+  if (!quiz)
+    return (
+      <div className="we-container">
+        <div className="we-box">
+          <h2>No quiz available for Western Europe</h2>
+          <button onClick={() => navigate("/region")}>← Return</button>
+        </div>
+      </div>
+    );
+
+  if (quizBlocked)
+    return (
+      <div className="we-container">
+        <div className="we-box we-blocked">
+          ⛔ You already attempted this quiz.
+          <br />
+          <button onClick={() => navigate("/region")}>← Return</button>
+        </div>
+      </div>
+    );
+
+  const current = quiz.questions[currentQ];
+  const revealIdx = selectedIndex !== null ? getCorrectIndex(current) : null;
 
   return (
     <div className="we-container">
       <div className="we-box">
-        {!quizFinished ? (
+        {!showResult ? (
           <>
-            <h2 className="we-question">Western Europe Region Quiz</h2>
+            <div className="we-header">
+              <button onClick={() => navigate("/region")} className="back-btn">
+                ←
+              </button>
+              <h2>Western Europe Quiz</h2>
+            </div>
+
             <div className="we-timer">Time Left: {timeLeft}s</div>
-            <h3 className="we-question">{questions[currentQ].question}</h3>
+
+            <h3 className="we-question">{current.question}</h3>
+
             <div className="we-options">
-              {questions[currentQ].options.map((option, i) => (
-                <button
-                  key={i}
-                  onClick={() => handleOptionClick(option)}
-                  className={`we-option ${
-                    selected
-                      ? option === questions[currentQ].answer
-                        ? "correct"
-                        : option === selected
-                        ? "incorrect"
-                        : ""
-                      : ""
-                  }`}
-                  disabled={!!selected}
-                >
-                  {option}
+              {current.options.map((opt, i) => {
+                let cls = "";
+                if (selectedIndex !== null) {
+                  if (i === revealIdx) cls = "correct";
+                  else if (i === selectedIndex && selectedIndex !== revealIdx) cls = "incorrect";
+                }
+                return (
+                  <button
+                    key={i}
+                    onClick={() => handleOptionClick(i)}
+                    className={`we-option ${cls}`}
+                    disabled={selectedIndex !== null}
+                  >
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="we-footer">
+              {selectedIndex !== null ? (
+                <button onClick={handleNext} className="we-next-btn">
+                  Next
                 </button>
-              ))}
+              ) : (
+                <small>Pick an answer — or wait for timer to skip</small>
+              )}
             </div>
           </>
         ) : (
           <div className="we-result">
             <h2>Quiz Completed 🎉</h2>
-            <p className="we-score">Your Score: {score} / {questions.length}</p>
-            <p className={isPassed ? "pass" : "fail"}>
-              {isPassed ? "Passed ✅" : "Failed ❌"}
+            <p>
+              Your Score: {score} / {quiz.questions.length} ({percentScore}%)
             </p>
-            <button onClick={() => navigate("/region")} className="we-footer-btn">
-              Return to Region Selection
-            </button>
+            <p className={passed ? "pass" : "fail"}>
+              {passed ? "Passed ✅" : "Failed ❌"}
+            </p>
+            <button onClick={() => navigate("/region")}>← Return</button>
           </div>
         )}
       </div>

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
-import '../styles/leaderboard.css';
+import "../styles/leaderboard.css";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
-
 import {
   listenToReactions,
   addReaction,
@@ -68,7 +67,6 @@ const Leaderboard = ({ forceExpand = false }) => {
     };
   }, []);
 
-  // Handle auto-expand (on mount)
   useEffect(() => {
     if (forceExpand) {
       setExpanded(true);
@@ -95,30 +93,60 @@ const Leaderboard = ({ forceExpand = false }) => {
 
   const renderEmojis = (username) => {
     const userReactions = reactions[username] || {};
+
+    // Sort emojis by reaction count
     const sorted = Object.entries(userReactions)
       .filter(([, users]) => users.length > 0)
       .sort((a, b) => b[1].length - a[1].length);
 
-    const topThree = sorted.slice(0, 3);
-    const remaining = sorted.slice(3);
+    if (sorted.length === 0) return null;
+
+    // Special case: only one emoji and exactly 1 reaction → just show emoji
+    if (sorted.length === 1 && sorted[0][1].length === 1) {
+      const [emoji] = sorted[0];
+      return (
+        <span className="emoji-reaction-group">
+          <span
+            className="emoji-reaction"
+            title={`Reacted by: ${sorted[0][1][0].split("@")[0]}`}
+          >
+            {emoji}
+          </span>
+        </span>
+      );
+    }
+
+    // Pick top 2 emojis
+    const topTwo = sorted.slice(0, 2);
+    const topTwoTotal = topTwo.reduce((sum, [, users]) => sum + users.length, 0);
 
     return (
-      <>
-        {topThree.map(([emoji, users]) => (
+      <span className="emoji-reaction-group">
+        {topTwo.map(([emoji]) => (
           <span
             key={emoji}
             className="emoji-reaction"
-            title={`Reacted by: ${users
+            title={`Reacted by: ${userReactions[emoji]
               .map((email) => email.split("@")[0])
               .join(", ")}`}
           >
-            {emoji} {users.length > 1 ? `+${users.length}` : ""}
+            {emoji}
           </span>
         ))}
-        {remaining.length > 0 && (
-          <span className="emoji-more">+{remaining.length}</span>
+        {topTwoTotal > 0 && (
+          <span
+            className="emoji-total"
+            title={sorted
+              .map(
+                ([emoji, users]) =>
+                  `${emoji}: ${users.map((e) => e.split("@")[0]).join(", ")}`
+              )
+              .join("\n")}
+          >
+            +{topTwoTotal}
+          </span>
         )}
-      </>
+      </span>
     );
   };
 

@@ -251,4 +251,52 @@
       transform: translateY(0);
     }
   }
-  
+  /* +x hidden emoji count */
+.emoji-more {
+  font-size: 0.4rem; /* increase size */
+  opacity: 0.9;      /* make it more visible */
+  color: #999997;    /* change to gold */
+  font-weight: bold; /* make it pop */
+}
+
+/* Wrapper for reset button + info text */
+.lb-reset-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+/* Reset Leaderboard Button */
+.lb-startover-btn {
+  background-color: #ff5252; /* red tone for caution */
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+
+.lb-startover-btn:hover {
+  background-color: #e53935;
+  transform: translateY(-1px);
+}
+
+/* Info text beside the reset button */
+.lb-info-text {
+  font-size: 0.85rem;
+  color: #555;
+  font-style: italic;
+}
+<div className="lb-reset-wrapper">
+  <button className="lb-startover-btn" onClick={onStartOver}>
+    Reset Leaderboard
+  </button>
+  <span className="lb-info-text">
+    Leaderboard showing points from Aug 1
+  </span>
+</div>

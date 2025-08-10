@@ -1,0 +1,492 @@
+/* src/styles/AdminAddQuiz.css */
+
+/*
+  =============================================
+  == AdminAddQuiz Component Styles ==
+  =============================================
+*/
+
+/* Main container for the entire admin page */
+.aaq-admin-container {
+  display: flex;
+  gap: 3rem;
+  padding: 2rem;
+  font-family: Arial, sans-serif;
+  background-color: #f4f7f9;
+  min-height: 100vh;
+  color: #000000; /* Main text color changed to black */
+}
+
+/* Style for the 'Access Denied' message */
+.aaq-admin-denied {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100vh;
+  padding: 2rem;
+}
+
+/* Section for the quiz creation form */
+.aaq-admin-form-section {
+  flex: 1;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Section for the quiz lists (pending and published) */
+.aaq-admin-list-section {
+  width: 50%;
+  padding: 2rem 0;
+}
+
+/* General button styles */
+.aaq-admin-form-section button,
+.aaq-admin-denied button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* 'Back' button for navigation */
+.aaq-back-button {
+  background-color: #e0e7ff;
+  color: #3b82f6;
+  margin-bottom: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.aaq-back-button:hover {
+  background-color: #c7d2fe;
+}
+
+/* Main form button for saving the quiz */
+.aaq-admin-form-section .aaq-save-btn-container button {
+  background-color: #10b981;
+  color: white;
+  margin-top: 1rem;
+}
+
+.aaq-admin-form-section .aaq-save-btn-container button:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.aaq-admin-form-section .aaq-save-btn-container button:disabled {
+  background-color: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Add Question button */
+.aaq-add-question-btn {
+  background-color: #4f46e5;
+  color: white;
+  margin-top: 1rem;
+}
+
+.aaq-add-question-btn:hover {
+  background-color: #4338ca;
+}
+
+/* Form field container */
+.aaq-form-field {
+  margin-bottom: 1rem;
+}
+
+.aaq-form-field-flex {
+  flex: 1;
+}
+
+.aaq-form-field-region {
+  width: 180px;
+}
+
+/* Container for form fields that should appear in a row */
+.aaq-form-group {
+  display: flex;
+  gap: rem;
+}
+
+/* Input and select element styling */
+.aaq-admin-form-section input[type="text"],
+.aaq-admin-form-section input[type="datetime-local"],
+.aaq-admin-form-section select,
+.aaq-question-input,
+.aaq-option-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #6d6f72;
+  border-radius: 14px;
+  margin-top: .1rem;
+  box-sizing: border-box;
+  color: #000000; /* Input text color changed to black */
+}
+
+/* Question Card */
+.aaq-question-card {
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.aaq-question-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: .1rem;
+}
+
+.aaq-remove-question-btn {
+  background-color: #fca5a5;
+  color: #b91c1c;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.aaq-remove-question-btn:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+.aaq-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.aaq-option-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.aaq-option-text {
+  flex-shrink: 0;
+  color: #000000; /* Option text color changed to black */
+}
+
+/*
+  =============================================
+  == Quiz List Styles ==
+  =============================================
+*/
+
+.aaq-quiz-list-container {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.aaq-quiz-list-container.pending {
+  background-color: #faf1ce;
+  border: 1px solid #e2cb6f;
+}
+
+.aaq-quiz-list-container.published {
+  background-color: #d6e7fc;
+  border: 1px solid #a5ceff;
+}
+
+.aaq-quiz-list-container h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #374151;
+}
+
+.aaq-quiz-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.aaq-quiz-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.aaq-quiz-list-item:last-child {
+  border-bottom: none;
+}
+
+.aaq-quiz-list-item strong {
+  color: #1f2937;
+}
+
+.aaq-quiz-list-item em {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.aaq-quiz-list-container.pending .aaq-delete-button {
+  background-color: #f87171;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.aaq-quiz-list-container.pending .aaq-delete-button:hover {
+  background-color: #ef4444;
+}
+
+/* Small text for list scrolling */
+.aaq-admin-list-section small {
+  display: block;
+  text-align: center;
+  color: #6b7280;
+  margin-top: 1rem;
+}
+
+/*
+  =============================================
+  == New Styles for User Scores Table & Button ==
+  =============================================
+*/
+
+/* Styles for the "Delete All Old Scores" button */
+.admin-scores-container .delete-button {
+  background-color: #dc2626; /* A red color */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+  margin-bottom: 1rem;
+}
+
+.admin-scores-container .delete-button:hover {
+  background-color: #b91c1c; /* A darker red on hover */
+}
+
+/* Container for the scores table to ensure proper spacing and overflow */
+.admin-scores-container {
+  margin-top: 2rem;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow-x: auto; /* Enables horizontal scrolling for the table on small screens */
+}
+
+/* Styling for the user scores table */
+.user-scores-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+/* Table header styles */
+.user-scores-table thead th {
+  background-color: #e5e7eb;
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 2px solid #d1d5db;
+}
+
+/* Table body row styles */
+.user-scores-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.user-scores-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.user-scores-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+/* Table data cell styles */
+.user-scores-table tbody td {
+  padding: 10px 15px;
+}
+
+/*
+  =============================================
+  == Responsive Adjustments ==
+  =============================================
+*/
+
+@media (max-width: 768px) {
+  .aaq-admin-container {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .aaq-admin-list-section {
+    width: 100%;
+    padding: 1rem 0;
+  }
+
+  .aaq-admin-form-section {
+    padding: 1.5rem;
+  }
+
+  .aaq-form-group {
+    flex-direction: column;
+  }
+
+  .aaq-form-field-region {
+    width: 100%;
+  }
+
+  .aaq-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* src/styles/AdminAddQuiz.css */
+
+/*
+  =============================================
+  == AdminDeleteScoresButton Styles ==
+  =============================================
+*/
+
+/* src/styles/AdminAddQuiz.css */
+
+/*
+  =============================================
+  == AdminDeleteScoresButton Styles ==
+  =============================================
+*/
+
+.delete-button {
+  /* Positioning the button at the bottom-right of the screen */
+  position: fixed; /* This is the key change */
+  bottom: 20px;    /* 20px from the bottom edge */
+  right: 20px;     /* 20px from the right edge */
+  z-index: 1000;   /* Ensure it's on top of other content */
+
+  /* Basic styling for the button */
+  background-color: #dc2626; /* A red color */
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.delete-button:hover {
+  background-color: #b91c1c; /* A darker red on hover */
+}
+
+.delete-button:disabled {
+  background-color: #9ca3af; /* Gray color for disabled state */
+  cursor: not-allowed;
+}
+
+/*
+  =============================================
+  == Other Styles (no change needed here) ==
+  =============================================
+*/
+
+/* ... All other existing CSS code goes here ... */
+
+
+/* src/styles/AdminAddQuiz.css */
+
+/*
+  =============================================
+  == Updated Styles for User Scores Table ==
+  =============================================
+*/
+
+.user-scores-container {
+  /* Positioning the table at the bottom-right of the screen */
+  position: fixed; /* Fixes the position relative to the viewport */
+  bottom: 20px;    /* 20px from the bottom edge */
+  right: 20px;     /* 20px from the right edge */
+  width: 400px;    /* Set a fixed width for the table container */
+  max-height: 50vh; /* Set a maximum height to allow scrolling if needed */
+  z-index: 1000;   /* Ensure it's on top of other content */
+
+  /* General container styling */
+  background-color: #db1010;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Added a more prominent shadow */
+  overflow-y: auto; /* Enables vertical scrolling for the table content */
+}
+
+/* Action buttons in quiz list */
+.aaq-admin-list-section .aaq-list-actions {
+  display: flex;
+  gap: 6px;
+}
+
+/* View button */
+.aaq-admin-list-section .aaq-view-button {
+  background-color: #2563eb; /* blue */
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+}
+.aaq-admin-list-section .aaq-view-button:hover {
+  background-color: #1d4ed8;
+}
+
+/* Download button */
+.aaq-admin-list-section .aaq-download-button {
+  background-color: #059669; /* green */
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+}
+.aaq-admin-list-section .aaq-download-button:hover {
+  background-color: #047857;
+}
+
+/* Delete button */
+.aaq-admin-list-section .aaq-delete-button {
+  background-color: #dc2626; /* red */
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+}
+.aaq-admin-list-section .aaq-delete-button:hover {
+  background-color: #b91c1c;
+}

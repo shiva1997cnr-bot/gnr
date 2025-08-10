@@ -1,3 +1,4 @@
+// src/pages/Login.jsx
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
@@ -119,77 +120,89 @@ const Login = () => {
   };
 
   return (
-    <div className="login-container">
-      <div className="org-name">Generalist</div>
-      <div className="welcome-note">Glad you're here</div>
-      <div className="sub-note">We're excited to help you learn and grow.</div>
+    <div
+      className="login-container"
+      style={{
+        // Changed .jpg to .jpeg here
+        backgroundImage: "url('/login/login-bg.jpeg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        minHeight: "100vh",
+      }}
+    >
+      <div className="overlay">
+        <div className="org-name">Generalist</div>
+        <div className="welcome-note">Glad you're here</div>
+        <div className="sub-note">We're excited to help you learn and grow.</div>
 
-      <div className="login-box" style={{ height: 'auto', minHeight: '40vh' }}>
-        <div className="login-form">
-          <h2 className="logo">
-            {mode === 'login' ? '👤 Login' : 'Register'}
-          </h2>
-          <p className="subtitle">
-            {mode === 'login' ? 'Access your account' : 'Create a new account'}
-          </p>
+        <div className="login-box" style={{ height: 'auto', minHeight: '40vh' }}>
+          <div className="login-form">
+            <h2 className="logo">
+              {mode === 'login' ? '👤 Login' : 'Register'}
+            </h2>
+            <p className="subtitle">
+              {mode === 'login' ? 'Access your account' : 'Create a new account'}
+            </p>
 
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="login-form input"
-            />
+            <form onSubmit={handleSubmit}>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="login-form input"
+              />
 
-            {mode === 'register' && (
-              <>
-                <input
-                  type="text"
-                  placeholder="First Name"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  required
-                  className="login-form input"
-                />
-                <input
-                  type="text"
-                  placeholder="Last Name"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  required
-                  className="login-form input"
-                />
-              </>
-            )}
+              {mode === 'register' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    required
+                    className="login-form input"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    required
+                    className="login-form input"
+                  />
+                </>
+              )}
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="login-form input"
-            />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="login-form input"
+              />
 
-            {error && <p className="message">{error}</p>}
+              {error && <p className="message">{error}</p>}
 
-            <button type="submit" className="login-form button" disabled={loading}>
-              {loading
-                ? (mode === 'login' ? 'Logging In...' : 'Registering...')
-                : (mode === 'login' ? 'Login' : 'Register')}
-            </button>
-          </form>
+              <button type="submit" className="login-form button" disabled={loading}>
+                {loading
+                  ? (mode === 'login' ? 'Logging In...' : 'Registering...')
+                  : (mode === 'login' ? 'Login' : 'Register')}
+              </button>
+            </form>
 
-          <p
-            className="toggle-text"
-            onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
-          >
-            {mode === 'login'
-              ? "Don't have an account? Register"
-              : "Already have an account? Login"}
-          </p>
+            <p
+              className="toggle-text"
+              onClick={() => setMode(mode === 'login' ? 'register' : 'login')}
+            >
+              {mode === 'login'
+                ? "Don't have an account? Register"
+                : "Already have an account? Login"}
+            </p>
+          </div>
         </div>
       </div>
     </div>

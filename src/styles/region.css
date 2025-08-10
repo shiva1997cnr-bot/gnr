@@ -11,14 +11,27 @@
   width: 100%;
   background: url('/region/world-map.webp') no-repeat center center;
   background-size: cover;
-  background-color: #3d3a3a;
-  background-blend-mode: multiply;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  overflow-y: auto;
+  overflow: hidden; /* ensure overlay doesn't spill */
 }
+
+.region-page::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.35); /* adjust opacity for darkness */
+  z-index: 0; /* sit under the content */
+}
+
+
+
+
 
 /* Main content box */
 .region-container {
@@ -93,7 +106,7 @@
   background-color: #e50914;
   color: rgb(243, 239, 239);
   transform: scale(1.05);
-  border-color: #fd179d;
+  border-color: #c500bb;
 }
 
 /* Logout button styling */
@@ -242,4 +255,135 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+.admin-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.admin-add-quiz-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  position: absolute;
+  right: 2%;
+  bottom: 20%;
+  border: none;
+  background: #28a745;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+
+.admin-add-quiz-button:hover {
+  background: #218838;
+}
+
+/* Countdown Timer */
+.quiz-timer {
+  margin-top: 10px;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  display: inline-block;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.quiz-timer span {
+  color: #ffd700; /* Gold for the countdown numbers */
+  font-weight: bold;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Wrapper for admin buttons so reset is positioned cleanly */
+.admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap; /* So it wraps nicely on smaller screens */
+  margin-top: 20px;
+}
+
+/* Reset Leaderboard Button */
+.lb-startover-btn {
+  background: linear-gradient(135deg, #ff5252, #ff1744);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 10px rgba(255, 23, 68, 0.4);
+  position: absolute;
+  top: 76%;
+  right: 87%;
+  overflow: hidden;
+}
+
+/* Hover + active effects */
+.lb-startover-btn:hover {
+  background: linear-gradient(135deg, #ff1744, #d50000);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(255, 23, 68, 0.6);
+}
+.lb-startover-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 6px rgba(255, 23, 68, 0.4);
+}
+
+/* Pulse animation when enabled */
+.lb-startover-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  animation: pulse 2s infinite;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.1); opacity: 0; }
+}
+
+/* Disabled state */
+.lb-startover-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Info text beside button */
+.lb-info-text {
+  font-size: 0.85rem;
+  color: #815f5f;
+  
+  margin-inline:  0px;
+  position: absolute;
+  top: 85%;
+  right: 82%;
+}
+.lb-info-text strong {
+  color: #da2020;
+
 }

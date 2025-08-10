@@ -1,0 +1,13 @@
+/* Reuse the whole AdminAddQuiz styling */
+@import "./AdminAddQuiz.css";
+
+/* Optional, page-specific tweaks */
+.aaq-view-meta {
+  margin-top: 8px;
+}
+
+.aaq-view-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}

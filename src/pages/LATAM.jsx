@@ -1,120 +1,101 @@
 // src/pages/LATAM.jsx
-
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  collection,
+  getDocs,
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  query,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 import { saveQuizResult } from "../utils/firestoreUtils";
-import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import "../styles/latam.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
-import dayjs from "dayjs";
-
-const questions = [
-  {
-    question: "Who is the Head of State in Brazil (2025)?",
-    options: ["President", "Prime Minister", "Monarch", "Chancellor"],
-    answer: "President",
-  },
-  {
-    question: "What type of government does Argentina have?",
-    options: ["Federal Republic", "Constitutional Monarchy", "Theocracy", "Military Junta"],
-    answer: "Federal Republic",
-  },
-  {
-    question: "What is the capital of Chile?",
-    options: ["Santiago", "Lima", "Buenos Aires", "Bogotá"],
-    answer: "Santiago",
-  },
-  {
-    question: "What is the currency of Colombia?",
-    options: ["Peso", "Real", "Sol", "Dollar"],
-    answer: "Peso",
-  },
-  {
-    question: "Which language is official in Peru?",
-    options: ["Spanish", "Portuguese", "French", "English"],
-    answer: "Spanish",
-  },
-  {
-    question: "What is the Parliament of Mexico called?",
-    options: ["Congress of the Union", "National Assembly", "People’s Council", "Legislative Forum"],
-    answer: "Congress of the Union",
-  },
-  {
-    question: "Which country has recent regime change in 2024?",
-    options: ["Bolivia", "Brazil", "Paraguay", "Uruguay"],
-    answer: "Bolivia",
-  },
-  {
-    question: "Which agency is Argentina's intelligence unit?",
-    options: ["AFI", "ABIN", "DINA", "CIA"],
-    answer: "AFI",
-  },
-  {
-    question: "Which Latin American country signed a major climate agreement in 2025?",
-    options: ["Chile", "Venezuela", "Brazil", "Ecuador"],
-    answer: "Brazil",
-  },
-  {
-    question: "What upcoming event is hosted by Mexico in 2025?",
-    options: ["Pan American Games", "Olympics", "G20 Summit", "COP30"],
-    answer: "G20 Summit",
-  },
-];
 
 function LATAM() {
+  const regionKey = "latam";
+  const [quizData, setQuizData] = useState(null);
   const [currentQ, setCurrentQ] = useState(0);
   const [selected, setSelected] = useState(null);
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [quizBlocked, setQuizBlocked] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
+  const [loading, setLoading] = useState(true);
   const startTime = useRef(Date.now());
   const navigate = useNavigate();
 
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const username = user?.username;
+
   useEffect(() => {
-    const checkAttempt = async () => {
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (!user || !user.username) {
-        console.error("❌ Username not found in localStorage");
-        return;
-      }
+    const fetchQuiz = async () => {
+      try {
+        // get only the latest quiz
+        const q = query(collection(db, regionKey), orderBy("createdAt", "desc"), limit(1));
+        const snap = await getDocs(q);
 
-      const username = user.username;
-      const regionKey = "latam";
-      const userRef = doc(db, "users", username);
-      const snap = await getDoc(userRef);
-      const data = snap.data();
-      const isAdmin = data?.role === "admin";
-      const prevAttempt = data?.scores?.[regionKey];
+        if (snap.empty) {
+          setQuizData(null);
+          setLoading(false);
+          return;
+        }
 
-      const currentMonth = dayjs().format("YYYY-MM");
-      const attemptMonth = prevAttempt?.date ? dayjs(prevAttempt.date).format("YYYY-MM") : null;
+        const docSnap = snap.docs[0];
+        const latest = { id: docSnap.id, ...docSnap.data() };
+        setQuizData(latest);
 
-      if (!isAdmin && currentMonth === attemptMonth) {
-        setQuizBlocked(true);
+        // block if already attempted (admin bypass) — check multiple legacy fields
+        if (username) {
+          const userRef = doc(db, "users", username);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            const data = userSnap.data();
+            const isAdmin = data?.role === "admin";
+            const taken = data?.takenQuizzes || [];
+            const attempted = data?.attemptedQuizzes || [];
+            const attemptsMap = data?.attempts || {};
+            const already =
+              taken.includes(latest.id) ||
+              attempted.includes(latest.id) ||
+              Boolean(attemptsMap[latest.id]);
+
+            if (!isAdmin && already) {
+              setQuizBlocked(true);
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error fetching ${regionKey} quiz:`, error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    checkAttempt();
-  }, []);
+    fetchQuiz();
+  }, [username]);
 
   useEffect(() => {
-    if (quizFinished || selected !== null || quizBlocked) return;
+    if (loading || quizFinished || selected !== null || quizBlocked) return;
     if (timeLeft === 0) {
       handleNext();
       return;
     }
     const timer = setTimeout(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearTimeout(timer);
-  }, [timeLeft, selected, quizFinished, quizBlocked]);
+  }, [timeLeft, selected, quizFinished, quizBlocked, loading]);
 
   const handleOptionClick = (option) => {
     if (selected || quizBlocked) return;
     setSelected(option);
 
-    const isCorrect = option === questions[currentQ].answer;
+    const isCorrect = option === quizData.questions[currentQ].answer;
     if (isCorrect) setScore((prev) => prev + 1);
 
     const audio = new Audio(isCorrect ? correctSound : wrongSound);
@@ -126,26 +107,36 @@ function LATAM() {
   };
 
   const handleNext = async () => {
-    if (currentQ + 1 < questions.length) {
-      setCurrentQ(currentQ + 1);
+    if (!quizData) return;
+
+    if (currentQ + 1 < quizData.questions.length) {
+      setCurrentQ((prev) => prev + 1);
       setSelected(null);
       setTimeLeft(30);
     } else {
       setQuizFinished(true);
 
-      const user = JSON.parse(localStorage.getItem("currentUser"));
-      if (!user || !user.username) {
-        console.error("❌ Username not found in localStorage");
-        return;
-      }
+      if (!username) return;
 
-      const username = user.username;
-      const regionKey = "latam";
       const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
 
-      await saveQuizResult(username, regionKey, score, timeSpent);
-      console.log(`✅ LATAM result saved for ${username}`);
+      // save result
+      await saveQuizResult(username, quizData.id, regionKey, score, timeSpent);
 
+      // ensure next visit is blocked (write to user doc)
+      try {
+        const userRef = doc(db, "users", username);
+        await updateDoc(userRef, {
+          takenQuizzes: arrayUnion(quizData.id),
+          attemptedQuizzes: arrayUnion(quizData.id),
+          // If you also track a map:
+          // ["attempts." + quizData.id]: true,
+        });
+      } catch (e) {
+        console.warn("Failed to update user attempted lists:", e);
+      }
+
+      // keep your local scores if you want them
       const scores = JSON.parse(localStorage.getItem("scores")) || {};
       if (!scores[username]) scores[username] = {};
       scores[username]["LATAM"] = score;
@@ -153,45 +144,64 @@ function LATAM() {
     }
   };
 
-  const isPassed = (score / questions.length) * 100 >= 80;
+  if (loading) {
+    return (
+      <div className="latam-container">
+        <div className="latam-box">
+          <h2>Loading...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  if (!quizData) {
+    return (
+      <div className="latam-container">
+        <div className="latam-box">
+          <h2>No quiz available for LATAM</h2>
+          <button className="latam-footer-button" onClick={() => navigate("/region")}>
+            Return to Region
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (quizBlocked) {
+    return (
+      <div className="latam-container">
+        <div className="latam-box">
+          <h2 className="text-xl text-red-500 font-semibold mb-4">
+            You have already attempted this LATAM quiz. 📅
+          </h2>
+          <button className="latam-footer-button" onClick={() => navigate("/region")}>
+            Return to Region
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const isPassed = (score / quizData.questions.length) * 100 >= 80;
 
   return (
     <div className="latam-container">
       <div className="latam-box">
         <h1 className="text-3xl font-bold mb-4">LATAM Quiz 🌎</h1>
 
-        {quizBlocked ? (
-          <div className="latam-result">
-            <h2 className="text-xl text-red-500 font-semibold mb-4">
-              You have already attempted the LATAM quiz this month. 📅
-            </h2>
-            <button className="latam-footer-button" onClick={() => navigate("/region")}>
-              Return to Region
-            </button>
-          </div>
-        ) : quizFinished ? (
-          <div className="latam-result">
-            <h2>Your Score: {score} / {questions.length}</h2>
-            <p className={`latam-score ${isPassed ? "text-green-500" : "text-red-500"}`}>
-              {isPassed ? "Passed ✅" : "Failed ❌"}
-            </p>
-            <button className="latam-footer-button" onClick={() => navigate("/region")}>
-              Return to Region
-            </button>
-          </div>
-        ) : (
+        {!quizFinished ? (
           <>
             <div className="latam-question">
-              Question {currentQ + 1} of {questions.length}
+              Question {currentQ + 1} of {quizData.questions.length}
             </div>
             <div className="latam-score">Time Left: {timeLeft}s</div>
-            <div className="latam-question">{questions[currentQ].question}</div>
+            <div className="latam-question">{quizData.questions[currentQ].question}</div>
 
             <div className="latam-options">
-              {questions[currentQ].options.map((option, idx) => {
+              {quizData.questions[currentQ].options.map((option, idx) => {
                 let className = "latam-option";
                 if (selected) {
-                  if (option === questions[currentQ].answer) {
+                  if (option === quizData.questions[currentQ].answer) {
                     className += " correct";
                   } else if (option === selected) {
                     className += " incorrect";
@@ -210,6 +220,16 @@ function LATAM() {
               })}
             </div>
           </>
+        ) : (
+          <div className="latam-result">
+            <h2>Your Score: {score} / {quizData.questions.length}</h2>
+            <p className={`latam-score ${isPassed ? "text-green-500" : "text-red-500"}`}>
+              {isPassed ? "Passed ✅" : "Failed ❌"}
+            </p>
+            <button className="latam-footer-button" onClick={() => navigate("/region")}>
+              Return to Region
+            </button>
+          </div>
         )}
       </div>
     </div>

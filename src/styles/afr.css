@@ -1,119 +1,274 @@
-/* src/pages/afr.css */
+/* src/styles/afr.css */
 
 /* ===== AFR REGION STYLES ===== */
 
-/* Main container for the AFR quiz page */
-.afr-container {
-    text-align: center;
-    min-height: 100vh; /* Ensure it takes full viewport height */
+/*
+  Full-screen container for the background images.
+  It is fixed to the viewport and placed behind all other content.
+*/
+.afr-background-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    overflow: hidden;
+  }
+  
+  /*
+    A semi-transparent overlay that sits on top of the background images
+    to improve the readability of the quiz content.
+  */
+  .afr-overlay-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
-    padding: 2rem; /* Consistent padding */
-    background-color: black; /* Dark background */
-    color: white; /* White text for contrast */
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+  }
+  
+  /*
+    Individual layer for each background image.
+    They are stacked on top of each other. The 'opacity' transition
+    creates the fading effect.
+  */
+  .bg-fade-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.5s ease-in-out;
+    z-index: -1;
+  }
+  
+  /*
+    This class is dynamically added to the current background layer to
+    make it visible.
+  */
+  .bg-fade-layer.visible {
+    opacity: 1;
+  }
+  
+  /*
+    Main container for the AFR quiz content.
+    It's centered on the page and placed above the background and overlay.
+  */
+  .afr-container {
+    text-align: center;
+    min-height: 100vh;
+    width: 100%;
+    padding: 2rem;
+    background-color: transparent; /* Changed to transparent to show background */
+    color: white;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Specific font */
-}
-
-/* The central quiz box */
-.afr-box {
-    background-color: rgba(26, 24, 24, 0.75); /* Semi-transparent dark background */
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    position: relative; /* Needed for z-index to work */
+    z-index: 2; /* Ensures content is on top of the overlay */
+  }
+  
+  /* The central quiz box */
+  .afr-box {
+    background-color: rgba(26, 24, 24, 0.75);
     padding: 2rem;
-    border-radius: 2rem; /* Large rounded corners */
-    max-width: 700px; /* Maximum width for the box */
-    width: 100%; /* Ensure responsiveness */
+    border-radius: 2rem;
+    max-width: 700px;
+    width: 100%;
     text-align: center;
-}
-
-/* Styles for the question text */
-.afr-question {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Added a subtle shadow */
+  }
+  
+  /* The box for a blocked quiz attempt */
+  .afr-box.afr-blocked {
+    background-color: rgba(100, 0, 0, 0.8); /* Dark red background for the blocked message */
+    border: 2px solid #e50914; /* Red border */
+  }
+  
+  /* Styles for the question text */
+  .afr-question {
     font-size: 1.25rem;
     font-weight: bold;
     margin-bottom: 1.5rem;
-}
-
-/* Container for the answer options */
-.afr-options {
+  }
+  
+  /* Container for the answer options */
+  .afr-options {
     display: flex;
-    flex-direction: column; /* Stack options vertically */
-    gap: 0.7rem; /* Space between options */
-}
-
-/* Individual answer option button/div */
-.afr-option {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  
+  /* Individual answer option button/div */
+  .afr-option {
     padding: 0.8rem;
-    background-color: white; /* White background for options */
-    color: black; /* Black text for options */
-    border-radius: 4rem; /* Pill shape */
-    border-left: 6px solid transparent; /* Left border for visual effect */
-    text-align: left; /* Align text to the left */
+    background-color: white;
+    color: black;
+    border-radius: 4rem;
+    border-left: 6px solid transparent;
+    text-align: left;
     font-weight: 500;
-    transition: all 0.3s ease; /* Smooth transitions for hover and state changes */
+    transition: all 0.3s ease;
     cursor: pointer;
-}
-
-/* Hover effect for options */
-.afr-option:hover {
-    background-color: #2196f3; /* Blue background on hover */
-    color: white; /* White text on hover */
-}
-
-/* Style for the correct answer when selected */
-.afr-option.correct {
-    background-color: #4caf50; /* Green background */
+  }
+  
+  /* Hover effect for options */
+  .afr-option:hover {
+    background-color: #2196f3;
     color: white;
-}
-
-/* Style for an incorrect answer when selected */
-.afr-option.incorrect {
-    background-color: #f44336; /* Red background */
+  }
+  
+  /* Style for the correct answer when selected */
+  .afr-option.correct {
+    background-color: #4caf50;
     color: white;
-}
-
-/* Footer section (e.g., for timer or navigation buttons) */
-.afr-footer {
+    border-left-color: #4caf50;
+  }
+  
+  /* Style for an incorrect answer when selected */
+  .afr-option.incorrect {
+    background-color: #f44336;
+    color: white;
+    border-left-color: #f44336;
+  }
+  
+  /* Footer section */
+  .afr-footer {
     margin-top: 1.5rem;
     display: flex;
-    justify-content: space-between; /* Space out content */
+    justify-content: space-between;
     align-items: center;
-    color: #ccc; /* Light grey text */
-}
-
-/* Styles for buttons within the footer (e.g., Next, Submit) */
-.afr-footer button {
-    background-color: #2563eb; /* Blue background */
+    color: #ccc;
+  }
+  
+  /* Styles for buttons */
+  .afr-footer button,
+  .afr-blocked button,
+  .afr-result button {
+    background-color: #2563eb;
     color: white;
-    padding: 0.5rem 1rem;
+    padding: 0.5rem 1.5rem;
     border-radius: 0.4rem;
     font-weight: 600;
     border: none;
     cursor: pointer;
-}
-
-/* Heading for the quiz result section */
-.afr-result h2 {
-    color: #e50914; /* Netflix red */
-}
-
-/* Style for the score display */
-.afr-score {
+    transition: background-color 0.3s ease;
+  }
+  
+  .afr-footer button:hover,
+  .afr-blocked button:hover,
+  .afr-result button:hover {
+    background-color: #1a4a9f;
+  }
+  
+  /* Heading for the quiz result section */
+  .afr-result h2 {
+    color: #e50914;
+  }
+  
+  /* Style for the score display */
+  .afr-score {
     font-size: 1.25rem;
     margin: 1rem 0;
-}
-
-/* Responsive tweaks for smaller screens */
-@media screen and (max-width: 640px) {
+  }
+  
+  /* Responsive tweaks for smaller screens */
+  @media screen and (max-width: 640px) {
     .afr-box {
-        padding: 1.5rem; /* Smaller padding on mobile */
+      padding: 1.5rem;
     }
-
+  
     .afr-option {
-        font-size: 0.95rem; /* Smaller font size for options */
+      font-size: 0.95rem;
     }
-
+  
     .afr-footer {
-        flex-direction: column; /* Stack footer items vertically */
-        gap: 1rem; /* Space between stacked items */
+      flex-direction: column;
+      gap: 1rem;
     }
+  }
+
+  /* Center the box on the page (keeps your background untouched) */
+.afr-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
 }
+
+/* Glassy box */
+.afr-box {
+  width: 100%;
+  max-width: 720px;
+  padding: 24px 28px;
+  border-radius: 16px;
+  color: #e5e7eb; /* light text */
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+/* Blocked/simple state inside the box */
+.afr-box.afr-blocked {
+  text-align: center;
+}
+
+.afr-box.afr-blocked h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fca5a5; /* soft red heading */
+  margin-bottom: 8px;
+}
+
+.afr-box.afr-blocked p {
+  margin: 4px 0;
+  opacity: 0.9;
+}
+
+/* Buttons in the box (including your "Return to Region") */
+.afr-box button,
+.afr-footer-button {
+  margin-top: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.afr-box button:hover,
+.afr-footer-button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
+}
+
+.afr-box button:active,
+.afr-footer-button:active {
+  transform: translateY(0);
+}
+
+.afr-box button:focus-visible,
+.afr-footer-button:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 2px;
+}
+
+/* Optional: pass/fail text if you show it in AFR results */
+.pass { color: #16a34a; font-weight: 600; }  /* green */
+.fail { color: #dc2626; font-weight: 600; }  /* red */
