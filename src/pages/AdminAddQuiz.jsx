@@ -1,4 +1,4 @@
-import "../styles/AdminAddQuiz.css";
+import "../styles/adminaddquiz.css";
 import React, { useState, useEffect, useMemo } from "react";
 import {
   collection,
