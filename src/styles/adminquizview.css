@@ -1,5 +1,5 @@
 /* Reuse the whole AdminAddQuiz styling */
-@import "../styles/adminaddquiz.css";
+@import "./adminaddquiz.css";
 
 
 /* Optional, page-specific tweaks */
