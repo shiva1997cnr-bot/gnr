@@ -8,6 +8,7 @@
   --accent-improvement: #ffe082;
   --button-color: #020507;
   --button-hover: #2979ff;
+  
 }
 
 body {
@@ -15,6 +16,7 @@ body {
   background: linear-gradient(135deg, var(--primary-bg), #d6d6d6);
   color: var(--text-color);
   min-height: 100vh;
+  background-color: rgb(102, 90, 90);
 }
 
 /* --- Banner --- */
@@ -27,7 +29,7 @@ body {
 }
 
 .banner-overlay {
-  background: rgba(0, 0, 0, 0.4);
+  
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -43,8 +45,9 @@ body {
   font-size: 3.5rem;
   font-weight: bold;
   position: absolute;
-  top: 30%;
-  color: #fff;
+  top: 10%;
+  right: 70%;
+  color: #f5eded;
   margin: 0;
 }
 
@@ -52,6 +55,7 @@ body {
   font-size: 2.2rem;
   position: absolute;
   top: 70%;
+  right: 1%;
   color: #faf6f6;
   margin-top: 10px;
 }
