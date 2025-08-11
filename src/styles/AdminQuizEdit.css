@@ -1,5 +1,6 @@
 /* Reuse the whole AdminAddQuiz styling */
-@import "./AdminAddQuiz.css";
+@import "./adminaddquiz.css";
+
 
 /* Optional, page-specific tweaks */
 .aaq-edit-actions {
