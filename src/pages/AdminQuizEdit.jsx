@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import "../adminaddquiz.css";
+import "../styles/Adminquizedit.css";
+
 
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase";
