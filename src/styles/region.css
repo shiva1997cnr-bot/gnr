@@ -1,10 +1,10 @@
 /*
- * Region Page Styles — centered card + fixed logout (top-right)
+ * Region Page Styles — centered card, fixed header, admin docks
  */
 
  :root {
-  --overlay-darkness: 0.22;         /* overall page darkening */
-  --card-darkness: 0.38;            /* inside card background */
+  --overlay-darkness: 0.22;
+  --card-darkness: 0.38;
   --max-card-width: 800px;
 }
 
@@ -15,8 +15,8 @@
   background: url('/region/world-map.webp') no-repeat center center;
   background-size: cover;
   display: flex;
-  align-items: center;              /* vertical center */
-  justify-content: center;          /* horizontal center */
+  align-items: center;          /* vertical center */
+  justify-content: center;      /* horizontal center */
   position: relative;
   overflow: hidden;
 }
@@ -28,13 +28,13 @@
   z-index: 0;
 }
 
-/* Header layer (kept out of flow so the card stays centered) */
+/* Header (kept out of flow so the card stays centered) */
 .region-header {
   position: fixed;
-  inset: 0 0 auto 0;               /* top:0; left:0; right:0 */
-  height: 0;                        /* let children place themselves */
+  inset: 0 0 auto 0;           /* top:0; left:0; right:0 */
+  height: 0;
   z-index: 5;
-  pointer-events: none;             /* container ignores clicks */
+  pointer-events: none;         /* container ignores clicks */
 }
 .region-header > * { pointer-events: auto; }
 
@@ -57,7 +57,7 @@
 
 .live-quiz-button {
   position: fixed;
-  top: 60px;                        /* just below Logout */
+  top: 60px;                    /* just below Logout */
   right: 16px;
   z-index: 10;
   background: #22c55e;
@@ -109,7 +109,7 @@
 .quiz-timer span { color: #ffd700; font-weight: 700; }
 
 .profile-circle {
-  position: fixed;                  /* pin top-left */
+  position: fixed;              /* pin top-left */
   top: 16px;
   left: 16px;
   z-index: 10;
@@ -155,7 +155,7 @@
 /* Centered card */
 .region-container {
   position: relative;
-  z-index: 1;                        /* above overlay */
+  z-index: 1;                    /* above overlay */
   width: min(92%, var(--max-card-width));
   padding: 2rem;
   border-radius: 12px;
@@ -173,7 +173,7 @@
 }
 .region-subtitle {
   font-size: 1.5rem;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2.0rem;
 }
 
 /* Animated name */
@@ -200,7 +200,7 @@
   border: 2px solid #e50914;
   border-radius: 80px;
   font-size: 1rem;
-  font-weight: 600;                  /* fix from 50 */
+  font-weight: 600;
   text-align: center;
   color: #fff;
   cursor: pointer;
@@ -213,84 +213,95 @@
   border-color: #c500bb;
 }
 
-/* Admin actions */
-.admin-actions {
+/* ===== Admin action docks (outside the card) ===== */
+
+/* Bottom-right: stacked Add Quiz + Download Scores */
+.admin-dock {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 12;
   display: flex;
+  flex-direction: column;
+  gap: 12px;                     /* proper gap */
+}
+.admin-dock .action-btn {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .2s ease, opacity .2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,.18);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 16px;
 }
+.admin-dock .action-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,.22); }
+.admin-dock .action-btn:active { transform: translateY(0); }
+
 .admin-add-quiz-button {
-  padding: 10px 20px;
-  font-size: 14px;
-  border: none;
+  composes: action-btn from none;   /* ignored by most processors, but safe */
   background: #28a745;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s ease-in-out;
+  color: #ffffff;
 }
 .admin-add-quiz-button:hover { background: #218838; }
 
-.admin-export { margin-top: 1.5rem; text-align: center; }
 .export-button {
-  background-color: #4caf50;
-  color: #fff;
-  border: none;
-  padding: .9rem 1.4rem;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  display: inline-block;
+  composes: action-btn from none;
+  background: #4caf50;
+  color: #ffffff;
 }
-.export-button:hover {
-  background-color: #388e3c;
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
-}
-.export-button:active { transform: translateY(0); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+.export-button:hover { background: #388e3c; }
 
-/* Reset leaderboard button + info */
+/* Bottom-left: Reset Leaderboard + info text (above leaderboard) */
+.reset-dock {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 .lb-startover-btn {
-  position: relative; /* for ::after pulse */
+  position: relative;             /* for ::after pulse */
   background: linear-gradient(135deg, #ff5252, #ff1744);
   color: #fff;
   border: none;
   padding: 10px 16px;
-  border-radius: 8px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 4px 10px rgba(255, 23, 68, 0.4);
+  transition: background .25s ease, transform .15s ease, box-shadow .2s ease;
+  box-shadow: 0 4px 12px rgba(255, 23, 68, 0.35);
 }
 .lb-startover-btn:hover {
   background: linear-gradient(135deg, #ff1744, #d50000);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 14px rgba(255, 23, 68, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(255, 23, 68, 0.45);
 }
-.lb-startover-btn:active { transform: translateY(0); box-shadow: 0 3px 6px rgba(255, 23, 68, 0.4); }
+.lb-startover-btn:active { transform: translateY(0); }
+.lb-startover-btn:disabled { opacity: .6; cursor: not-allowed; box-shadow: none; }
 .lb-startover-btn::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   animation: pulse 2s infinite;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.35);
   pointer-events: none;
 }
-.lb-startover-btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
 
 .lb-info-text {
-  font-size: 0.85rem;
-  color: #ddd;
+  font-size: 0.9rem;
+  color: #e6e6e6;
   font-style: italic;
 }
+.lb-info-text strong { color: #fff; }
 
 /* Keyframes */
 @keyframes colorShift {

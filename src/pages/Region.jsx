@@ -42,7 +42,7 @@ const Region = () => {
     { code: "esea", label: "ESEA" },
   ];
 
-  // Preload background image (for smoother fade-in)
+  // Preload background
   useEffect(() => {
     const img = new Image();
     img.src = "/region/world-map.webp";
@@ -268,24 +268,35 @@ const Region = () => {
         <div className="leaderboard-wrapper">
           <Leaderboard />
         </div>
+      </div>
 
-        {isAdmin && (
-          <div className="admin-actions">
+      {/* Admin docks outside the card */}
+      {isAdmin && (
+        <>
+          {/* Bottom-right: Add Quiz + Export, stacked with gap */}
+          <div className="admin-dock">
             <button
-              className="admin-add-quiz-button"
+              className="admin-add-quiz-button action-btn"
               onClick={() => navigate("/admin-add-quiz")}
             >
               ➕ Add New Quiz
             </button>
 
-            <button className="export-button" onClick={handleExportScores}>
+            <button
+              className="export-button action-btn"
+              onClick={handleExportScores}
+            >
               ⬇️ Download All User Scores
             </button>
+          </div>
 
+          {/* Bottom-left: Reset + info label */}
+          <div className="reset-dock">
             <button
               className="lb-startover-btn"
               onClick={handleResetLeaderboard}
               disabled={lbLoading}
+              title="Reset leaderboard points & reactions for all users"
             >
               {lbLoading ? "Resetting…" : "Reset Leaderboard"}
             </button>
@@ -293,8 +304,8 @@ const Region = () => {
               Points from <strong>{sinceLabel}</strong>
             </span>
           </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 };
