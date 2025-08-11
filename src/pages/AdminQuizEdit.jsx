@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import "../styles/Adminquizedit.css";
+import "../styles/adminquizedit.css";
+
 
 
 import { useParams, useNavigate } from "react-router-dom";
