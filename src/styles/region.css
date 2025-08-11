@@ -3,7 +3,7 @@
  */
 
  :root {
-  --overlay-darkness: 0.22;
+  --overlay-darkness: 0.11;
   --card-darkness: 0.38;
   --max-card-width: 800px;
 }
@@ -242,7 +242,7 @@
 .admin-dock .action-btn:active { transform: translateY(0); }
 
 .admin-add-quiz-button {
-  composes: action-btn from none;   /* ignored by most processors, but safe */
+  composes: action-btn from none;   /* harmless hint; ignored by most processors */
   background: #28a745;
   color: #ffffff;
 }
@@ -258,7 +258,7 @@
 /* Bottom-left: Reset Leaderboard + info text (above leaderboard) */
 .reset-dock {
   position: fixed;
-  bottom: 20px;
+  bottom: 8%;   /* moved up: was 20px or 4% → now 8% from bottom */
   left: 20px;
   z-index: 12;
   display: flex;
@@ -330,3 +330,5 @@
 
 /* Predictable sizing */
 .region-page, .region-page * { box-sizing: border-box; }
+/* --- override: move reset dock higher --- */
+.reset-dock { bottom: 8% !important; }

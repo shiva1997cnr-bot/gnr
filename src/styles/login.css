@@ -1,216 +1,214 @@
 /* ===========================
    GLOBAL STYLES (lighter)
    =========================== */
-   html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
-    background-color: #f5f7fb;          /* was #3d3a3a */
-    color: #111827;                      /* darker-on-light text */
-  }
-  
-  /* ===========================
-     FULL-PAGE BACKGROUND
-     =========================== */
-  .login-page {
-    min-height: 100vh;
-    width: 100%;
-    /* Remove dark blend; use a very light white tint over the image */
-    background:
-      linear-gradient(rgba(255,255,255,0.18), rgba(255,255,255,0.18)),
-      url('/login/login-bg.jpg') no-repeat center center;
-    background-size: cover;
-    /* background-blend-mode: multiply;  <-- REMOVED (caused dark look) */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow-y: auto;
-  }
-  
-  /* Light, soft shapes (kept) */
-  .login-page::before,
-  .login-page::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%);
-    filter: blur(60px);
-    z-index: 0;
-    pointer-events: none;
-  }
-  .login-page::before {
-    width: 60vw; height: 60vw; top: -10vw; left: -15vw;
-    animation: floatShape1 20s ease-in-out infinite alternate;
-  }
-  .login-page::after {
-    width: 50vw; height: 50vw; bottom: -10vw; right: -15vw;
-    background: radial-gradient(circle, rgba(197,220,240,0.18) 0%, rgba(197,220,240,0) 70%);
-    animation: floatShape2 25s ease-in-out infinite alternate-reverse;
-  }
-  @keyframes floatShape1 { 0%{transform:translate(0,0)} 100%{transform:translate(10vw,10vh)} }
-  @keyframes floatShape2 { 0%{transform:translate(0,0)} 100%{transform:translate(-10vw,-10vh)} }
-  
-  /* ===========================
-     LOGIN BOX (Glassmorphism)
-     =========================== */
-  .login-box {
-    /* Center with the flex container; remove absolute offsets */
-    position: relative;                 /* was absolute */
-    left: auto; top: auto;              /* removed */
-    background: rgba(255, 255, 255, 0.65);   /* brighter card */
-    backdrop-filter: blur(20px);
-    border-radius: 24px;
-    border: 1px solid rgba(0, 0, 0, 0.08);   /* lighter border */
-    padding: 2.25rem;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
-    animation: login-fadeInUp 0.8s ease forwards;
-    text-align: center;
-    max-width: 450px;
-    width: min(92%, 450px);
-    min-height: 40vh;
-    z-index: 1;
-  }
-  @keyframes login-fadeInUp { from{opacity:0;transform:translateY(36px)} to{opacity:1;transform:translateY(0)} }
-  
-  /* ===========================
-     LOGO & TITLES
-     =========================== */
-  .logo {
-    font-family: 'Poppins', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin-bottom: 0.75rem;
-    text-shadow: none; /* cleaner on light */
-    animation: popIn 0.4s ease-out;
-  }
-  @keyframes popIn { 0%{transform:scale(.96);opacity:0} 100%{transform:scale(1);opacity:1} }
-  
-  .subtitle {
-    color: #334155;
-    font-size: 1rem;
-    margin-bottom: 1.6rem;
-  }
-  
-  /* ===========================
-     INPUT FIELDS (white)
-     =========================== */
-  .login-form input {
-    width: 100%;
-    padding: 0.9rem 1rem;
-    margin-bottom: 1.1rem;
-    border-radius: 999px;
-    border: 1px solid rgba(0,0,0,0.15);
-    background-color: rgba(255,255,255,0.95);   /* was dark */
-    color: #111827;
-    font-size: 1rem;
-    outline: none;
-    transition: all 0.2s ease;
-  }
-  .login-form input::placeholder { color: #6b7280; }
-  .login-form input:focus {
-    border-color: #2563eb;
-    background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
-  }
-  
-  /* ===========================
-     BUTTON
-     =========================== */
-  .login-form button {
-    width: 100%;
-    padding: 0.85rem 1rem;
-    background: linear-gradient(to right, #c8e34f, #bfe636);
-    border: none;
-    border-radius: 14px;
-    color: #0b0f19;
-    font-weight: 700;
-    font-size: 1.05rem;
-    cursor: pointer;
-    transition: background 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
-  }
-  .login-form button:hover {
-    background: linear-gradient(to right, #d8f15d, #c7f24c);
-    transform: translateY(-1px);
-    box-shadow: 0 10px 24px rgba(180, 200, 80, 0.35);
-  }
-  
-  /* ===========================
-     TEXT & MESSAGES
-     =========================== */
-  .message {
-    color: #dc2626;
-    font-size: 0.9rem;
-    margin-top: 0.75rem;
-    animation: login-fadeIn 0.3s ease-in;
-  }
-  @keyframes login-fadeIn { from{opacity:0} to{opacity:1} }
-  
-  .toggle-text {
-    margin-top: 14px;
-    color: #1f2937;
-    text-align: center;
-    font-size: 14px;
-    cursor: pointer;
-    text-decoration: underline;
-  }
-  .toggle-text:hover { color: #ef4444; text-shadow: none; }
-  
-  /* ===========================
-     WELCOME TEXT (optional)
-     =========================== */
-  @keyframes colorShift {
-    0% { background-position: 0% 50% }
-    50% { background-position: 100% 50% }
-    100% { background-position: 0% 50% }
-  }
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(10px) }
-    to   { opacity: 1; transform: translateY(0) }
-  }
-  
-  .org-name {
-    position: fixed;
-    right: 54%;
-    top: 10%;
-    width: 40%;
-    margin: 0;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 300;
-    font-size: 4.2rem;               /* a bit smaller on light */
-    background: linear-gradient(90deg, #EB5757, #493240, #de73a0, #FF0099);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    background-size: 200% 200%;
-    animation: colorShift 8s ease-in-out infinite, fadeInUp 0.8s ease-out forwards;
-  }
-  
-  .welcome-note {
-    position: absolute;
-    top: 50%;
-    left: 10%;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 500;
-    font-size: 3.2rem;               /* slightly lighter weight & size */
-    color: #1f2937;
-    margin-top: 10px;
-    opacity: 0;
-    animation: fadeIn 0.8s ease-in-out forwards;
-    animation-delay: 1.2s;
-  }
-  .sub-note {
-    position: fixed;
-    left: 11%;
-    top: 69%;
-    font-family: 'Roboto', sans-serif;
-    font-weight: 400;
-    font-size: 1.25rem;
-    color: #374151;
-    margin-top: 5px;
-    opacity: 0;
-    animation: fadeIn 0.8s ease-in-out forwards;
-    animation-delay: 1.6s;
-  }
-  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
-  
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Verdana, sans-serif;
+  background-color: #f5f7fb;          /* was #3d3a3a */
+  color: #111827;                      /* darker-on-light text */
+}
+
+/* ===========================
+   FULL-PAGE BACKGROUND
+   =========================== */
+.login-page {
+  min-height: 100vh;
+  width: 100%;
+  /* Remove dark blend; use a very light white tint over the image */
+  background:
+    url('/login/login-bg.jpg') no-repeat center center;
+  background-size: cover;
+  /* background-blend-mode: multiply;  <-- REMOVED (caused dark look) */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow-y: auto;
+}
+
+/* Light, soft shapes (kept) */
+.login-page::before,
+.login-page::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%);
+  filter: blur(60px);
+  z-index: 0;
+  pointer-events: none;
+}
+.login-page::before {
+  width: 60vw; height: 60vw; top: -10vw; left: -15vw;
+  animation: floatShape1 20s ease-in-out infinite alternate;
+}
+.login-page::after {
+  width: 50vw; height: 50vw; bottom: -10vw; right: -15vw;
+  background: radial-gradient(circle, rgba(197,220,240,0.18) 0%, rgba(197,220,240,0) 70%);
+  animation: floatShape2 25s ease-in-out infinite alternate-reverse;
+}
+@keyframes floatShape1 { 0%{transform:translate(0,0)} 100%{transform:translate(10vw,10vh)} }
+@keyframes floatShape2 { 0%{transform:translate(0,0)} 100%{transform:translate(-10vw,-10vh)} }
+
+/* ===========================
+   LOGIN BOX (Glassmorphism)
+   =========================== */
+.login-box {
+  /* Center with the flex container; remove absolute offsets */
+  position: relative;                 /* was absolute */
+  left: auto; top: auto;              /* removed */
+  background: rgba(255, 255, 255, 0.65);   /* brighter card */
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.08);   /* lighter border */
+  padding: 2.25rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+  animation: login-fadeInUp 0.8s ease forwards;
+  text-align: center;
+  max-width: 450px;
+  width: min(92%, 450px);
+  min-height: 40vh;
+  z-index: 1;
+}
+@keyframes login-fadeInUp { from{opacity:0;transform:translateY(36px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===========================
+   LOGO & TITLES
+   =========================== */
+.logo {
+  font-family: 'Poppins', sans-serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.75rem;
+  text-shadow: none; /* cleaner on light */
+  animation: popIn 0.4s ease-out;
+}
+@keyframes popIn { 0%{transform:scale(.96);opacity:0} 100%{transform:scale(1);opacity:1} }
+
+.subtitle {
+  color: #334155;
+  font-size: 1rem;
+  margin-bottom: 1.6rem;
+}
+
+/* ===========================
+   INPUT FIELDS (white)
+   =========================== */
+.login-form input {
+  width: 100%;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background-color: rgba(255,255,255,0.95);   /* was dark */
+  color: #111827;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.login-form input::placeholder { color: #6b7280; }
+.login-form input:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.18);
+}
+
+/* ===========================
+   BUTTON
+   =========================== */
+.login-form button {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  background: linear-gradient(to right, #c8e34f, #bfe636);
+  border: none;
+  border-radius: 14px;
+  color: #0b0f19;
+  font-weight: 700;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease, box-shadow 0.25s ease;
+}
+.login-form button:hover {
+  background: linear-gradient(to right, #d8f15d, #c7f24c);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(180, 200, 80, 0.35);
+}
+
+/* ===========================
+   TEXT & MESSAGES
+   =========================== */
+.message {
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-top: 0.75rem;
+  animation: login-fadeIn 0.3s ease-in;
+}
+@keyframes login-fadeIn { from{opacity:0} to{opacity:1} }
+
+.toggle-text {
+  margin-top: 14px;
+  color: #1f2937;
+  text-align: center;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.toggle-text:hover { color: #ef4444; text-shadow: none; }
+
+/* ===========================
+   WELCOME TEXT (optional)
+   =========================== */
+@keyframes colorShift {
+  0% { background-position: 0% 50% }
+  50% { background-position: 100% 50% }
+  100% { background-position: 0% 50% }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px) }
+  to   { opacity: 1; transform: translateY(0) }
+}
+
+.org-name {
+  position: fixed;
+  right: 54%;
+  top: 10%;
+  width: 40%;
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  font-size: 4.2rem;               /* a bit smaller on light */
+  background: linear-gradient(90deg, #EB5757, #493240, #de73a0, #FF0099);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  background-size: 200% 200%;
+  animation: colorShift 8s ease-in-out infinite, fadeInUp 0.8s ease-out forwards;
+}
+
+.welcome-note {
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  font-size: 3.2rem;               /* slightly lighter weight & size */
+  color: #1f2937;
+  margin-top: 10px;
+  opacity: 0;
+  animation: fadeIn 0.8s ease-in-out forwards;
+  animation-delay: 1.2s;
+}
+.sub-note {
+  position: fixed;
+  left: 11%;
+  top: 69%;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 1.25rem;
+  color: #374151;
+  margin-top: 5px;
+  opacity: 0;
+  animation: fadeIn 0.8s ease-in-out forwards;
+  animation-delay: 1.6s;
+}
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
