@@ -1,291 +1,101 @@
 /*
- * Region Page Styles
- *
- * This CSS file defines the layout and styling for the region selection page.
- * It includes styles for the background, main content container, headers,
- * region grid, buttons, and a new animated welcome message.
+ * Region Page Styles — centered card + fixed logout (top-right)
  */
 
- .region-page {
-  height: 100vh;
+ :root {
+  --overlay-darkness: 0.22;         /* overall page darkening */
+  --card-darkness: 0.38;            /* inside card background */
+  --max-card-width: 800px;
+}
+
+/* Page background & overlay */
+.region-page {
+  min-height: 100vh;
   width: 100%;
   background: url('/region/world-map.webp') no-repeat center center;
   background-size: cover;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  align-items: center;              /* vertical center */
+  justify-content: center;          /* horizontal center */
   position: relative;
-  overflow: hidden; /* ensure overlay doesn't spill */
+  overflow: hidden;
 }
-
 .region-page::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.35); /* adjust opacity for darkness */
-  z-index: 0; /* sit under the content */
+  inset: 0;
+  background-color: rgba(0, 0, 0, var(--overlay-darkness));
+  z-index: 0;
 }
 
-
-
-
-
-/* Main content box */
-.region-container {
-  background-color: rgba(8, 7, 7, 0.6);
-  padding: 2rem;
-  border-radius: 12px;
-  max-width: 800px;
-  width: 100%;
-  position: absolute;
-  top: 15%;
-  right: 20%;
-  text-align: center;
-  color: white;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+/* Header layer (kept out of flow so the card stays centered) */
+.region-header {
+  position: fixed;
+  inset: 0 0 auto 0;               /* top:0; left:0; right:0 */
+  height: 0;                        /* let children place themselves */
+  z-index: 5;
+  pointer-events: none;             /* container ignores clicks */
 }
+.region-header > * { pointer-events: auto; }
 
-/* Headings */
-.region-title {
-  font-size: 2.5rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-}
-
-/* Animated Username */
-.region-username {
-  /* Applying a 4-color gradient to the text */
-  background: linear-gradient(
-    90deg,
-    #ff6b6b, /* Soft Red */
-    #ff816b, /* Soft Yellow */
-    #de73a0, /* Soft Blue */
-    #a85cff  /* Soft Green */
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-size: 200% 200%;
-
-  /* Animation for the gradient and fade-in effect */
-  animation:
-    colorShift 8s ease-in-out infinite,
-    fadeInUp 1s ease-out forwards;
-}
-
-.region-subtitle {
-  font-size: 1.5rem;
-  margin-bottom: 4rem;
-}
-
-/* Grid of regions */
-.region-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 1.9rem;
-  justify-items: center;
-}
-
-/* Individual region box */
-.region-box {
-  background-color: rgba(245, 242, 242, 0.1);
-  padding: .2rem 1.3rem;
-  border: 2px solid #e50914;
-  border-radius: 80px;
-  font-size: 1rem;
-  font-weight: 50;
-  text-align: unset;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.3s ease-in-out;
-}
-
-.region-box:hover {
-  background-color: #e50914;
-  color: rgb(243, 239, 239);
-  transform: scale(1.05);
-  border-color: #c500bb;
-}
-
-/* Logout button styling */
+/* Fixed controls */
 .logout-button {
-  position: absolute;
-  top: 1rem;
-  left: 80rem;
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 10;
   background-color: rgba(50, 47, 59, 0.6);
-  color: white;
+  color: #fff;
   font-size: 0.9rem;
   padding: 6px 10px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.25s ease;
 }
+.logout-button:hover { background-color: #c40812; }
 
-.logout-button:hover {
-  background-color: #c40812;
-}
-
-.region-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-}
-
-/* --- Profile Logo Styles --- */
-.profile-circle {
-  width: 50px;
-  height: 50px;
-  position: absolute;
-  left: 5%;
-  top: 5%;
-  border-radius: 50%;
-  background-color: #ffffff22; /* Retaining a simple, translucent background */
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
+.live-quiz-button {
+  position: fixed;
+  top: 60px;                        /* just below Logout */
+  right: 16px;
+  z-index: 10;
+  background: #22c55e;
+  color: #0b1b0f;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.3px;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.25);
   cursor: pointer;
-  transition: 0.3s ease;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  transition: transform .12s ease, box-shadow .15s ease, background-color .15s ease, filter .15s ease;
 }
-
-.profile-circle:hover {
-  background-color: #ffffff44;
+.live-quiz-button:hover {
+  background: #16a34a;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(22, 163, 74, 0.35);
+  filter: saturate(1.1);
 }
-
-/* New: Gradient ring around the profile circle */
-.profile-circle::before {
-  content: '';
-  position: absolute;
-  width: 60px; /* Slightly larger than the main circle */
-  height: 60px;
-  top: -5px; /* Center it around the main circle */
-  left: -5px;
-  border-radius: 50%;
-  z-index: -1; /* Place it behind the main circle */
-  transition: 0.3s ease;
-  /* Applying the 2-color gradient to the border */
-  border: 3px solid transparent;
-  background-image: linear-gradient(
-      to bottom right,
-      #fd179d, /* Pink */
-      #a85cff  /* Purple */
-    ),
-    linear-gradient(
-      to bottom right,
-      #fd179d,
-      #a85cff
-    );
-  background-origin: border-box;
-  background-clip: padding-box, border-box;
-  animation: rotateBorder 3s linear infinite;
-}
-
-/* Hover effect for the new gradient border */
-.profile-circle:hover::before {
-  box-shadow: 0 0 15px rgba(253, 23, 157, 0.6); /* Add a glow on hover */
-  transform: scale(1.1);
-}
-
-/* --- Admin Export Button --- */
-.admin-export {
-  margin-top: 2rem;
-  text-align: center;
-}
-
-.export-button {
-  background-color: #4caf50; /* A pleasant green for success/download */
+.live-quiz-button.is-live {
+  background: #16a34a;
   color: #ffffff;
-  position: absolute;
-  right: 2%;
-  top: 85%;
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.45);
+  animation: pulseGlow 1.6s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 8px 20px rgba(22,163,74,.45); }
+  50%      { box-shadow: 0 10px 24px rgba(22,163,74,.6); }
 }
 
-.export-button:hover {
-  background-color: #388e3c; /* Darker green on hover */
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-}
-
-.export-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-/* --- Keyframes for animations --- */
-@keyframes colorShift {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Keyframes for the rotating border animation */
-@keyframes rotateBorder {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.admin-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  margin: 20px 0;
-}
-
-.admin-add-quiz-button {
-  padding: 10px 20px;
-  font-size: 14px;
-  position: absolute;
-  right: 2%;
-  bottom: 20%;
-  border: none;
-  background: #28a745;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s ease-in-out;
-}
-
-.admin-add-quiz-button:hover {
-  background: #218838;
-}
-
-/* Countdown Timer */
 .quiz-timer {
-  margin-top: 10px;
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  margin: 0;
   padding: 8px 14px;
   background: rgba(0, 0, 0, 0.6);
   color: #ffffff;
@@ -296,34 +106,158 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   animation: fadeIn 0.6s ease-in-out;
 }
+.quiz-timer span { color: #ffd700; font-weight: 700; }
 
-.quiz-timer span {
-  color: #ffd700; /* Gold for the countdown numbers */
+.profile-circle {
+  position: fixed;                  /* pin top-left */
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #ffffff22;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: bold;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+.profile-circle:hover { background-color: #ffffff44; }
+.profile-circle::before {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  top: -5px;
+  left: -5px;
+  border-radius: 50%;
+  z-index: -1;
+  transition: 0.3s ease;
+  border: 3px solid transparent;
+  background-image:
+    linear-gradient(to bottom right, #fd179d, #a85cff),
+    linear-gradient(to bottom right, #fd179d, #a85cff);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  animation: rotateBorder 3s linear infinite;
+}
+.profile-circle:hover::before {
+  box-shadow: 0 0 15px rgba(253, 23, 157, 0.6);
+  transform: scale(1.1);
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Centered card */
+.region-container {
+  position: relative;
+  z-index: 1;                        /* above overlay */
+  width: min(92%, var(--max-card-width));
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  color: #fff;
+  background-color: rgba(8, 7, 7, var(--card-darkness));
+  box-shadow: 0 0 40px rgba(0,0,0,0.35);
 }
 
-/* Wrapper for admin buttons so reset is positioned cleanly */
+/* Headings */
+.region-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+.region-subtitle {
+  font-size: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+/* Animated name */
+.region-username {
+  background: linear-gradient(90deg, #ff6b6b, #ff816b, #de73a0, #a85cff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: colorShift 8s ease-in-out infinite, fadeInUp 1s ease-out forwards;
+}
+
+/* Region grid */
+.region-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.2rem;
+  justify-items: center;
+}
+
+/* Region pill/button */
+.region-box {
+  background-color: rgba(245, 242, 242, 0.1);
+  padding: .5rem 1.3rem;
+  border: 2px solid #e50914;
+  border-radius: 80px;
+  font-size: 1rem;
+  font-weight: 600;                  /* fix from 50 */
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+.region-box:hover {
+  background-color: #e50914;
+  color: #f3efef;
+  transform: scale(1.05);
+  border-color: #c500bb;
+}
+
+/* Admin actions */
 .admin-actions {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 12px;
-  flex-wrap: wrap; /* So it wraps nicely on smaller screens */
-  margin-top: 20px;
+  flex-wrap: wrap;
+  margin-top: 16px;
 }
+.admin-add-quiz-button {
+  padding: 10px 20px;
+  font-size: 14px;
+  border: none;
+  background: #28a745;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out;
+}
+.admin-add-quiz-button:hover { background: #218838; }
 
-/* Reset Leaderboard Button */
+.admin-export { margin-top: 1.5rem; text-align: center; }
+.export-button {
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  padding: .9rem 1.4rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  display: inline-block;
+}
+.export-button:hover {
+  background-color: #388e3c;
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+.export-button:active { transform: translateY(0); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+/* Reset leaderboard button + info */
 .lb-startover-btn {
+  position: relative; /* for ::after pulse */
   background: linear-gradient(135deg, #ff5252, #ff1744);
   color: #fff;
   border: none;
@@ -334,24 +268,13 @@
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
   box-shadow: 0 4px 10px rgba(255, 23, 68, 0.4);
-  position: absolute;
-  top: 76%;
-  right: 87%;
-  overflow: hidden;
 }
-
-/* Hover + active effects */
 .lb-startover-btn:hover {
   background: linear-gradient(135deg, #ff1744, #d50000);
   transform: translateY(-2px);
   box-shadow: 0 6px 14px rgba(255, 23, 68, 0.6);
 }
-.lb-startover-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 3px 6px rgba(255, 23, 68, 0.4);
-}
-
-/* Pulse animation when enabled */
+.lb-startover-btn:active { transform: translateY(0); box-shadow: 0 3px 6px rgba(255, 23, 68, 0.4); }
 .lb-startover-btn::after {
   content: "";
   position: absolute;
@@ -359,31 +282,40 @@
   border-radius: inherit;
   animation: pulse 2s infinite;
   border: 2px solid rgba(255, 255, 255, 0.3);
+  pointer-events: none;
+}
+.lb-startover-btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+
+.lb-info-text {
+  font-size: 0.85rem;
+  color: #ddd;
+  font-style: italic;
+}
+
+/* Keyframes */
+@keyframes colorShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes rotateBorder { to { transform: rotate(360deg); } }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes pulse {
   0% { transform: scale(1); opacity: 1; }
   100% { transform: scale(1.1); opacity: 0; }
 }
 
-/* Disabled state */
-.lb-startover-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+/* Desktop niceties */
+@media (min-width: 1024px) {
+  .region-page::before { background-color: rgba(0, 0, 0, 0.16); }
 }
 
-/* Info text beside button */
-.lb-info-text {
-  font-size: 0.85rem;
-  color: #815f5f;
-  
-  margin-inline:  0px;
-  position: absolute;
-  top: 85%;
-  right: 82%;
-}
-.lb-info-text strong {
-  color: #da2020;
-
-}
+/* Predictable sizing */
+.region-page, .region-page * { box-sizing: border-box; }

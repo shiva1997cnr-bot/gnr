@@ -42,21 +42,21 @@ const Region = () => {
     { code: "esea", label: "ESEA" },
   ];
 
-  // preload bg
+  // Preload background image (for smoother fade-in)
   useEffect(() => {
     const img = new Image();
     img.src = "/region/world-map.webp";
     img.onload = () => setBgLoaded(true);
   }, []);
 
-  // get username
+  // Get username
   useEffect(() => {
     if (currentUser) {
       setUserName(currentUser.firstName || currentUser.username || "User");
     }
   }, [currentUser]);
 
-  // countdown
+  // Countdown per selected region
   useEffect(() => {
     if (!selectedRegion) return;
 
@@ -99,7 +99,7 @@ const Region = () => {
     return () => unsub();
   }, [selectedRegion]);
 
-  // last reset date
+  // Last reset date
   useEffect(() => {
     (async () => {
       try {
@@ -211,33 +211,41 @@ const Region = () => {
         transition: "background-image 0.6s ease-in-out",
       }}
     >
-      {/* Header */}
+      {/* Fixed header controls */}
       <div className="region-header">
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-          <button className="logout-button" onClick={handleLogout}>
-            Logout
-          </button>
-          {/* Go Live button below logout */}
-          <button
-            className={`live-quiz-button ${isLive ? "is-live" : ""}`}
-            onClick={handleLiveClick}
-            onMouseEnter={playHoverSound}
-            title={isLive ? "Join the live quiz now!" : (isAdmin ? "Start/Manage a live quiz" : "See live quiz details")}
-          >
-            {isLive ? "Join Live Quiz" : (isAdmin ? "Go Live" : "Go Live")}
-          </button>
-        </div>
+        <button className="logout-button" onClick={handleLogout}>
+          Logout
+        </button>
+
+        <button
+          className={`live-quiz-button ${isLive ? "is-live" : ""}`}
+          onClick={handleLiveClick}
+          onMouseEnter={playHoverSound}
+          title={
+            isLive
+              ? "Join the live quiz now!"
+              : (isAdmin ? "Start/Manage a live quiz" : "See live quiz details")
+          }
+        >
+          {isLive ? "Join Live Quiz" : (isAdmin ? "Go Live" : "Go Live")}
+        </button>
+
         {timeLeft && (
           <div className="quiz-timer">
             ⏳ Next quiz in: <span>{timeLeft}</span>
           </div>
         )}
-        <div className="profile-circle" onClick={handleProfileClick} title="Go to your profile">
+
+        <div
+          className="profile-circle"
+          onClick={handleProfileClick}
+          title="Go to your profile"
+        >
           {userName.charAt(0).toUpperCase()}
         </div>
       </div>
 
-      {/* Content */}
+      {/* Centered content */}
       <div className="region-container">
         <h1 className="region-title">
           Welcome, <span className="region-username animated-welcome">{userName}</span>!
@@ -260,102 +268,33 @@ const Region = () => {
         <div className="leaderboard-wrapper">
           <Leaderboard />
         </div>
+
+        {isAdmin && (
+          <div className="admin-actions">
+            <button
+              className="admin-add-quiz-button"
+              onClick={() => navigate("/admin-add-quiz")}
+            >
+              ➕ Add New Quiz
+            </button>
+
+            <button className="export-button" onClick={handleExportScores}>
+              ⬇️ Download All User Scores
+            </button>
+
+            <button
+              className="lb-startover-btn"
+              onClick={handleResetLeaderboard}
+              disabled={lbLoading}
+            >
+              {lbLoading ? "Resetting…" : "Reset Leaderboard"}
+            </button>
+            <span className="lb-info-text">
+              Points from <strong>{sinceLabel}</strong>
+            </span>
+          </div>
+        )}
       </div>
-
-      {/* Admin actions */}
-      {isAdmin && (
-        <div className="admin-actions">
-          <button
-            className="admin-add-quiz-button"
-            onClick={() => navigate("/admin-add-quiz")}
-          >
-            ➕ Add New Quiz
-          </button>
-
-          <button className="export-button" onClick={handleExportScores}>
-            ⬇️ Download All User Scores
-          </button>
-
-          <button
-            className="lb-startover-btn"
-            onClick={handleResetLeaderboard}
-            disabled={lbLoading}
-          >
-            {lbLoading ? "Resetting…" : "Reset Leaderboard"}
-          </button>
-          <span className="lb-info-text">
-            Points from <strong>{sinceLabel}</strong>
-          </span>
-        </div>
-      )}
-
-      {/* Styles */}
-      <style>{`
-        .live-quiz-button {
-          position: absolute;
-          top: 60px;   /* adjust vertical position */
-          right: 20px;
-          background: #22c55e;
-          color: #0b1b0f;
-          border: none;
-          padding: 8px 14px;
-          border-radius: 999px;
-          font-weight: 700;
-          font-size: 0.9rem;
-          letter-spacing: 0.3px;
-          margin-top: 6px;
-          box-shadow: 0 4px 14px rgba(34, 197, 94, 0.25);
-          cursor: pointer;
-          transition: transform .12s ease, box-shadow .15s ease, background-color .15s ease, filter .15s ease;
-        }
-        .live-quiz-button:hover {
-          background: #16a34a;
-          transform: translateY(-1px);
-          box-shadow: 0 8px 18px rgba(22, 163, 74, 0.35);
-          filter: saturate(1.1);
-        }
-        .live-quiz-button.is-live {
-          background: #16a34a;
-          color: #ffffff;
-          box-shadow: 0 8px 20px rgba(22, 163, 74, 0.45);
-          animation: pulseGlow 1.6s ease-in-out infinite;
-        }
-        @keyframes pulseGlow {
-          0%, 100% { box-shadow: 0 8px 20px rgba(22,163,74,.45); }
-          50% { box-shadow: 0 10px 24px rgba(22,163,74,.6); }
-        }
-        .lb-startover-btn {
-          background-color: #ff5252;
-          color: #fff;
-          border: none;
-          padding: 8px 14px;
-          border-radius: 8px;
-          font-size: 0.9rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background-color 0.2s ease, transform 0.15s ease;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-          margin-left: 10px;
-        }
-        .lb-startover-btn:hover {
-          background-color: #e53935;
-          transform: translateY(-1px);
-        }
-        .lb-startover-btn:disabled {
-          opacity: .6;
-          cursor: not-allowed;
-          transform: none;
-        }
-        .lb-info-text {
-          font-size: 0.85rem;
-          color: #ddd;
-          font-style: italic;
-          margin-left: 8px;
-        }
-        .lb-info-text strong {
-          color: #fff;
-        }
-      `}</style>
     </div>
   );
 };
