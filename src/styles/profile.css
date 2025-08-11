@@ -45,8 +45,8 @@ body {
   font-size: 3.5rem;
   font-weight: bold;
   position: absolute;
-  top: 10%;
-  right: 70%;
+  top: 60%;
+  right: fix;
   color: #f5eded;
   margin: 0;
 }

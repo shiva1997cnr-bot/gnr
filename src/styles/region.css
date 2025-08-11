@@ -3,7 +3,7 @@
  */
 
  :root {
-  --card-darkness: 0.48;
+  --card-darkness: .6;
   --max-card-width: 800px;
 }
 
@@ -331,5 +331,5 @@
 .region-page, .region-page * { box-sizing: border-box; }
 /* --- override: move reset dock higher --- */
 .reset-dock { 
-  left: 29%;
-  bottom: 4% !important; }
+  left: 18%;
+  bottom: 2% !important; }
