@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import "../styles/AdminAddQuiz.css"; // ✅ reuse same CSS
+import "../styles/adminquizview.css";
 import { useParams, useNavigate } from "react-router-dom";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
