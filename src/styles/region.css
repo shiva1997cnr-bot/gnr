@@ -123,7 +123,7 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1.6rem;
   cursor: pointer;
   transition: 0.3s ease;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
@@ -331,4 +331,4 @@
 /* Predictable sizing */
 .region-page, .region-page * { box-sizing: border-box; }
 /* --- override: move reset dock higher --- */
-.reset-dock { bottom: 8% !important; }
+.reset-dock { bottom: 14% !important; }
