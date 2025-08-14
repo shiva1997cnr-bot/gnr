@@ -146,7 +146,8 @@
 
 /* Centered card */
 .region-container {
-  position: relative;
+  position: absolute;
+  top: 33%;
   z-index: 1;                    /* above overlay */
   width: min(92%, var(--max-card-width));
   padding: 2rem;
