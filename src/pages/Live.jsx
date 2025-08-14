@@ -381,6 +381,13 @@ export default function Live() {
     return () => unsub();
   }, [session?.id]); // intentionally minimal deps
 
+  // 🔧 Reset per-question state for everyone whenever host advances
+  useEffect(() => {
+    if (mode === "live") {
+      setSelected(null); // allows answering on each new question
+    }
+  }, [mode, session?.currentQuestionIndex]);
+
   // Per-question countdown when live
   useEffect(() => {
     if (!session || !quiz || mode !== "live") {
@@ -458,6 +465,7 @@ export default function Live() {
 
   const handleAnswer = async (answerIndex) => {
     if (!session?.id || !quiz || !canAnswer) return;
+
     setSelected(answerIndex);
 
     const startTs = session.currentQuestionStartAt;
@@ -523,7 +531,7 @@ export default function Live() {
       currentQuestionIndex: next,
       currentQuestionStartAt: serverTimestamp(),
     });
-    setSelected(null);
+    setSelected(null); // local UX snap
   };
 
   const hostEnd = async () => {
@@ -684,7 +692,7 @@ export default function Live() {
       <div className="bg-grid"></div>
       <div className="particles">
         {Array.from({ length: 18 }).map((_, i) => (
-          <span key={i} className={`p p-${(i % 6) + 1}`} />
+          <span key={i} className={`p p-${((i % 6) + 1)}`} />
         ))}
       </div>
 
@@ -705,225 +713,225 @@ export default function Live() {
             </button>
           </div>
 
-          {mode === "idle" && (
-            <>
-              <ClockBlock timeParts={timeParts} />
-              <div className="waiting-host">
-                Waiting for host to schedule{dots}
+        {mode === "idle" && (
+          <>
+            <ClockBlock timeParts={timeParts} />
+            <div className="waiting-host">
+              Waiting for host to schedule{dots}
+            </div>
+          </>
+        )}
+
+        {mode === "countdown" && quiz && (
+          <>
+            <ClockBlock timeParts={timeParts} />
+            <CountdownBlock launchAt={quiz.launchAt} />
+            {hostReady && hostAllowed && (
+              <div
+                style={{
+                  marginTop: 16,
+                  display: "flex",
+                  gap: 8,
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button className="host-primary" onClick={hostStart}>
+                  Start now
+                </button>
               </div>
-            </>
-          )}
+            )}
+          </>
+        )}
 
-          {mode === "countdown" && quiz && (
-            <>
-              <ClockBlock timeParts={timeParts} />
-              <CountdownBlock launchAt={quiz.launchAt} />
-              {hostReady && hostAllowed && (
+        {mode === "live" && quiz && session && (
+          <>
+            <div style={{ marginTop: 6, marginBottom: 10 }}>
+              <div
+                style={{
+                  height: 10,
+                  borderRadius: 999,
+                  background: "#e5e7eb",
+                  overflow: "hidden",
+                }}
+              >
                 <div
                   style={{
-                    marginTop: 16,
-                    display: "flex",
-                    gap: 8,
-                    justifyContent: "center",
-                    flexWrap: "wrap",
+                    width: `${Math.min(
+                      100,
+                      Math.round(
+                        ((Number(session.currentQuestionIndex || 0) + 1) /
+                          (quiz.questions.length || 1)) *
+                          100
+                      )
+                    )}%`,
+                    background: "linear-gradient(90deg,#22c55e,#16a34a)",
+                    height: "100%",
                   }}
-                >
-                  <button className="host-primary" onClick={hostStart}>
-                    Start now
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-
-          {mode === "live" && quiz && session && (
-            <>
-              <div style={{ marginTop: 6, marginBottom: 10 }}>
-                <div
-                  style={{
-                    height: 10,
-                    borderRadius: 999,
-                    background: "#e5e7eb",
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        Math.round(
-                          ((Number(session.currentQuestionIndex || 0) + 1) /
-                            (quiz.questions.length || 1)) *
-                            100
-                        )
-                      )}%`,
-                      background: "linear-gradient(90deg,#22c55e,#16a34a)",
-                      height: "100%",
-                    }}
-                  />
-                </div>
-                <div
-                  style={{
-                    marginTop: 6,
-                    textAlign: "center",
-                    fontSize: 12,
-                    opacity: 0.8,
-                  }}
-                >
-                  Question {Number(session.currentQuestionIndex || 0) + 1} /{" "}
-                  {quiz.questions.length}
-                </div>
+                />
               </div>
+              <div
+                style={{
+                  marginTop: 6,
+                  textAlign: "center",
+                  fontSize: 12,
+                  opacity: 0.8,
+                }}
+              >
+                Question {Number(session.currentQuestionIndex || 0) + 1} /{" "}
+                {quiz.questions.length}
+              </div>
+            </div>
 
-              {currentQ ? (
-                <div className="live-qblock">
-                  <h3 className="live-question">
-                    Q{Number(session.currentQuestionIndex || 0) + 1}.{" "}
-                    {currentQ.question}
-                  </h3>
-                  <div className="live-options">
-                    {(currentQ.options || []).map((opt, oi) => {
-                      const locked = !canAnswer;
-                      const picked =
-                        selected === oi ||
-                        myAnsweredMap[
-                          Number(session.currentQuestionIndex || 0)
-                        ] === oi;
-                      return (
-                        <button
-                          key={oi}
-                          className={`live-option ${picked ? "picked" : ""} ${
-                            locked ? "locked" : ""
-                          }`}
-                          onClick={() => handleAnswer(oi)}
-                          disabled={!canAnswer}
-                          title={locked ? "Locked" : "Choose"}
-                        >
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="live-footer">
-                    <span className="time-pill">
-                      ⏱ {timeLeft !== null ? `${timeLeft}s` : "--"}
-                    </span>
-                    {selected !== null ||
-                    myAnsweredMap[
-                      Number(session.currentQuestionIndex || 0)
-                    ] !== undefined ? (
-                      <span className="answered-pill">Answer locked</span>
-                    ) : (
-                      <span className="hint-pill">Pick once — no changes</span>
-                    )}
-                  </div>
+            {currentQ ? (
+              <div className="live-qblock">
+                <h3 className="live-question">
+                  Q{Number(session.currentQuestionIndex || 0) + 1}.{" "}
+                  {currentQ.question}
+                </h3>
+                <div className="live-options">
+                  {(currentQ.options || []).map((opt, oi) => {
+                    const locked = !canAnswer;
+                    const picked =
+                      selected === oi ||
+                      myAnsweredMap[
+                        Number(session.currentQuestionIndex || 0)
+                      ] === oi;
+                    return (
+                      <button
+                        key={oi}
+                        className={`live-option ${picked ? "picked" : ""} ${
+                          locked ? "locked" : ""
+                        }`}
+                        onClick={() => handleAnswer(oi)}
+                        disabled={!canAnswer}
+                        title={locked ? "Locked" : "Choose"}
+                      >
+                        {opt}
+                      </button>
+                    );
+                  })}
                 </div>
-              ) : (
-                <div className="waiting-host">Loading question…</div>
-              )}
-
-              {hostReady && hostAllowed && (
-                <div
-                  style={{
-                    marginTop: 14,
-                    display: "flex",
-                    gap: 8,
-                    justifyContent: "center",
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <button
-                    className="host-secondary"
-                    onClick={hostNext}
-                    disabled={
-                      Number(session.currentQuestionIndex || 0) + 1 >=
-                      (quiz.questions?.length || 0)
-                    }
-                  >
-                    Next question
-                  </button>
-                  <button className="host-danger" onClick={hostEnd}>
-                    End session
-                  </button>
-                </div>
-              )}
-
-              <div className="live-boards">
-                <div className="lb-card">
-                  <h4>Top Players</h4>
-                  {leaderboard.length === 0 ? (
-                    <div className="lb-empty">No answers yet…</div>
+                <div className="live-footer">
+                  <span className="time-pill">
+                    ⏱ {timeLeft !== null ? `${timeLeft}s` : "--"}
+                  </span>
+                  {selected !== null ||
+                  myAnsweredMap[
+                    Number(session.currentQuestionIndex || 0)
+                  ] !== undefined ? (
+                    <span className="answered-pill">Answer locked</span>
                   ) : (
-                    <ol className="lb-list">
-                      {leaderboard.slice(0, 10).map((r, i) => (
-                        <li key={r.uid}>
-                          <span className="rank">{i + 1}</span>
-                          <span className="name">{r.name}</span>
-                          <span className="score">{r.correct} ✓</span>
-                          <span className="time">{r.totalTimeMs} ms</span>
-                        </li>
-                      ))}
-                    </ol>
-                  )}
-                </div>
-
-                <div className="lb-card">
-                  <h4>
-                    Fastest on Q{Number(session.currentQuestionIndex || 0) + 1}
-                  </h4>
-                  {fastestThisQ.length === 0 ? (
-                    <div className="lb-empty">No correct answers yet…</div>
-                  ) : (
-                    <ol className="lb-list">
-                      {fastestThisQ.map((a, i) => (
-                        <li key={`${a.uid}_${i}`}>
-                          <span className="rank">{i + 1}</span>
-                          <span className="name">{a.displayName || a.uid}</span>
-                          <span className="time">{a.timeMsSinceStart} ms</span>
-                        </li>
-                      ))}
-                    </ol>
+                    <span className="hint-pill">Pick once — no changes</span>
                   )}
                 </div>
               </div>
-            </>
-          )}
+            ) : (
+              <div className="waiting-host">Loading question…</div>
+            )}
 
-          {mode === "ended" && (
-            <>
-              <h3 style={{ textAlign: "center", marginTop: 10 }}>
-                Session Ended 🎉
-              </h3>
-              <div className="live-boards">
-                <div className="lb-card" style={{ flex: 1 }}>
-                  <h4>Final Top 20</h4>
-                  {leaderboard.length === 0 ? (
-                    <div className="lb-empty">No data</div>
-                  ) : (
-                    <ol className="lb-list">
-                      {leaderboard.map((r, i) => (
-                        <li key={r.uid}>
-                          <span className="rank">{i + 1}</span>
-                          <span className="name">{r.name}</span>
-                          <span className="score">{r.correct} ✓</span>
-                          <span className="time">{r.totalTimeMs} ms</span>
-                        </li>
-                      ))}
-                    </ol>
-                  )}
-                </div>
+            {hostReady && hostAllowed && (
+              <div
+                style={{
+                  marginTop: 14,
+                  display: "flex",
+                  gap: 8,
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  className="host-secondary"
+                  onClick={hostNext}
+                  disabled={
+                    Number(session.currentQuestionIndex || 0) + 1 >=
+                    (quiz.questions?.length || 0)
+                  }
+                >
+                  Next question
+                </button>
+                <button className="host-danger" onClick={hostEnd}>
+                  End session
+                </button>
               </div>
-              {hostReady && hostAllowed && (
-                <div style={{ marginTop: 14, display: "flex", justifyContent: "center" }}>
-                  <button className="host-primary" onClick={exportResults}>
-                    ⬇️ Export Results
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+            )}
 
-          <div className="scanline" />
+            <div className="live-boards">
+              <div className="lb-card">
+                <h4>Top Players</h4>
+                {leaderboard.length === 0 ? (
+                  <div className="lb-empty">No answers yet…</div>
+                ) : (
+                  <ol className="lb-list">
+                    {leaderboard.slice(0, 10).map((r, i) => (
+                      <li key={r.uid}>
+                        <span className="rank">{i + 1}</span>
+                        <span className="name">{r.name}</span>
+                        <span className="score">{r.correct} ✓</span>
+                        <span className="time">{r.totalTimeMs} ms</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+
+              <div className="lb-card">
+                <h4>
+                  Fastest on Q{Number(session.currentQuestionIndex || 0) + 1}
+                </h4>
+                {fastestThisQ.length === 0 ? (
+                  <div className="lb-empty">No correct answers yet…</div>
+                ) : (
+                  <ol className="lb-list">
+                    {fastestThisQ.map((a, i) => (
+                      <li key={`${a.uid}_${i}`}>
+                        <span className="rank">{i + 1}</span>
+                        <span className="name">{a.displayName || a.uid}</span>
+                        <span className="time">{a.timeMsSinceStart} ms</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {mode === "ended" && (
+          <>
+            <h3 style={{ textAlign: "center", marginTop: 10 }}>
+              Session Ended 🎉
+            </h3>
+            <div className="live-boards">
+              <div className="lb-card" style={{ flex: 1 }}>
+                <h4>Final Top 20</h4>
+                {leaderboard.length === 0 ? (
+                  <div className="lb-empty">No data</div>
+                ) : (
+                  <ol className="lb-list">
+                    {leaderboard.map((r, i) => (
+                      <li key={r.uid}>
+                        <span className="rank">{i + 1}</span>
+                        <span className="name">{r.name}</span>
+                        <span className="score">{r.correct} ✓</span>
+                        <span className="time">{r.totalTimeMs} ms</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+            </div>
+            {hostReady && hostAllowed && (
+              <div style={{ marginTop: 14, display: "flex", justifyContent: "center" }}>
+                <button className="host-primary" onClick={exportResults}>
+                  ⬇️ Export Results
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        <div className="scanline" />
         </div>
       </main>
     </div>
