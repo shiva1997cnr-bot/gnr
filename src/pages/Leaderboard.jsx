@@ -1,40 +1,92 @@
 import React, { useEffect, useState } from "react";
 import "../styles/leaderboard.css";
-import {
-  collection,
-  onSnapshot,
-  writeBatch,
-  getDocs,
-  deleteField,
-} from "firebase/firestore";
+import { collection, onSnapshot, doc } from "firebase/firestore";
 import { db } from "../firebase";
-import { listenToReactions, addReaction, EMOJIS } from "../utils/firestoreUtils";
+import {
+  listenToReactions,
+  addReaction,
+  EMOJIS,
+  resetLeaderboardNow,
+} from "../utils/firestoreUtils";
+import dayjs from "dayjs";
 
 /**
  * Leaderboard
  * - Shows users only if they have at least one score entry
- * - Clears scores + reactions on admin reset, so names disappear from the board
+ * - Respects settings/leaderboard.lastResetAt (non-destructive reset window)
  *
  * Props:
  *  - forceExpand?: boolean — auto expand briefly
- *  - isAdmin?: boolean — show reset button
+ *  - isAdmin?: boolean — show reset ♻️ icon
  */
 const Leaderboard = ({ forceExpand = false, isAdmin = false }) => {
   const [leaderboard, setLeaderboard] = useState([]);
   const [currentUserEntry, setCurrentUserEntry] = useState(null);
   const [expanded, setExpanded] = useState(false);
+  const [autoExpandActive, setAutoExpandActive] = useState(forceExpand);
+
   const [reactions, setReactions] = useState({});
   const [hoveredUser, setHoveredUser] = useState(null);
-  const [autoExpandActive, setAutoExpandActive] = useState(forceExpand);
+
+  const [lastResetAt, setLastResetAt] = useState(null);
+  const [sinceLabel, setSinceLabel] = useState(null);
   const [resetLoading, setResetLoading] = useState(false);
 
-  // Live users + scores
+  const subtleSinceStyle = {
+    fontSize: "12px",
+    opacity: 0.6,
+    marginTop: "4px",
+    lineHeight: 1.2,
+  };
+  const resetIconStyle = {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 10,
+    fontSize: 16,
+    lineHeight: 1,
+    border: "none",
+    background: "transparent",
+    padding: 0,
+    cursor: resetLoading ? "default" : "pointer",
+    opacity: resetLoading ? 0.5 : 0.9,
+    transition: "transform .12s ease, opacity .12s ease",
+  };
+
+  // watch settings/leaderboard.lastResetAt
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "settings", "leaderboard"), (snap) => {
+      const ts = snap?.data()?.lastResetAt;
+      const dt = ts?.toDate ? ts.toDate() : null;
+      setLastResetAt(dt);
+      setSinceLabel(dt ? dayjs(dt).format("MMM D") : null);
+    });
+    return () => unsub();
+  }, []);
+
+  // parse attempt to Date
+  const parseAttemptDate = (entry) => {
+    if (!entry) return null;
+    if (entry.date) {
+      const d = dayjs(entry.date);
+      if (d.isValid()) return d.toDate();
+    }
+    if (entry.dateOfAttempt) {
+      const str = entry.timeOfAttempt
+        ? `${entry.dateOfAttempt} ${entry.timeOfAttempt}`
+        : entry.dateOfAttempt;
+      const d = dayjs(str);
+      if (d.isValid()) return d.toDate();
+    }
+    return null;
+  };
+
+  // live users + scores filtered by lastResetAt
   useEffect(() => {
     const unsubUsers = onSnapshot(collection(db, "users"), (snapshot) => {
       const users = [];
-
-      snapshot.forEach((doc) => {
-        const data = doc.data() || {};
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data() || {};
         const scores = data.scores || {};
 
         let totalScore = 0;
@@ -42,70 +94,70 @@ const Leaderboard = ({ forceExpand = false, isAdmin = false }) => {
         let scoresCount = 0;
 
         Object.values(scores).forEach((entry) => {
-          totalScore += Number(entry.score) || 0;
-          totalTime += Number(entry.timeSpent) || 0;
-          scoresCount += 1;
+          const when = parseAttemptDate(entry);
+          if (lastResetAt && when && when < lastResetAt) return;
+
+          if (!lastResetAt || (when && when >= lastResetAt)) {
+            totalScore += Number(entry.score) || 0;
+            totalTime += Number(entry.timeSpent) || 0;
+            scoresCount += 1;
+          }
         });
 
         users.push({
-          username: doc.id,
-          fullName: data.firstName || doc.id,
+          username: docSnap.id,
+          fullName:
+            data.firstName ||
+            data.firstname ||
+            data.fullName ||
+            docSnap.id,
           totalScore,
           totalTime,
           scoresCount,
         });
       });
 
-      // Sort by score desc, then time asc
       users.sort((a, b) => {
         if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
         return a.totalTime - b.totalTime;
       });
 
-      // ✅ Only show users who actually have entries
       const filtered = users.filter((u) => u.scoresCount > 0);
       setLeaderboard(filtered);
 
-      // Keep current user block in sync
-      const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+      const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
       if (currentUser) {
-        const index = filtered.findIndex(
-          (u) => u.username === currentUser.username
-        );
-        if (index !== -1) {
-          setCurrentUserEntry({ ...filtered[index], rank: index + 1 });
+        const idx = filtered.findIndex((u) => u.username === currentUser.username);
+        if (idx !== -1) {
+          setCurrentUserEntry({ ...filtered[idx], rank: idx + 1 });
         } else {
           setCurrentUserEntry(null);
         }
       }
     });
 
-    // Live reactions
     const unsubReactions = listenToReactions(setReactions);
-
     return () => {
       unsubUsers();
       unsubReactions();
     };
-  }, []);
+  }, [lastResetAt]);
 
-  // Auto expand once when forceExpand flips true
   useEffect(() => {
     if (forceExpand) {
       setExpanded(true);
-      const timer = setTimeout(() => {
+      const t = setTimeout(() => {
         setExpanded(false);
         setAutoExpandActive(false);
       }, 1500);
-      return () => clearTimeout(timer);
+      return () => clearTimeout(t);
     }
   }, [forceExpand]);
 
   const handleReact = async (targetUsername, emoji) => {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
     const currentUsername = currentUser?.username;
     if (!currentUsername || !targetUsername || currentUsername === targetUsername) return;
-
     try {
       await addReaction(targetUsername, emoji, currentUsername);
     } catch (err) {
@@ -115,14 +167,12 @@ const Leaderboard = ({ forceExpand = false, isAdmin = false }) => {
 
   const renderEmojis = (username) => {
     const userReactions = reactions[username] || {};
-
     const sorted = Object.entries(userReactions)
       .filter(([, users]) => users.length > 0)
       .sort((a, b) => b[1].length - a[1].length);
 
     if (sorted.length === 0) return null;
 
-    // If a single emoji has exactly one reaction, show just the emoji
     if (sorted.length === 1 && sorted[0][1].length === 1) {
       const [emoji] = sorted[0];
       return (
@@ -207,29 +257,28 @@ const Leaderboard = ({ forceExpand = false, isAdmin = false }) => {
     </div>
   );
 
-  // --- Admin reset: remove scores field from all users + clear reactions ---
-  const resetScoresOnly = async () => {
-    setResetLoading(true);
+  // Admin reset (non-destructive): set lastResetAt = now
+  const handleResetWindow = async () => {
+    if (!isAdmin || resetLoading) return;
+
+    const msg = [
+      "♻️ Reset leaderboard window?",
+      "",
+      `This will restart the leaderboard from NOW (no quiz attempts are deleted).`,
+      sinceLabel ? `Currently showing points since ${sinceLabel}.` : "",
+      "",
+      "Proceed?",
+    ].join("\n");
+
+    if (!window.confirm(msg)) return;
     try {
-      const batch = writeBatch(db);
-
-      // 1) Remove scores from all users (so they no longer appear in filtered list)
-      const usersSnap = await getDocs(collection(db, "users"));
-      usersSnap.forEach((d) => {
-        batch.update(d.ref, { scores: deleteField() });
-      });
-
-      // 2) Delete all reaction docs (so emoji UI clears too)
-      //    Assumes a top-level "reactions" collection with one doc per target username.
-      const reactionsSnap = await getDocs(collection(db, "reactions"));
-      reactionsSnap.forEach((d) => {
-        batch.delete(d.ref);
-      });
-
-      await batch.commit();
-      console.log("✅ Leaderboard reset: scores removed and reactions cleared.");
-    } catch (err) {
-      console.error("❌ Failed to reset leaderboard:", err);
+      setResetLoading(true);
+      const who = JSON.parse(localStorage.getItem("currentUser") || "null")?.email;
+      await resetLeaderboardNow({ by: who });
+      // lastResetAt auto-updates via onSnapshot
+    } catch (e) {
+      console.error("❌ Failed to reset leaderboard:", e);
+      alert("Failed to reset leaderboard.");
     } finally {
       setResetLoading(false);
     }
@@ -246,17 +295,44 @@ const Leaderboard = ({ forceExpand = false, isAdmin = false }) => {
       }}
     >
       <div className="leaderboard-header-row">
-        <button className="leaderboard-toggle-button">🌍 Global Leaderboard</button>
+        {/* Single button: "Global Leaderboard" with inline reset icon (inside) */}
+        <button
+          className="leaderboard-toggle-button"
+          onClick={() => setExpanded((v) => !v)}
+          title="Toggle leaderboard"
+        >
+          🌍 Global Leaderboard
+          {isAdmin && (
+            <span
+              role="button"
+              aria-label="Reset leaderboard window"
+              title={
+                sinceLabel
+                  ? `Reset leaderboard window. Currently showing from ${sinceLabel}. Starts counting from now (no data deleted).`
+                  : `Reset leaderboard window. Starts counting from now (no data deleted).`
+              }
+              style={resetIconStyle}
+              onClick={(e) => {
+                e.stopPropagation(); // don't toggle the leaderboard
+                handleResetWindow();
+              }}
+              onMouseEnter={(e) => {
+                if (!resetLoading) e.currentTarget.style.transform = "rotate(18deg)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "rotate(0deg)";
+              }}
+            >
+              {resetLoading ? "…" : "♻️"}
+            </span>
+          )}
+        </button>
 
-        {isAdmin && (
-          <button
-            className="leaderboard-reset-button"
-            onClick={resetScoresOnly}
-            disabled={resetLoading}
-            title="Remove all scores and reactions (names will vanish from board)"
-          >
-            {resetLoading ? "Resetting..." : "Reset Leaderboard"}
-          </button>
+        {/* subtle 'since' line under the headline */}
+        {sinceLabel && (
+          <div className="since-subtle" style={subtleSinceStyle}>
+            since {sinceLabel} <span style={{ opacity: 0.5 }}></span>
+          </div>
         )}
       </div>
 

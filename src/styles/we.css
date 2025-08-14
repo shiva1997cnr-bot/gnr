@@ -1,144 +1,293 @@
-/* src/pages/we.css */
+/* =========================================================
+   WE PAGE STYLES — MATCHED TO USCAN
+   Z-index stack:
+     0  = .bg-fade-layer (images)
+     1  = .we-overlay-layer (darkener)
+     2+ = Content (.we-container/.we-box)
+========================================================= */
 
-/* Main container for the WE quiz page */
-.we-container {
-    text-align: center;
-    min-height: 100vh; /* Ensure it takes full viewport height */
-    width: 100%; /* Full width */
-    padding: 2rem; /* Consistent padding */
-    background-color: #1b1f3a; /* Dark blue background */
-    color: white; /* White text for contrast */
+/* ---------- Background layers ---------- */
+
+/* Wrapper holds everything */
+.we-background-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 100vh; /* avoid mobile shrinking */
+    overflow: hidden;
+    background: #2e2b2b; /* fallback if no images found */
+  }
+  
+  /* Each background image layer (React adds inline backgroundImage) */
+  .bg-fade-layer {
+    position: absolute;
+    inset: 0;
+    background-color: #3d3a3a; /* fallback color */
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 12s ease-in-out; /* slow fade like USCAN */
+    z-index: 0;              /* behind overlay and content */
+    pointer-events: none;
+    will-change: opacity;
+  }
+  
+  /* Visible background image */
+  .bg-fade-layer.visible {
+    opacity: 1;
+  }
+  
+  /* Dark overlay to enhance readability (above images, below content) */
+  .we-overlay-layer,
+  .bg-overlay { /* keep old alias working too */
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45); /* tweak to taste */
+    z-index: 1;
+    pointer-events: none;
+    mix-blend-mode: normal;
+  }
+  
+  /* ---------- Main content container ---------- */
+  
+  .we-container {
+    position: relative;
+    z-index: 2; /* above bg + overlay */
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Specific font */
-}
-
-/* The central quiz box */
-.we-box {
-    background-color: rgba(26, 24, 24, 0.75); /* Semi-transparent dark background */
-    padding: 2rem;
-    border-radius: 2rem; /* Large rounded corners */
-    max-width: 700px; /* Maximum width for the box */
-    width: 100%; /* Ensure responsiveness */
+    min-height: 100vh;
+    width: 100%;
+    padding: 24px;
     text-align: center;
-}
-
-/* Styles for the question text */
-.we-question {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #ffffff;
+  }
+  
+  /* Glassy quiz box */
+  .we-box {
+    width: 100%;
+    max-width: 720px;
+    padding: 24px 28px;
+    border-radius: 16px;
+    color: #e5e7eb;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    text-align: center;
+  }
+  
+  /* Blocked/simple state */
+  .we-box.we-blocked { text-align: center; }
+  .we-box.we-blocked h2 {
     font-size: 1.25rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-}
-
-/* Container for the answer options */
-.we-options {
-    display: flex;
-    flex-direction: column; /* Stack options vertically */
-    gap: 0.7rem; /* Space between options */
-}
-
-/* Individual answer option button/div */
-.we-option {
-    padding: 0.8rem;
-    background-color: white; /* White background for options */
-    color: black; /* Black text for options */
-    border-radius: 4rem; /* Pill shape */
-    border-left: 6px solid transparent; /* Left border for visual effect */
-    text-align: left; /* Align text to the left */
-    font-weight: 500;
-    transition: all 0.3s ease; /* Smooth transitions for hover and state changes */
+    font-weight: 700;
+    color: #fca5a5;
+    margin-bottom: 8px;
+  }
+  .we-box.we-blocked p { margin: 4px 0; opacity: 0.9; }
+  
+  /* Buttons inside box (and shared footer-style button) */
+  .we-box button,
+  .we-footer-button,
+  .we-next-btn,
+  .we-footer-btn {
+    margin-top: 12px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
     cursor: pointer;
-}
-
-/* Hover effect for options */
-.we-option:hover {
-    background-color: #2196f3; /* Blue background on hover */
-    color: white; /* White text on hover */
-}
-
-/* Style for the correct answer when selected */
-.we-option.correct {
-    background-color: #4caf50; /* Green background */
-    color: white;
-}
-
-/* Style for an incorrect answer when selected */
-.we-option.incorrect {
-    background-color: #f44336; /* Red background */
-    color: white;
-}
-
-/* Footer section (e.g., for timer or navigation buttons) */
-.we-footer {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+  .we-box button:hover,
+  .we-footer-button:hover,
+  .we-next-btn:hover,
+  .we-footer-btn:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
+  }
+  .we-box button:active,
+  .we-footer-button:active,
+  .we-next-btn:active,
+  .we-footer-btn:active { transform: translateY(0); }
+  .we-box button:focus-visible,
+  .we-footer-button:focus-visible,
+  .we-next-btn:focus-visible,
+  .we-footer-btn:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+  
+  /* ---------- Question + options ---------- */
+  
+  .we-question {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: #f9fafb;
+  }
+  
+  .we-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  
+  /* Option buttons */
+  .we-option {
+    padding: 0.8rem 1rem;
+    background-color: #ffffff;
+    color: #111827;
+    border-radius: 999px;
+    text-align: left;
+    font-weight: 600;
+    transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+    cursor: pointer;
+    border: none;
+  }
+  .we-option:hover {
+    background-color: #2196f3;
+    color: #ffffff;
+  }
+  .we-option.correct {
+    background-color: #4caf50;
+    color: #ffffff;
+  }
+  .we-option.incorrect {
+    background-color: #f44336;
+    color: #ffffff;
+  }
+  
+  /* Disabled/locked */
+  .we-option[disabled],
+  .we-option.locked {
+    opacity: 0.75;
+    cursor: not-allowed;
+  }
+  
+  /* Footer area (timer + navigation) */
+  .we-footer {
     margin-top: 1.5rem;
     display: flex;
-    justify-content: space-between; /* Space out content */
+    justify-content: space-between;
     align-items: center;
-    color: #ccc; /* Light grey text */
-}
-
-/* Styles for buttons within the footer (e.g., Next, Submit) */
-.we-footer button {
-    background-color: #2563eb; /* Blue background */
-    color: white;
+    color: #d1d5db;
+  }
+  .we-footer button {
+    background-color: #2563eb;
+    color: #ffffff;
     padding: 0.5rem 1rem;
-    border-radius: 0.4rem;
-    font-weight: 600;
+    border-radius: 0.6rem;
+    font-weight: 700;
     border: none;
     cursor: pointer;
-}
-
-/* Heading for the quiz result section */
-.we-result h2 {
-    color: #e50914; /* Netflix red */
-}
-
-/* Style for the score display */
-.we-score {
-    font-size: 1.25rem;
-    margin: 1rem 0;
-}
-
-/* Responsive tweaks for smaller screens */
-@media screen and (max-width: 640px) {
-    .we-box {
-        padding: 1.5rem; /* Smaller padding on mobile */
-    }
-
-    .we-option {
-        font-size: 0.95rem; /* Smaller font size for options */
-    }
-
-    .we-footer {
-        flex-direction: column; /* Stack footer items vertically */
-        gap: 1rem; /* Space between stacked items */
-    }
-}
-
-/* Styles for pass/fail text in the result section */
-.we-result .pass {
-    color: #48bb78; /* Tailwind green-500 */
-    font-weight: bold;
-}
-
-.we-result .fail {
-    color: #ef4444; /* Tailwind red-500 */
-    font-weight: bold;
-}
-
-/* Style for the return button in the result section */
-.we-footer-btn {
-    background-color: #2563eb; /* Blue background */
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.4rem;
-    font-weight: 600;
+  }
+  
+  /* ---------- Floating Feedback Bubble (same behavior as USCAN) ---------- */
+  /* Rendered OUTSIDE the box and positioned near the selected option.
+     WE.jsx sets inline top/left and data-* attributes. */
+  
+  .we-feedback-bubble {
+    position: fixed;                 /* screen-positioned */
+    transform: translateY(-50%);
+    z-index: 10000;                  /* above the quiz UI */
+    max-width: 340px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f8fafc;            /* light base for readability */
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 12px 28px rgba(0,0,0,.22);
+    color: #0f172a;                  /* dark text */
+    line-height: 1.35;
+    white-space: normal;             /* wrap long lines */
+  }
+  
+  /* Make sure children inherit the dark color */
+  .we-feedback-bubble * { color: inherit; }
+  
+  /* Variants by type */
+  .we-feedback-bubble[data-type="correct"] {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+  }
+  .we-feedback-bubble[data-type="wrong"] {
+    background: #fff1f2;             /* brighter for contrast */
+    border-color: #fecaca;
+  }
+  .we-feedback-bubble[data-type="timeup"] {
+    background: #f8fafc;
+    border-color: #e5e7eb;
+  }
+  
+  /* Pointer arrow */
+  .we-feedback-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 9px solid transparent;
+    border-bottom: 9px solid transparent;
+  }
+  
+  /* Arrow when bubble sits to the RIGHT of the option */
+  .we-feedback-bubble[data-side="right"] .we-feedback-arrow { left: -9px; }
+  .we-feedback-bubble[data-side="right"][data-type="correct"] .we-feedback-arrow { border-right: 9px solid #a7f3d0; }
+  .we-feedback-bubble[data-side="right"][data-type="wrong"]   .we-feedback-arrow { border-right: 9px solid #fecaca; }
+  .we-feedback-bubble[data-side="right"][data-type="timeup"]  .we-feedback-arrow { border-right: 9px solid #e5e7eb; }
+  
+  /* Arrow when bubble sits to the LEFT of the option */
+  .we-feedback-bubble[data-side="left"] .we-feedback-arrow { right: -9px; }
+  .we-feedback-bubble[data-side="left"][data-type="correct"] .we-feedback-arrow { border-left: 9px solid #a7f3d0; }
+  .we-feedback-bubble[data-side="left"][data-type="wrong"]   .we-feedback-arrow { border-left: 9px solid #fecaca; }
+  .we-feedback-bubble[data-side="left"][data-type="timeup"]  .we-feedback-arrow { border-left: 9px solid #e5e7eb; }
+  
+  /* Bubble content */
+  .we-feedback-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; }
+  .we-feedback-body  { font-size: 14px; margin-bottom: 6px; }
+  .we-feedback-ans   { font-size: 13px; opacity: 0.9; }
+  .we-feedback-actions {
+    display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;
+  }
+  .we-feedback-actions button {
+    background: #2563eb;
+    color: #fff;
+    padding: 6px 11px;
     border: none;
+    border-radius: 10px;
+    font-weight: 700;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-.we-footer-btn:hover {
-    background-color: #1d4ed8; /* Darker blue on hover */
-}
+  }
+  .we-feedback-actions button:hover { filter: brightness(1.06); }
+  
+  /* ---------- Results ---------- */
+  .we-result h2 { color: #e50914; }
+  .we-score { font-size: 1.25rem; margin: 1rem 0; }
+  .pass { color: #16a34a; font-weight: 600; }
+  .fail { color: #dc2626; font-weight: 600; }
+  .we-result-center { text-align: center; }
+  
+  /* ---------- Loading / simple states ---------- */
+  .we-loading {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    padding: 24px;
+    text-align: center;
+  }
+  
+  /* ---------- Responsive ---------- */
+  @media screen and (max-width: 640px) {
+    .we-box { padding: 18px; }
+    .we-option { font-size: 0.95rem; }
+    .we-footer { flex-direction: column; gap: 1rem; }
+  }
+  

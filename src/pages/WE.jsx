@@ -1,5 +1,5 @@
 // src/pages/WE.jsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   collection,
@@ -7,288 +7,656 @@ import {
   query,
   orderBy,
   limit,
-  doc,
-  getDoc,
-  updateDoc,
-  arrayUnion,
+  where,
 } from "firebase/firestore";
 import { db } from "../firebase";
-import { saveQuizResult } from "../utils/firestoreUtils";
+import dayjs from "dayjs";
+import "../styles/we.css";
 import correctSound from "../assets/correct.mp3";
 import wrongSound from "../assets/wrong.mp3";
-import dayjs from "dayjs";
-import duration from "dayjs/plugin/duration";
-import "../styles/we.css";
+import { hasUserAttemptedQuiz, saveQuizResult } from "../utils/firestoreUtils";
+import { logActivity } from "../utils/activityLogger";
+import LoadingScreen from "../components/LoadingScreen";
 
-dayjs.extend(duration);
+const PER_QUESTION_SECONDS = 30;
+
+/* ---------- bg helpers: load /public/we/bg{1..6}.(jpeg|jpg|png|webp) ---------- */
+const tryLoad = (url) =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve({ ok: true, url });
+    img.onerror = () => resolve({ ok: false, url });
+    img.src = url;
+  });
+
+const useResolvedBackgrounds = () => {
+  const [bgImages, setBgImages] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const bases = ["bg1", "bg2", "bg3", "bg4", "bg5", "bg6"];
+      const exts = ["jpeg", "jpg", "png", "webp"];
+      const candidates = [];
+      bases.forEach((b) => exts.forEach((e) => candidates.push(`/we/${b}.${e}`)));
+      const checks = await Promise.all(candidates.map(tryLoad));
+      const good = checks.filter((c) => c.ok).map((c) => c.url);
+      if (!cancelled) setBgImages(good);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+  return bgImages;
+};
+/* --------------------------------------------------------------------------- */
 
 function WE() {
-  const [quiz, setQuiz] = useState(null);
-  const [currentQ, setCurrentQ] = useState(0);
-  const [selectedIndex, setSelectedIndex] = useState(null); // null=not chosen, -1=timed out, 0..n=chosen
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [loading, setLoading] = useState(true);
-  const [quizBlocked, setQuizBlocked] = useState(false);
-  const [countdown, setCountdown] = useState(null); // optional: if your docs have launchAt/startTime
-  const [showResult, setShowResult] = useState(false);
-
-  const startTime = useRef(Date.now());
   const navigate = useNavigate();
-  const regionKey = "we";
 
-  const user = JSON.parse(localStorage.getItem("currentUser"));
-  const username = user?.username;
+  // quiz + per-question state
+  const [quiz, setQuiz] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState([]);           // string | null per index
+  const [pickedIdx, setPickedIdx] = useState([]);       // number | null per index
+  const [timeLeftArr, setTimeLeftArr] = useState([]);   // seconds remaining per index
+  const [locked, setLocked] = useState([]);             // boolean per index
 
-  // Resolve correct option index from either schema (answer string or correctIndex)
-  const getCorrectIndex = (qObj) => {
-    if (!qObj) return -1;
-    if (typeof qObj.correctIndex === "number") return Number(qObj.correctIndex);
-    if (typeof qObj.answer === "string" && Array.isArray(qObj.options)) {
-      const ans = qObj.answer.trim();
-      const idx = qObj.options.findIndex((o) => String(o ?? "").trim() === ans);
-      return idx >= 0 ? idx : -1;
-    }
-    return -1;
-  };
+  // flow state
+  const [showResult, setShowResult] = useState(false);
+  const [quizBlocked, setQuizBlocked] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [countdown, setCountdown] = useState(null);
 
-  // Fetch latest quiz (by createdAt desc, consistent with ESEA/LATAM), handle optional launchAt/startTime, and block if already taken
+  // feedback (floating bubble near chosen option)
+  const [feedback, setFeedback] = useState({
+    visible: false,
+    type: null, // 'correct' | 'wrong' | 'timeup'
+    title: "",
+    body: "",
+    correctAnswer: "",
+  });
+
+  // where to draw the bubble (anchored to selected button)
+  const [bubblePos, setBubblePos] = useState({ top: 0, left: 0, side: "right" }); // side: right|left
+
+  // timers
+  const startTime = useRef(Date.now());
+  const tickRef = useRef(null);
+
+  // option button refs (per question -> per option)
+  const optionRefs = useRef({}); // { [qIndex]: [ref0, ref1, ...] }
+
+  // backgrounds
+  const resolvedBgs = useResolvedBackgrounds();
+  const [bgIndex, setBgIndex] = useState(0);
   useEffect(() => {
-    const fetchLatest = async () => {
+    if (!resolvedBgs.length) return;
+    const t = setInterval(() => setBgIndex((p) => (p + 1) % resolvedBgs.length), 9500);
+    return () => clearInterval(t);
+  }, [resolvedBgs.length]);
+
+  /* ---------- load latest WE quiz ---------- */
+  useEffect(() => {
+    const fetchQuiz = async () => {
+      const user = JSON.parse(localStorage.getItem("currentUser") || "null");
+      const username = user?.username;
+      if (!username) { setLoading(false); return; }
+
       try {
-        // get ONLY the latest quiz
-        const qRef = query(collection(db, regionKey), orderBy("createdAt", "desc"), limit(1));
-        const snap = await getDocs(qRef);
+        const now = new Date();
+
+        // Prefer scheduled launchAt if present, else fallback to createdAt
+        let q1 = query(
+          collection(db, "we"),
+          where("launchAt", "<=", now),
+          orderBy("launchAt", "desc"),
+          limit(1)
+        );
+        let snap = await getDocs(q1);
 
         if (snap.empty) {
+          const q2 = query(collection(db, "we"), orderBy("createdAt", "desc"), limit(1));
+          snap = await getDocs(q2);
+        }
+
+        if (snap.empty) { setLoading(false); return; }
+
+        const docData = snap.docs[0].data();
+        const quizId = snap.docs[0].id;
+
+        // If scheduled in the future
+        const launchTime = dayjs(docData.launchAt?.toDate?.() || docData.launchAt);
+        if (launchTime.isValid() && dayjs().isBefore(launchTime)) {
+          setCountdown(launchTime.diff(dayjs(), "second"));
           setLoading(false);
           return;
         }
 
-        const docSnap = snap.docs[0];
-        const data = docSnap.data();
-        const quizId = docSnap.id;
-
-        // Optional scheduled start support (launchAt or startTime if present)
-        const launchMoment = dayjs(
-          data.launchAt?.toDate?.() ||
-            data.launchAt ||
-            data.startTime?.toDate?.() ||
-            data.startTime
-        );
-        if (launchMoment.isValid() && dayjs().isBefore(launchMoment)) {
-          setCountdown(launchMoment.diff(dayjs(), "second"));
+        // Check attempt lock
+        const attempted = await hasUserAttemptedQuiz(username, quizId);
+        if (attempted) {
+          setQuizBlocked(true);
           setLoading(false);
           return;
         }
 
-        // Block retakes (admin bypass) — check all legacy fields
-        if (username) {
-          const userRef = doc(db, "users", username);
-          const userSnap = await getDoc(userRef);
-          const userData = userSnap.exists() ? userSnap.data() : {};
-          const isAdmin = userData?.role === "admin";
-          const taken = userData?.takenQuizzes || [];
-          const attempted = userData?.attemptedQuizzes || [];
-          const attemptsMap = userData?.attempts || {};
-          const already =
-            taken.includes(quizId) ||
-            attempted.includes(quizId) ||
-            Boolean(attemptsMap[quizId]);
-          if (!isAdmin && already) {
-            setQuizBlocked(true);
-            setLoading(false);
-            return;
+        const qs = Array.isArray(docData.questions) ? docData.questions : [];
+        setQuiz({ ...docData, id: quizId });
+
+        // Initialize per-question state (with restore)
+        const draftKey = `quizDraft:${username}:${quizId}`;
+        const draft = JSON.parse(localStorage.getItem(draftKey) || "null");
+
+        const initAnswers = Array(qs.length).fill(null);
+        const initPicked = Array(qs.length).fill(null);
+        const initTime = Array(qs.length).fill(PER_QUESTION_SECONDS);
+        const initLocked = Array(qs.length).fill(false);
+
+        if (draft) {
+          if (Array.isArray(draft.answers)) draft.answers.forEach((v, i) => (initAnswers[i] = v));
+          if (Array.isArray(draft.timeLeftArr)) {
+            draft.timeLeftArr.forEach((v, i) => (initTime[i] = Math.max(0, Math.min(PER_QUESTION_SECONDS, v))));
+          }
+          if (Array.isArray(draft.locked)) draft.locked.forEach((v, i) => (initLocked[i] = !!v));
+          if (typeof draft.currentQuestion === "number") {
+            const idx = Math.max(0, Math.min(qs.length - 1, draft.currentQuestion));
+            setCurrentQuestion(idx);
           }
         }
 
-        setQuiz({ ...data, id: quizId });
-      } catch (err) {
-        console.error("WE: error while fetching quiz:", err);
-      } finally {
-        setLoading(false);
+        setAnswers(initAnswers);
+        setPickedIdx(initPicked);
+        setTimeLeftArr(initTime);
+        setLocked(initLocked);
+      } catch (error) {
+        console.error("WE: error fetching quiz:", error);
       }
+      setLoading(false);
     };
 
-    fetchLatest();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [username]);
+    fetchQuiz();
+  }, []);
 
-  // Launch countdown tick (only if a future start was detected)
+  /* ---------- countdown until quiz start ---------- */
   useEffect(() => {
     if (countdown === null) return;
-    if (countdown <= 0) {
-      window.location.reload();
-      return;
-    }
-    const t = setTimeout(() => setCountdown((s) => s - 1), 1000);
-    return () => clearTimeout(t);
+    if (countdown <= 0) { window.location.reload(); return; }
+    const timer = setTimeout(() => setCountdown((prev) => prev - 1), 1000);
+    return () => clearTimeout(timer);
   }, [countdown]);
 
-  // Per-question timer
+  /* ---------- persist draft ---------- */
+  const persistDraft = useCallback(() => {
+    const user = JSON.parse(localStorage.getItem("currentUser") || "null");
+    const username = user?.username;
+    if (!username || !quiz?.id) return;
+    const draftKey = `quizDraft:${username}:${quiz.id}`;
+    localStorage.setItem(
+      draftKey,
+      JSON.stringify({ answers, timeLeftArr, locked, currentQuestion })
+    );
+  }, [answers, timeLeftArr, locked, currentQuestion, quiz?.id]);
+
+  /* ---------- per-question ticking ---------- */
   useEffect(() => {
-    if (!quiz || selectedIndex !== null || showResult || quizBlocked) return;
-    if (timeLeft === 0) {
-      // treat timeout as incorrect; user can press Next
-      setSelectedIndex(-1);
-      return;
+    if (!quiz) return;
+    if (tickRef.current) clearInterval(tickRef.current);
+
+    if (locked[currentQuestion]) return;
+    if (timeLeftArr[currentQuestion] <= 0) return;
+
+    tickRef.current = setInterval(() => {
+      setTimeLeftArr((prev) => {
+        const next = [...prev];
+        if (next[currentQuestion] > 0) next[currentQuestion] = next[currentQuestion] - 1;
+        return next;
+      });
+    }, 1000);
+
+    return () => {
+      if (tickRef.current) clearInterval(tickRef.current);
+    };
+  }, [quiz, currentQuestion, locked, timeLeftArr[currentQuestion]]);
+
+  /* ---------- when time hits 0, lock + show bubble (no auto-advance) ---------- */
+  useEffect(() => {
+    if (!quiz) return;
+    const t = timeLeftArr[currentQuestion];
+    if (t === 0 && !locked[currentQuestion]) {
+      setLocked((prev) => {
+        const n = [...prev];
+        n[currentQuestion] = true;
+        return n;
+      });
+
+      if (answers[currentQuestion] == null) {
+        const q = quiz.questions[currentQuestion] || {};
+        const correctAnswer =
+          q?.answer ||
+          (Array.isArray(q?.options) ? q.options[q.correctIndex || 0] : "");
+        setFeedback({
+          visible: true,
+          type: "timeup",
+          title: "⏰ Time’s up!",
+          body: q?.wrongBody || "You ran out of time.",
+          correctAnswer: correctAnswer || "",
+        });
+        // anchor to first option (fallback)
+        requestAnimationFrame(() => updateBubblePos(currentQuestion, 0));
+      }
     }
-    const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [timeLeft, quiz, selectedIndex, showResult, quizBlocked]);
+    persistDraft();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLeftArr, answers, currentQuestion]);
 
-  // Click option by INDEX (not by text)
-  const handleOptionClick = (index) => {
-    if (selectedIndex !== null) return;
-    setSelectedIndex(index);
-
-    const qObj = quiz.questions[currentQ];
-    const correctIdx = getCorrectIndex(qObj);
-    const isCorrect = index === correctIdx;
-
-    if (isCorrect) setScore((s) => s + 1);
-
-    const audio = new Audio(isCorrect ? correctSound : wrongSound);
-    audio.play();
+  /* ---------- compute bubble position next to an option ---------- */
+  const updateBubblePos = (qIndex, optIndex) => {
+    const btn = optionRefs.current?.[qIndex]?.[optIndex];
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    const gap = 12;
+    const assumedWidth = 300; // approximate bubble width for edge detection
+    let left = r.right + gap;
+    let side = "right";
+    if (left + assumedWidth > window.innerWidth - 8) {
+      left = Math.max(8, r.left - gap - assumedWidth);
+      side = "left";
+    }
+    const top = r.top + r.height / 2; // translateY(-50%) in styles
+    setBubblePos({ top, left, side });
   };
 
-  const handleNext = async () => {
-    const nextIndex = currentQ + 1;
-    if (nextIndex < (quiz?.questions?.length || 0)) {
-      setCurrentQ(nextIndex);
-      setSelectedIndex(null);
-      setTimeLeft(30);
-      return;
+  // recompute on resize while visible
+  useEffect(() => {
+    if (!feedback.visible) return;
+    const handle = () => {
+      const oi = pickedIdx[currentQuestion] != null ? pickedIdx[currentQuestion] : 0;
+      updateBubblePos(currentQuestion, oi);
+    };
+    window.addEventListener("resize", handle);
+    return () => window.removeEventListener("resize", handle);
+  }, [feedback.visible, currentQuestion, pickedIdx]);
+
+  const playSound = (isCorrect) => {
+    const audio = new Audio(isCorrect ? correctSound : wrongSound);
+    audio.play().catch(() => {});
+  };
+
+  /* ---------- handle option selection: lock + show bubble (no auto-advance) ---------- */
+  const handleSelect = (option, index) => {
+    if (!quiz) return;
+    const alreadyLocked = locked[currentQuestion] || timeLeftArr[currentQuestion] <= 0;
+    if (alreadyLocked) return;
+
+    const q = quiz.questions[currentQuestion];
+    const correct = option === q.answer;
+    playSound(correct);
+
+    setAnswers((prev) => {
+      const n = [...prev];
+      n[currentQuestion] = option;
+      return n;
+    });
+    setPickedIdx((prev) => {
+      const n = [...prev];
+      n[currentQuestion] = index;
+      return n;
+    });
+    setLocked((prev) => {
+      const n = [...prev];
+      n[currentQuestion] = true;
+      return n;
+    });
+
+    const correctAnswer =
+      q?.answer ||
+      (Array.isArray(q?.options) ? q.options[q.correctIndex || 0] : "");
+
+    if (correct) {
+      setFeedback({
+        visible: true,
+        type: "correct",
+        title: q.correctTitle || "Hey, that’s right! 🎉",
+        body: q.correctBody || "",
+        correctAnswer: "",
+      });
+    } else {
+      setFeedback({
+        visible: true,
+        type: "wrong",
+        title: q.wrongTitle || "That’s not correct",
+        body: q.wrongBody || "",
+        correctAnswer: correctAnswer || "",
+      });
     }
 
-    // finished
+    // position bubble next to the selected option
+    requestAnimationFrame(() => updateBubblePos(currentQuestion, index));
+  };
+
+  /* ---------- nav ---------- */
+  const goPrev = () => {
+    setFeedback({ visible: false, type: null, title: "", body: "", correctAnswer: "" });
+    setCurrentQuestion((i) => Math.max(0, i - 1));
+  };
+  const goNext = () => {
+    if (!quiz) return;
+    setFeedback({ visible: false, type: null, title: "", body: "", correctAnswer: "" });
+    const last = quiz.questions.length - 1;
+    if (currentQuestion < last) setCurrentQuestion((i) => i + 1);
+    else handleSubmit();
+  };
+
+  useEffect(() => {
+    setFeedback({ visible: false, type: null, title: "", body: "", correctAnswer: "" });
+  }, [currentQuestion]);
+
+  /* ---------- keyboard shortcuts ---------- */
+  useEffect(() => {
+    const onKey = (e) => {
+      if (!quiz) return;
+      if (e.key === "ArrowRight" || e.key === "Enter") { e.preventDefault(); goNext(); }
+      else if (e.key === "ArrowLeft") { e.preventDefault(); goPrev(); }
+      else {
+        const idx = Number(e.key);
+        if (
+          !Number.isNaN(idx) &&
+          idx >= 1 &&
+          idx <= Math.min(4, quiz.questions[currentQuestion].options.length)
+        ) {
+          const oi = idx - 1;
+          const opt = quiz.questions[currentQuestion].options[oi];
+          handleSelect(opt, oi);
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [quiz, currentQuestion, timeLeftArr, locked, answers]);
+
+  /* ---------- scoring & submit ---------- */
+  const computeScore = useCallback(() => {
+    if (!quiz) return 0;
+    let s = 0;
+    for (let i = 0; i < quiz.questions.length; i++) {
+      const a = answers[i];
+      const correct = quiz.questions[i].answer;
+      if (a && a === correct) s += 1;
+    }
+    return s;
+  }, [quiz, answers]);
+
+  const handleSubmit = async () => {
+    if (!quiz) return;
     setShowResult(true);
 
-    // save result and ensure future blocks
-    try {
-      if (!username) return;
+    const finalScore = computeScore();
+    const user = JSON.parse(localStorage.getItem("currentUser") || "null");
+    const username = user?.username;
+    if (username) {
       const timeSpent = Math.floor((Date.now() - startTime.current) / 1000);
-
-      // Save result (your util)
-      await saveQuizResult(username, quiz.id, regionKey, score, timeSpent);
-
-      // Ensure the next visit is blocked (compat with all schemas)
-      const userRef = doc(db, "users", username);
-      await updateDoc(userRef, {
-        takenQuizzes: arrayUnion(quiz.id),
-        attemptedQuizzes: arrayUnion(quiz.id),
-        // If you also keep a map, uncomment:
-        // ["attempts." + quiz.id]: true,
-      });
-    } catch (err) {
-      console.error("WE: error saving result / tagging user doc:", err);
+      await saveQuizResult(username, quiz.id, "we", finalScore, timeSpent);
+      logActivity("QUIZ_ATTEMPT", `WE Quiz | Score: ${finalScore}/${quiz.questions.length}`);
+      localStorage.removeItem(`quizDraft:${username}:${quiz.id}`);
     }
   };
 
-  const percentScore = quiz ? Math.round((score / quiz.questions.length) * 100) : 0;
-  const passed = percentScore >= 80;
+  const percentDone = useMemo(
+    () => (quiz ? Math.round(((currentQuestion + 1) / quiz.questions.length) * 100) : 0),
+    [quiz, currentQuestion]
+  );
 
-  // --- UI states ---
-  if (loading)
+  /* ---------- UI ---------- */
+  if (loading) return <LoadingScreen />;
+
+  if (countdown !== null) {
     return (
-      <div className="we-container">
-        <div className="we-box">Loading...</div>
+      <div className="we-loading">
+        ⏳ New quiz starts in {countdown}s
+        <div><button onClick={() => navigate("/region")}>Return to Region</button></div>
       </div>
     );
+  }
 
-  if (countdown !== null)
+  if (quizBlocked) {
     return (
-      <div className="we-container">
-        <div className="we-box">
-          <h2>⏳ New Quiz Coming Soon!</h2>
-          <p>Starts in: {dayjs.duration(countdown, "seconds").format("HH:mm:ss")}</p>
-          <button onClick={() => navigate("/region")} className="we-footer-btn">
-            ← Return
-          </button>
+      <div className="we-background-wrapper">
+        <div className="we-overlay-layer" />
+        {resolvedBgs.map((src, i) => (
+          <div
+            key={i}
+            className={`bg-fade-layer ${i === bgIndex ? "visible" : ""}`}
+            style={{ backgroundImage: `url(${src})` }}
+          />
+        ))}
+        <div className="we-container">
+          <div className="we-box we-blocked">
+            ⛔ You already attempted this quiz.
+            <br />
+            <button onClick={() => navigate("/region")}>← Return to Region</button>
+          </div>
         </div>
       </div>
     );
+  }
 
-  if (!quiz)
+  if (!quiz) {
     return (
-      <div className="we-container">
-        <div className="we-box">
-          <h2>No quiz available for Western Europe</h2>
-          <button onClick={() => navigate("/region")}>← Return</button>
-        </div>
+      <div className="we-loading">
+        No quiz available for WE
+        <div><button onClick={() => navigate("/region")}>Return to Region</button></div>
       </div>
     );
+  }
 
-  if (quizBlocked)
-    return (
-      <div className="we-container">
-        <div className="we-box we-blocked">
-          ⛔ You already attempted this quiz.
-          <br />
-          <button onClick={() => navigate("/region")}>← Return</button>
-        </div>
-      </div>
-    );
-
-  const current = quiz.questions[currentQ];
-  const revealIdx = selectedIndex !== null ? getCorrectIndex(current) : null;
+  const q = quiz.questions[currentQuestion];
+  const selected = answers[currentQuestion];
+  const isLocked = locked[currentQuestion] || timeLeftArr[currentQuestion] <= 0;
 
   return (
-    <div className="we-container">
-      <div className="we-box">
-        {!showResult ? (
-          <>
-            <div className="we-header">
-              <button onClick={() => navigate("/region")} className="back-btn">
-                ←
-              </button>
-              <h2>Western Europe Quiz</h2>
-            </div>
+    <div className="we-background-wrapper">
+      <div className="we-overlay-layer" />
+      {resolvedBgs.map((src, i) => (
+        <div
+          key={i}
+          className={`bg-fade-layer ${i === bgIndex ? "visible" : ""}`}
+          style={{ backgroundImage: `url(${src})` }}
+        />
+      ))}
 
-            <div className="we-timer">Time Left: {timeLeft}s</div>
+      <div className="we-container">
+        <div className="we-box" style={{ overflow: "hidden" }}>
+          {!showResult ? (
+            <>
+              {/* progress */}
+              <div
+                style={{
+                  position: "relative",
+                  height: 8,
+                  borderRadius: 999,
+                  background: "rgba(255,255,255,0.25)",
+                  overflow: "hidden",
+                  marginBottom: 14,
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: `${percentDone}%`,
+                    transition: "width 320ms ease",
+                    background:
+                      "linear-gradient(90deg, rgba(59,130,246,0.9), rgba(16,185,129,0.9))",
+                  }}
+                />
+              </div>
 
-            <h3 className="we-question">{current.question}</h3>
+              <h2
+                className="we-question"
+                style={{
+                  transition: "transform 200ms ease, opacity 200ms ease",
+                  willChange: "transform,opacity",
+                }}
+                key={`q-${currentQuestion}`}
+              >
+                Q{currentQuestion + 1}: {q.question}
+              </h2>
 
-            <div className="we-options">
-              {current.options.map((opt, i) => {
-                let cls = "";
-                if (selectedIndex !== null) {
-                  if (i === revealIdx) cls = "correct";
-                  else if (i === selectedIndex && selectedIndex !== revealIdx) cls = "incorrect";
-                }
-                return (
-                  <button
-                    key={i}
-                    onClick={() => handleOptionClick(i)}
-                    className={`we-option ${cls}`}
-                    disabled={selectedIndex !== null}
-                  >
-                    {opt}
+              {/* per-question timer bar */}
+              <div
+                style={{
+                  height: 6,
+                  borderRadius: 999,
+                  background: "rgba(0,0,0,0.15)",
+                  overflow: "hidden",
+                  margin: "6px 0 12px",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${(timeLeftArr[currentQuestion] / PER_QUESTION_SECONDS) * 100}%`,
+                    transition: "width 1000ms linear",
+                    background:
+                      timeLeftArr[currentQuestion] > 5
+                        ? "rgba(34,197,94,0.9)"
+                        : "rgba(239,68,68,0.9)",
+                  }}
+                />
+              </div>
+
+              <div className="we-options" style={{ gap: 10 }}>
+                {q.options.map((option, index) => {
+                  const isCorrectNow = selected && option === q.answer;
+                  const isWrongPick = selected === option && selected !== q.answer;
+                  return (
+                    <button
+                      key={index}
+                      ref={(el) => {
+                        if (!optionRefs.current[currentQuestion]) optionRefs.current[currentQuestion] = [];
+                        optionRefs.current[currentQuestion][index] = el;
+                      }}
+                      onClick={() => handleSelect(option, index)}
+                      className={`we-option ${
+                        selected
+                          ? isCorrectNow
+                            ? "correct"
+                            : isWrongPick
+                            ? "incorrect"
+                            : ""
+                          : ""
+                      }`}
+                      disabled={isLocked}
+                      style={{
+                        transform: selected === option ? "scale(0.98)" : "scale(1)",
+                        transition: "transform 150ms ease, opacity 200ms ease",
+                        opacity: isLocked && !selected ? 0.7 : 1,
+                      }}
+                    >
+                      <span style={{ opacity: 0.8, fontSize: 12, marginRight: 6 }}>
+                        {index + 1}.
+                      </span>
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="we-footer" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <span>⏱ {timeLeftArr[currentQuestion]}s</span>
+                <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+                  <button onClick={goPrev} disabled={currentQuestion === 0}>Previous</button>
+                  <button onClick={goNext}>
+                    {currentQuestion === quiz.questions.length - 1 ? "Submit" : "Next"}
                   </button>
-                );
-              })}
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="we-result we-result-center">
+              <h2>Quiz Completed 🎉</h2>
+              <p className="we-score">
+                Your Score: {computeScore()} / {quiz.questions.length} (
+                {Math.round((computeScore() / quiz.questions.length) * 100)}%)
+              </p>
+              <p
+                className={`we-score ${
+                  (computeScore() / quiz.questions.length) * 100 >= 80 ? "pass" : "fail"
+                }`}
+              >
+                {((computeScore() / quiz.questions.length) * 100 >= 80)
+                  ? "✅ Great! You passed."
+                  : "❌ You did not pass."}
+              </p>
+              <button onClick={() => navigate("/region")}>Return to Region</button>
             </div>
+          )}
+        </div>
 
-            <div className="we-footer">
-              {selectedIndex !== null ? (
-                <button onClick={handleNext} className="we-next-btn">
-                  Next
-                </button>
-              ) : (
-                <small>Pick an answer — or wait for timer to skip</small>
-              )}
+        {/* ===== Floating feedback bubble anchored to the picked option ===== */}
+        {feedback.visible && (
+          <div
+            role="dialog"
+            aria-live="polite"
+            tabIndex={-1}
+            className="we-feedback-bubble"
+            data-type={feedback.type}
+            data-side={bubblePos.side}
+            style={{
+              position: "fixed",
+              top: bubblePos.top,
+              left: bubblePos.left,
+              transform: "translateY(-50%)",
+              zIndex: 10000,
+              maxWidth: 320,
+              background:
+                feedback.type === "correct" ? "#ecfdf5" :
+                feedback.type === "wrong"   ? "#fef2f2" : "#f8fafc",
+              border:
+                feedback.type === "correct" ? "1px solid #a7f3d0" :
+                feedback.type === "wrong"   ? "1px solid #fecaca" : "1px solid #e5e7eb",
+              boxShadow: "0 10px 24px rgba(0,0,0,.18)",
+              borderRadius: 10,
+              padding: "10px 12px",
+            }}
+          >
+            {/* arrow */}
+            <div
+              aria-hidden
+              className="we-feedback-arrow"
+              style={{
+                position: "absolute",
+                top: "50%",
+                [bubblePos.side === "right" ? "left" : "right"]: -8,
+                transform: "translateY(-50%)",
+                width: 0, height: 0,
+                borderTop: "8px solid transparent",
+                borderBottom: "8px solid transparent",
+                ...(bubblePos.side === "right"
+                  ? { borderRight: "8px solid " + (feedback.type === "correct" ? "#a7f3d0" : feedback.type === "wrong" ? "#fecaca" : "#e5e7eb") }
+                  : { borderLeft: "8px solid " + (feedback.type === "correct" ? "#a7f3d0" : feedback.type === "wrong" ? "#fecaca" : "#e5e7eb") }),
+              }}
+            />
+            <div className="we-feedback-title" style={{ fontWeight: 800, marginBottom: 6 }}>
+              {feedback.title}
             </div>
-          </>
-        ) : (
-          <div className="we-result">
-            <h2>Quiz Completed 🎉</h2>
-            <p>
-              Your Score: {score} / {quiz.questions.length} ({percentScore}%)
-            </p>
-            <p className={passed ? "pass" : "fail"}>
-              {passed ? "Passed ✅" : "Failed ❌"}
-            </p>
-            <button onClick={() => navigate("/region")}>← Return</button>
+            {feedback.body && (
+              <div className="we-feedback-body" style={{ fontSize: 14, marginBottom: 6 }}>
+                {feedback.body}
+              </div>
+            )}
+            {feedback.correctAnswer && (
+              <div className="we-feedback-ans" style={{ fontSize: 13, opacity: 0.85 }}>
+                <strong>Correct answer:</strong> {feedback.correctAnswer}
+              </div>
+            )}
+            <div className="we-feedback-actions" style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 8 }}>
+              <button onClick={goNext}>
+                {currentQuestion === quiz.questions.length - 1 ? "Submit" : "Next"}
+              </button>
+            </div>
           </div>
         )}
       </div>

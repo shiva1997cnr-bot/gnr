@@ -1,101 +1,276 @@
-/* src/pages/latam.css */
+/* =========================================================
+   LATAM PAGE STYLES — MATCHED TO USCAN/WE/SA
+   Z-index stack:
+     0  = .bg-fade-layer (images)
+     1  = .latam-overlay-layer (darkener)
+     2+ = Content (.latam-container/.latam-box)
+========================================================= */
 
-/* Main container for the LATAM quiz page */
-.latam-container {
-    text-align: center;
-    min-height: 100vh; /* Ensure it takes full viewport height */
-    width: 100%; /* Full width */
-    padding: 2rem; /* Consistent padding */
-    background-color: #013220; /* Dark green background */
-    color: white; /* White text for contrast */
+/* ---------- Background layers ---------- */
+
+/* Wrapper holds everything */
+.latam-background-wrapper {
+    position: relative;
+    width: 100%;
+    min-height: 100vh; /* mobile-safe */
+    overflow: hidden;
+    background: #2e2b2b; /* fallback if no images found */
+  }
+  
+  /* Each background image layer (React adds inline backgroundImage) */
+  .bg-fade-layer {
+    position: absolute;
+    inset: 0;
+    background-color: #3d3a3a; /* fallback color */
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 12s ease-in-out; /* slow fade */
+    z-index: 0;              /* behind overlay/content */
+    pointer-events: none;
+    will-change: opacity;
+  }
+  
+  /* Visible background image */
+  .bg-fade-layer.visible {
+    opacity: 1;
+  }
+  
+  /* Dark overlay above images, below content */
+  .latam-overlay-layer,
+  .bg-overlay { /* keep old class working too */
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 1;
+    pointer-events: none;
+    mix-blend-mode: normal;
+  }
+  
+  /* ---------- Main content container ---------- */
+  
+  .latam-container {
+    position: relative;
+    z-index: 2; /* above bg + overlay */
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; /* Specific font */
-}
-
-/* The central quiz box */
-.latam-box {
-    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark background */
-    padding: 2rem;
-    border-radius: 2rem; /* Large rounded corners */
-    max-width: 700px; /* Maximum width for the box */
-    width: 100%; /* Ensure responsiveness */
+    min-height: 100vh;
+    width: 100%;
+    padding: 24px;
     text-align: center;
-}
-
-/* Styles for the question text */
-.latam-question {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    color: #ffffff;
+  }
+  
+  /* Glassy quiz box */
+  .latam-box {
+    width: 100%;
+    max-width: 720px;
+    padding: 24px 28px;
+    border-radius: 16px;
+    color: #e5e7eb;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    text-align: center;
+  }
+  
+  /* Blocked/simple state */
+  .latam-box.latam-blocked { text-align: center; }
+  .latam-box.latam-blocked h2 {
     font-size: 1.25rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-}
-
-/* Container for the answer options */
-.latam-options {
-    display: flex;
-    flex-direction: column; /* Stack options vertically */
-    gap: 0.7rem; /* Space between options */
-}
-
-/* Individual answer option button/div */
-.latam-option {
-    padding: 0.8rem;
-    background-color: white; /* White background for options */
-    color: black; /* Black text for options */
-    border-radius: 4rem; /* Pill shape */
-    border-left: 6px solid transparent; /* Left border for visual effect */
-    text-align: left; /* Align text to the left */
-    font-weight: 500;
-    transition: all 0.3s ease; /* Smooth transitions for hover and state changes */
+    font-weight: 700;
+    color: #fca5a5;
+    margin-bottom: 8px;
+  }
+  .latam-box.latam-blocked p { margin: 4px 0; opacity: 0.9; }
+  
+  /* Buttons inside box (and shared footer-style button) */
+  .latam-box button,
+  .latam-footer-button {
+    margin-top: 12px;
+    padding: 10px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
     cursor: pointer;
-}
-
-/* Hover effect for options */
-.latam-option:hover {
-    background-color: #28a745; /* Green background on hover */
-    color: white; /* White text on hover */
-}
-
-/* Style for the correct answer when selected */
-.latam-option.correct {
-    background-color: #4caf50; /* Green background */
-    color: white;
-}
-
-/* Style for an incorrect answer when selected */
-.latam-option.incorrect {
-    background-color: #f44336; /* Red background */
-    color: white;
-}
-
-/* Footer section (e.g., for timer or navigation buttons) */
-.latam-footer {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+  .latam-box button:hover,
+  .latam-footer-button:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
+  }
+  .latam-box button:active,
+  .latam-footer-button:active { transform: translateY(0); }
+  .latam-box button:focus-visible,
+  .latam-footer-button:focus-visible {
+    outline: 2px solid #ffffff;
+    outline-offset: 2px;
+  }
+  
+  /* ---------- Question + options ---------- */
+  
+  .latam-question {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 1.5rem;
+    color: #f9fafb;
+  }
+  
+  .latam-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  
+  /* Option buttons */
+  .latam-option {
+    padding: 0.8rem 1rem;
+    background-color: #ffffff;
+    color: #111827;
+    border-radius: 999px;
+    text-align: left;
+    font-weight: 600;
+    transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+    cursor: pointer;
+    border: none;
+  }
+  .latam-option:hover {
+    background-color: #2196f3;
+    color: #ffffff;
+  }
+  .latam-option.correct {
+    background-color: #4caf50;
+    color: #ffffff;
+  }
+  .latam-option.incorrect {
+    background-color: #f44336;
+    color: #ffffff;
+  }
+  
+  /* Disabled/locked look */
+  .latam-option[disabled],
+  .latam-option.locked {
+    opacity: 0.75;
+    cursor: not-allowed;
+  }
+  
+  /* Footer (timer + navigation) */
+  .latam-footer {
     margin-top: 1.5rem;
     display: flex;
-    justify-content: space-between; /* Space out content */
+    justify-content: space-between;
     align-items: center;
-    color: #ccc; /* Light grey text */
-}
-
-/* Styles for buttons within the footer (e.g., Next, Submit) */
-.latam-footer button {
-    background-color: #006400; /* Dark green background */
-    color: white;
+    color: #d1d5db;
+  }
+  .latam-footer button {
+    background-color: #2563eb;
+    color: #ffffff;
     padding: 0.5rem 1rem;
-    border-radius: 0.4rem;
-    font-weight: 600;
+    border-radius: 0.6rem;
+    font-weight: 700;
     border: none;
     cursor: pointer;
-}
-
-/* Heading for the quiz result section */
-.latam-result h2 {
-    color: #ff6347; /* Tomato color */
-}
-
-/* Style for the score display */
-.latam-score {
-    font-size: 1.25rem;
-    margin: 1rem 0;
-}
+  }
+  
+  /* ---------- Floating Feedback Bubble (near selected option) ---------- */
+  /* This is rendered OUTSIDE the box and positioned via inline top/left. */
+  
+  .latam-feedback-bubble {
+    position: fixed;                 /* screen-positioned */
+    transform: translateY(-50%);
+    z-index: 10000;                  /* above the quiz UI */
+    max-width: 340px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 12px 28px rgba(0,0,0,.22);
+    color: #0f172a;                  /* dark text for readability */
+    line-height: 1.35;
+    white-space: normal;             /* wrap long lines */
+  }
+  
+  /* Ensure children inherit bubble text color */
+  .latam-feedback-bubble * { color: inherit; }
+  
+  /* Variants by type */
+  .latam-feedback-bubble[data-type="correct"] {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+  }
+  .latam-feedback-bubble[data-type="wrong"] {
+    background: #fff1f2;             /* bright for contrast */
+    border-color: #fecaca;
+  }
+  .latam-feedback-bubble[data-type="timeup"] {
+    background: #f8fafc;
+    border-color: #e5e7eb;
+  }
+  
+  /* Little arrow that points at the option */
+  .latam-feedback-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-top: 9px solid transparent;
+    border-bottom: 9px solid transparent;
+  }
+  
+  /* Arrow when bubble sits to the RIGHT of the option */
+  .latam-feedback-bubble[data-side="right"] .latam-feedback-arrow { left: -9px; }
+  .latam-feedback-bubble[data-side="right"][data-type="correct"] .latam-feedback-arrow { border-right: 9px solid #a7f3d0; }
+  .latam-feedback-bubble[data-side="right"][data-type="wrong"]   .latam-feedback-arrow { border-right: 9px solid #fecaca; }
+  .latam-feedback-bubble[data-side="right"][data-type="timeup"]  .latam-feedback-arrow { border-right: 9px solid #e5e7eb; }
+  
+  /* Arrow when bubble sits to the LEFT of the option */
+  .latam-feedback-bubble[data-side="left"] .latam-feedback-arrow { right: -9px; }
+  .latam-feedback-bubble[data-side="left"][data-type="correct"] .latam-feedback-arrow { border-left: 9px solid #a7f3d0; }
+  .latam-feedback-bubble[data-side="left"][data-type="wrong"]   .latam-feedback-arrow { border-left: 9px solid #fecaca; }
+  .latam-feedback-bubble[data-side="left"][data-type="timeup"]  .latam-feedback-arrow { border-left: 9px solid #e5e7eb; }
+  
+  /* Bubble content */
+  .latam-feedback-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; }
+  .latam-feedback-body  { font-size: 14px; margin-bottom: 6px; }
+  .latam-feedback-ans   { font-size: 13px; opacity: 0.9; }
+  
+  .latam-feedback-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .latam-feedback-actions button {
+    background: #2563eb;
+    color: #fff;
+    padding: 6px 11px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .latam-feedback-actions button:hover { filter: brightness(1.06); }
+  
+  /* ---------- Results ---------- */
+  .latam-result h2 { color: #e50914; }
+  .latam-score { font-size: 1.25rem; margin: 1rem 0; }
+  .pass { color: #16a34a; font-weight: 600; }
+  .fail { color: #dc2626; font-weight: 600; }
+  
+  /* ---------- Responsive ---------- */
+  @media screen and (max-width: 640px) {
+    .latam-box { padding: 18px; }
+    .latam-option { font-size: 0.95rem; }
+    .latam-footer { flex-direction: column; gap: 1rem; }
+  }
+  

@@ -3,20 +3,29 @@ import "../styles/region.css";
 import { useNavigate } from "react-router-dom";
 import hoverSound from "../assets/hover.mp3";
 import * as XLSX from "xlsx";
-import { getAllUserScores } from "../utils/firestoreUtils";
-import { db } from "../firebase";
+import { getAllUserScores, isAdminUserDoc } from "../utils/firestoreUtils";
+import { auth, db } from "../firebase";
 import {
   doc,
   onSnapshot,
   collection,
   getDocs,
-  writeBatch,
-  setDoc,
   getDoc,
-  Timestamp
 } from "firebase/firestore";
 import dayjs from "dayjs";
 import Leaderboard from "./Leaderboard";
+
+// Client-side fallback role check for localStorage user
+const isAdminLikeLocal = (u) => {
+  if (!u) return false;
+  const r = String(u.role || "").toLowerCase();
+  if (r === "admin" || r.startsWith("admin.")) return true;
+  const roles = Array.isArray(u.roles) ? u.roles : [];
+  return roles.some((x) => {
+    const v = String(x || "").toLowerCase();
+    return v === "admin" || v.startsWith("admin.");
+  });
+};
 
 const Region = () => {
   const navigate = useNavigate();
@@ -27,11 +36,17 @@ const Region = () => {
   const [timeLeft, setTimeLeft] = useState("");
   const [isLive, setIsLive] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState(null);
-  const [sinceLabel, setSinceLabel] = useState("Aug 1");
-  const [lbLoading, setLbLoading] = useState(false);
 
-  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-  const isAdmin = currentUser?.role === "admin";
+  const [adminAllowed, setAdminAllowed] = useState(false);
+  const [adminReady, setAdminReady] = useState(false);
+
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileRef = useRef(null);
+
+  const currentUser = (() => {
+    try { return JSON.parse(localStorage.getItem("currentUser") || "null"); }
+    catch { return null; }
+  })();
 
   const regions = [
     { code: "uscan", label: "US / CAN" },
@@ -49,67 +64,133 @@ const Region = () => {
     img.onload = () => setBgLoaded(true);
   }, []);
 
-  // Get username
+  // Page font: slim & modern (Inter)
+  useEffect(() => {
+    if (!document.getElementById("font-inter")) {
+      const link = document.createElement("link");
+      link.id = "font-inter";
+      link.rel = "stylesheet";
+      link.href =
+        "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";
+      document.head.appendChild(link);
+    }
+  }, []);
+
+  // Display name
   useEffect(() => {
     if (currentUser) {
       setUserName(currentUser.firstName || currentUser.username || "User");
     }
   }, [currentUser]);
 
+  // Robust admin access
+  useEffect(() => {
+    const unsub = auth.onAuthStateChanged(async (u) => {
+      try {
+        const local = (() => {
+          try { return JSON.parse(localStorage.getItem("currentUser") || "null"); } catch { return null; }
+        })();
+
+        const emailLc = (u?.email || "").toLowerCase();
+        const localEmailLc = (local?.email || "").toLowerCase();
+        const localUserLc = (local?.username || "").toLowerCase();
+
+        const guesses = [
+          u?.uid || null,
+          emailLc || null,
+          localEmailLc || null,
+          localUserLc || null,
+        ].filter(Boolean);
+
+        let merged = { ...(local || {}) };
+        const visited = new Set();
+        for (const id of guesses) {
+          if (visited.has(id)) continue;
+          visited.add(id);
+          try {
+            const snap = await getDoc(doc(db, "users", id));
+            if (snap.exists()) merged = { ...merged, ...snap.data() };
+          } catch {}
+        }
+        if (u?.email && !merged.email) merged.email = u.email;
+
+        const identifier = emailLc || localEmailLc || u?.uid || localUserLc || "";
+
+        let okServer = false;
+        try {
+          okServer = await isAdminUserDoc(identifier, merged);
+        } catch {
+          okServer = false;
+        }
+
+        const okLocal = isAdminLikeLocal(local);
+        setAdminAllowed(Boolean(okServer || okLocal));
+      } catch (e) {
+        console.error("Admin check error:", e);
+        setAdminAllowed(isAdminLikeLocal(currentUser));
+      } finally {
+        setAdminReady(true);
+      }
+    });
+    return () => unsub();
+  }, []); // once
+
+  // Close profile menu on outside click
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
+  }, []);
+
   // Countdown per selected region
   useEffect(() => {
     if (!selectedRegion) return;
 
+    let timerId;
     const unsub = onSnapshot(doc(db, "quizSchedule", selectedRegion), (snapshot) => {
-      if (snapshot.exists()) {
-        const nextQuizTime = snapshot.data().nextQuizTime;
-        if (nextQuizTime) {
-          const target = new Date(nextQuizTime).getTime();
-          const timer = setInterval(() => {
-            const now = Date.now();
-            const diff = target - now;
+      if (!snapshot.exists()) return;
 
-            if (diff <= 0) {
-              setTimeLeft("🚀 Quiz is live!");
-              setIsLive(true);
-              clearInterval(timer);
-              return;
-            } else {
-              setIsLive(false);
-            }
+      const nextQuizTime = snapshot.data().nextQuizTime;
+      if (!nextQuizTime) return;
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      const target = new Date(nextQuizTime).getTime();
 
-            const format =
-              days > 0
-                ? `${days}d ${hours}h ${minutes}m ${seconds}s`
-                : `${hours}h ${minutes}m ${seconds}s`;
+      if (timerId) clearInterval(timerId);
+      timerId = setInterval(() => {
+        const now = Date.now();
+        const diff = target - now;
 
-            setTimeLeft(format);
-          }, 1000);
-
-          return () => clearInterval(timer);
+        if (diff <= 0) {
+          setTimeLeft("🚀 Quiz is live!");
+          setIsLive(true);
+          clearInterval(timerId);
+          return;
+        } else {
+          setIsLive(false);
         }
-      }
+
+        const days = Math.floor(diff / 86400000);
+        const hours = Math.floor((diff % 86400000) / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+
+        const format = days > 0
+          ? `${days}d ${hours}h ${minutes}m ${seconds}s`
+          : `${hours}h ${minutes}m ${seconds}s`;
+
+        setTimeLeft(format);
+      }, 1000);
     });
 
-    return () => unsub();
+    return () => {
+      unsub();
+      if (timerId) clearInterval(timerId);
+    };
   }, [selectedRegion]);
-
-  // Last reset date
-  useEffect(() => {
-    (async () => {
-      try {
-        const snap = await getDoc(doc(db, "settings", "leaderboard"));
-        if (snap.exists() && snap.data().lastResetAt?.toDate) {
-          setSinceLabel(dayjs(snap.data().lastResetAt.toDate()).format("MMM D"));
-        }
-      } catch {}
-    })();
-  }, []);
 
   const handleRegionClick = (regionCode) => {
     setSelectedRegion(regionCode);
@@ -124,17 +205,12 @@ const Region = () => {
   const playHoverSound = () => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play();
+      audioRef.current.play().catch(() => {});
     }
   };
 
-  const handleProfileClick = () => {
-    navigate("/profile");
-  };
-
-  const handleLiveClick = () => {
-    navigate("/live");
-  };
+  const handleProfileClick = () => navigate("/profile");
+  const handleLiveClick = () => navigate("/live");
 
   const handleExportScores = async () => {
     try {
@@ -153,54 +229,19 @@ const Region = () => {
     }
   };
 
-  const handleResetLeaderboard = async () => {
-    if (!isAdmin) return;
-    if (!window.confirm("Reset leaderboard points and reactions for ALL users?")) return;
+  // Topbar actions
+  const gotoAbout = () => navigate("/about");
+  const gotoFAQ = () => navigate("/faq");
 
-    try {
-      setLbLoading(true);
-
-      const usersSnap = await getDocs(collection(db, "users"));
-      const userDocs = usersSnap.docs;
-
-      for (let i = 0; i < userDocs.length; i += 450) {
-        const batch = writeBatch(db);
-        userDocs.slice(i, i + 450).forEach((d) => {
-          batch.update(doc(db, "users", d.id), { scores: {} });
-        });
-        await batch.commit();
-      }
-
-      const reactionsSnap = await getDocs(collection(db, "reactions"));
-      const reactionDocs = reactionsSnap.docs;
-      for (let i = 0; i < reactionDocs.length; i += 450) {
-        const batch = writeBatch(db);
-        reactionDocs.slice(i, i + 450).forEach((d) => {
-          batch.delete(doc(db, "reactions", d.id));
-        });
-        await batch.commit();
-      }
-
-      await setDoc(
-        doc(db, "settings", "leaderboard"),
-        { lastResetAt: Timestamp.now() },
-        { merge: true }
-      );
-
-      setSinceLabel(dayjs().format("MMM D"));
-      alert("Leaderboard and reactions reset complete.");
-    } catch (e) {
-      console.error(e);
-      alert("Failed to reset leaderboard.");
-    } finally {
-      setLbLoading(false);
-    }
-  };
+  // Dynamic scores (admin vs user)
+  const scoresLabel = adminAllowed ? "All Scores" : "My Scores";
+  const gotoScores = () => navigate(adminAllowed ? "/allscores" : "/profile");
 
   return (
     <div
       className="region-page"
       style={{
+        fontFamily: "'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial",
         backgroundImage: bgLoaded
           ? "url('/region/world-map.webp')"
           : "linear-gradient(135deg, #1f1f1f, #3d3a3a)",
@@ -211,12 +252,62 @@ const Region = () => {
         transition: "background-image 0.6s ease-in-out",
       }}
     >
+      {/* Size tweaks without touching region.css */}
+      <style>{`
+        .region-topbar .topbar-left .toplink {
+          font-size: 1.05rem;
+          padding: 9px 14px;
+        }
+        .profile-circle::after {
+          font-size: 16px !important;
+        }
+        .profile-menu .pm-item {
+          font-size: 1.02rem;
+        }
+        .leaderboard-wrapper {
+          transform: scale(1.08);
+          transform-origin: top center;
+        }
+        @media (max-width: 920px) {
+          .leaderboard-wrapper { transform: none; }
+        }
+      `}</style>
+
+      {/* TOP BANNER */}
+      <header className="region-topbar grid">
+        <div className="topbar-left">
+          <button className="toplink fullhover anim-btn" onClick={gotoAbout}>About</button>
+          <button className="toplink fullhover anim-btn" onClick={gotoFAQ}>FAQ</button>
+          <button className="toplink fullhover anim-btn" onClick={gotoScores}>{scoresLabel}</button>
+        </div>
+
+        <div className="topbar-center brand-wrap">
+          <span className="brand-chip brand-fade">Generalist</span>
+        </div>
+
+        <div className="topbar-right">
+          <div className="profile-wrap" ref={profileRef}>
+            <div
+              className="profile-circle anim-btn"
+              onClick={() => setShowProfileMenu((v) => !v)}
+              title="Profile"
+              aria-label="Profile menu"
+            />
+            {showProfileMenu && (
+              <div className="profile-menu">
+                <div className="pmeta">Signed in as <strong>{userName}</strong></div>
+                <button className="pm-item" onClick={handleProfileClick}>Profile</button>
+                <button className="pm-item" onClick={() => navigate("/settings")}>Settings</button>
+                <button className="pm-item" onClick={gotoScores}>{scoresLabel}</button>
+                <button className="pm-item danger" onClick={handleLogout}>Logout</button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
       {/* Fixed header controls */}
       <div className="region-header">
-        <button className="logout-button" onClick={handleLogout}>
-          Logout
-        </button>
-
         <button
           className={`live-quiz-button ${isLive ? "is-live" : ""}`}
           onClick={handleLiveClick}
@@ -224,10 +315,10 @@ const Region = () => {
           title={
             isLive
               ? "Join the live quiz now!"
-              : (isAdmin ? "Start/Manage a live quiz" : "See live quiz details")
+              : (adminAllowed ? "Start/Manage a live quiz" : "See live quiz details")
           }
         >
-          {isLive ? "Join Live Quiz" : (isAdmin ? "Go Live" : "Go Live")}
+          {isLive ? "Join Live Quiz" : (adminAllowed ? "Go Live" : "Go Live")}
         </button>
 
         {timeLeft && (
@@ -235,14 +326,6 @@ const Region = () => {
             ⏳ Next quiz in: <span>{timeLeft}</span>
           </div>
         )}
-
-        <div
-          className="profile-circle"
-          onClick={handleProfileClick}
-          title="Go to your profile"
-        >
-          {userName.charAt(0).toUpperCase()}
-        </div>
       </div>
 
       {/* Centered content */}
@@ -266,14 +349,14 @@ const Region = () => {
         </div>
 
         <div className="leaderboard-wrapper">
-          <Leaderboard />
+          {/* Pass admin flag so the inline ♻️ shows to admins only */}
+          <Leaderboard isAdmin={adminAllowed} />
         </div>
       </div>
 
-      {/* Admin docks outside the card */}
-      {isAdmin && (
+      {/* Admin docks (export + add quiz only — reset moved into Leaderboard) */}
+      {adminReady && adminAllowed && (
         <>
-          {/* Bottom-right: Add Quiz + Export, stacked with gap */}
           <div className="admin-dock">
             <button
               className="admin-add-quiz-button action-btn"
@@ -281,28 +364,12 @@ const Region = () => {
             >
               ➕ Add New Quiz
             </button>
-
             <button
               className="export-button action-btn"
               onClick={handleExportScores}
             >
               ⬇️ Download All User Scores
             </button>
-          </div>
-
-          {/* Bottom-left: Reset + info label */}
-          <div className="reset-dock">
-            <button
-              className="lb-startover-btn"
-              onClick={handleResetLeaderboard}
-              disabled={lbLoading}
-              title="Reset leaderboard points & reactions for all users"
-            >
-              {lbLoading ? "Resetting…" : "Reset Leaderboard"}
-            </button>
-            <span className="lb-info-text">
-              Points from <strong>{sinceLabel}</strong>
-            </span>
           </div>
         </>
       )}

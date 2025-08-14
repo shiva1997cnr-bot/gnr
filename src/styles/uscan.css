@@ -1,212 +1,98 @@
-/* === USCAN PAGE STYLES === */
-/* Overlay layer to darken background images */
-.uscan-overlay-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    
-    z-index: -7;  /* Must be higher than .bg-fade-layer but lower than content */
-  }
-  
-/* Background wrapper */
+/* =========================================================
+   USCAN PAGE STYLES — MERGED + FIXED
+   - Keeps all your existing visual rules
+   - Fixes background image stacking (no negative z-index)
+   - Adds floating feedback bubble (near selected option)
+   - Small quality-of-life states (disabled/locked button)
+   Z-index stack:
+     0  = .bg-fade-layer (images)
+     1  = .uscan-overlay-layer (darkener)
+     2+ = Content (.uscan-container/.uscan-box)
+========================================================= */
+
+/* ---------- Background layers ---------- */
+
+/* Wrapper holds everything */
 .uscan-background-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    overflow: hidden;
-  }
-  
-  /* Each background image layer */
-  .bg-fade-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #3d3a3a; /* fallback color */
-    background-size: cover;
-    background-position: center;
-    opacity: 0.0;
-    transition: opacity 12s ease-in-out; /* Slower transition */
-    z-index: -8;
-  }
-  
-  /* Visible background image */
-  .bg-fade-layer.visible {
-    opacity: 1;
-  }
-  
-  /* Dark overlay layer to enhance readability */
-  .bg-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background-color: rgba(0, 0, 0, 2); /* Adjust transparency */
-    z-index: -7;
-  }
-  
-  /* Main quiz container */
-  .uscan-container {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    width: 100%;
-    padding: 2rem;
-    text-align: center;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    color: white;
-  }
-  
-  /* Quiz box */
-  .uscan-box {
-    background-color: rgba(0, 0, 0, 0.75);
-    padding: 2rem;
-    border-radius: 2rem;
-    max-width: 800px;
-    width: 100%;
-    text-align: center;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
-  }
-  
-  /* Question text */
-  .uscan-question {
-    font-size: 1.4rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-  }
-  
-  /* Options container */
-  .uscan-options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  
-  /* Individual option */
-  .uscan-option {
-    padding: 0.8rem 1rem;
-    background-color: white;
-    color: black;
-    border-radius: 4rem;
-    border-left: 6px solid transparent;
-    text-align: left;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-  
-  /* Hover effect */
-  .uscan-option:hover {
-    background-color: #2196f3;
-    color: white;
-  }
-  
-  /* Correct/Incorrect answer styles */
-  .uscan-option.correct {
-    background-color: #4caf50;
-    color: white;
-  }
-  
-  .uscan-option.incorrect {
-    background-color: #f44336;
-    color: white;
-  }
-  
-  /* Footer (e.g., for buttons/timer) */
-  .uscan-footer {
-    margin-top: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #ccc;
-  }
-  
-  /* Buttons in footer */
-  .uscan-footer button {
-    background-color: #2563eb;
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.4rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-  }
-  
-  /* Quiz result heading */
-  .uscan-result h2 {
-    color: #e50914;
-  }
-  
-  /* Score display */
-  .uscan-score {
-    font-size: 1.25rem;
-    margin: 1rem 0;
-  }
-  
-  /* Responsive styles */
-  @media screen and (max-width: 640px) {
-    .uscan-box {
-      padding: 1.5rem;
-    }
-  
-    .uscan-option {
-      font-size: 0.95rem;
-    }
-  
-    .uscan-footer {
-      flex-direction: column;
-      gap: 1rem;
-    }
-  }
-  /* Center the box on the page (keeps your background untouched) */
-.uscan-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+  position: relative;
+  width: 100%;
+  min-height: 100vh; /* use min-height to avoid mobile shrinking */
+  overflow: hidden;
+  background: #2e2b2b; /* fallback if no images found */
 }
 
-/* Glassy box */
+/* Each background image layer (React adds inline backgroundImage) */
+.bg-fade-layer {
+  position: absolute;
+  inset: 0;
+  background-color: #3d3a3a; /* fallback color */
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 12s ease-in-out; /* your original slow fade */
+  z-index: 0;              /* << behind overlay and content */
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* Visible background image */
+.bg-fade-layer.visible {
+  opacity: 1;
+}
+
+/* Dark overlay to enhance readability (above images, below content) */
+.uscan-overlay-layer,
+.bg-overlay { /* keep your old class working too */
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45); /* adjust strength if needed */
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: normal;
+}
+
+/* ---------- Main content container ---------- */
+
+.uscan-container {
+  position: relative;
+  z-index: 2; /* above bg + overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 24px;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #ffffff;
+}
+
+/* Glassy quiz box */
 .uscan-box {
   width: 100%;
   max-width: 720px;
   padding: 24px 28px;
-  border-radius: 16px;
-  color: #e5e7eb; /* light text */
+  border-radius: 16px;       /* you had 2rem; slightly tighter for modern look */
+  color: #e5e7eb;
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-}
-
-/* Blocked/simple state inside the box */
-.uscan-box.uscan-blocked {
   text-align: center;
 }
 
+/* Blocked/simple state */
+.uscan-box.uscan-blocked { text-align: center; }
 .uscan-box.uscan-blocked h2 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #fca5a5; /* soft red heading */
+  color: #fca5a5;
   margin-bottom: 8px;
 }
+.uscan-box.uscan-blocked p { margin: 4px 0; opacity: 0.9; }
 
-.uscan-box.uscan-blocked p {
-  margin: 4px 0;
-  opacity: 0.9;
-}
-
-/* Buttons in the box (including your "Return to Region") */
+/* Buttons inside box (and shared footer-style button) */
 .uscan-box button,
 .uscan-footer-button {
   margin-top: 12px;
@@ -221,28 +107,250 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-
 .uscan-box button:hover,
 .uscan-footer-button:hover {
   transform: translateY(-1px);
   background: rgba(255, 255, 255, 0.14);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
 }
-
 .uscan-box button:active,
-.uscan-footer-button:active {
-  transform: translateY(0);
-}
-
+.uscan-footer-button:active { transform: translateY(0); }
 .uscan-box button:focus-visible,
 .uscan-footer-button:focus-visible {
   outline: 2px solid #ffffff;
   outline-offset: 2px;
 }
 
-/* Optional: pass/fail text if you show it in USCAN results */
-.pass { color: #16a34a; font-weight: 600; }  /* green */
-.fail { color: #dc2626; font-weight: 600; }  /* red */
+/* ---------- Question + options ---------- */
 
-/* Optional: center WE-style result block if you used that class */
+.uscan-question {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  color: #f9fafb;
+}
+
+.uscan-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+/* Option buttons */
+.uscan-option {
+  padding: 0.8rem 1rem;
+  background-color: #ffffff;
+  color: #111827;
+  border-radius: 999px;
+  text-align: left;
+  font-weight: 600;
+  transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  cursor: pointer;
+  border: none; /* buttons already have default borders in some browsers */
+}
+.uscan-option:hover {
+  background-color: #2196f3;
+  color: #ffffff;
+}
+.uscan-option.correct {
+  background-color: #4caf50;
+  color: #ffffff;
+}
+.uscan-option.incorrect {
+  background-color: #f44336;
+  color: #ffffff;
+}
+
+/* Disabled/locked look (when button has disabled attribute) */
+.uscan-option[disabled],
+.uscan-option.locked {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* Footer area (timer + navigation) */
+.uscan-footer {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #d1d5db;
+}
+.uscan-footer button {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.6rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---------- Floating Feedback Bubble (NEW) ---------- */
+/* This is rendered OUTSIDE the box and positioned near the selected option.
+   Your JSX sets the inline top/left and data-* attributes. */
+
+.uscan-feedback-bubble {
+  position: fixed;           /* screen-positioned */
+  transform: translateY(-50%);
+  z-index: 10000;            /* above the quiz UI */
+  max-width: 320px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #292a2c;
+  border: 1px solid #3f444d;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  color: #0f172a;
+}
+
+/* Variants by type */
+.uscan-feedback-bubble[data-type="correct"] {
+  background: #323634;
+  border-color: #304d3f;
+}
+.uscan-feedback-bubble[data-type="wrong"] {
+  background: #2b1e1e;
+  border-color: #643636;
+}
+.uscan-feedback-bubble[data-type="timeup"] {
+  background: #2b2e31;
+  border-color: #292c31;
+}
+
+/* Little arrow that points to the option (color matches border) */
+.uscan-feedback-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+}
+
+/* Arrow when bubble sits to the RIGHT of the option */
+.uscan-feedback-bubble[data-side="right"] .uscan-feedback-arrow { left: -8px; }
+.uscan-feedback-bubble[data-side="right"][data-type="correct"] .uscan-feedback-arrow { border-right: 8px solid #a7f3d0; }
+.uscan-feedback-bubble[data-side="right"][data-type="wrong"]   .uscan-feedback-arrow { border-right: 8px solid #fecaca; }
+.uscan-feedback-bubble[data-side="right"][data-type="timeup"]  .uscan-feedback-arrow { border-right: 8px solid #e5e7eb; }
+
+/* Arrow when bubble sits to the LEFT of the option */
+.uscan-feedback-bubble[data-side="left"] .uscan-feedback-arrow { right: -8px; }
+.uscan-feedback-bubble[data-side="left"][data-type="correct"] .uscan-feedback-arrow { border-left: 8px solid #a7f3d0; }
+.uscan-feedback-bubble[data-side="left"][data-type="wrong"]   .uscan-feedback-arrow { border-left: 8px solid #fecaca; }
+.uscan-feedback-bubble[data-side="left"][data-type="timeup"]  .uscan-feedback-arrow { border-left: 8px solid #e5e7eb; }
+
+/* Bubble content */
+.uscan-feedback-title { font-weight: 800; margin-bottom: 6px; }
+.uscan-feedback-body  { font-size: 14px; margin-bottom: 6px; }
+.uscan-feedback-ans   { font-size: 13px; opacity: 0.85; }
+.uscan-feedback-actions {
+  display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;
+}
+.uscan-feedback-actions button {
+  background-color: #020305; color: #292121; padding: 6px 10px;
+  border-radius: 10px; font-weight: 600; border: none; cursor: pointer;
+}
+.uscan-feedback-actions button:hover { filter: brightness(1.05); }
+
+/* ---------- Results ---------- */
+.uscan-result h2 { color: #e50914; }
+.uscan-score { font-size: 1.25rem; margin: 1rem 0; }
+.pass { color: #16a34a; font-weight: 600; }
+.fail { color: #dc2626; font-weight: 600; }
 .we-result { text-align: center; }
+
+/* ---------- Responsive ---------- */
+@media screen and (max-width: 640px) {
+  .uscan-box { padding: 18px; }
+  .uscan-option { font-size: 0.95rem; }
+  .uscan-footer { flex-direction: column; gap: 1rem; }
+}
+/* ---------- Floating Feedback Bubble (FINAL) ---------- */
+/* Rendered OUTSIDE the quiz box and positioned by inline top/left. */
+.uscan-feedback-bubble {
+  position: fixed;                 /* sit near the picked option */
+  transform: translateY(-50%);
+  z-index: 10000;                  /* above overlay + box */
+  max-width: 340px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #041525;            /* neutral light */
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 28px rgba(0,0,0,.22);
+  color: #0f172a;                  /* FORCE dark text for readability */
+  line-height: 1.35;
+  white-space: normal;             /* wrap long lines */
+}
+
+/* Make sure children inherit the dark color */
+.uscan-feedback-bubble * { color: inherit; }
+
+/* Variants by type */
+.uscan-feedback-bubble[data-type="correct"] {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+.uscan-feedback-bubble[data-type="wrong"] {
+  background: #fff1f2;             /* a bit brighter than #fef2f2 to increase contrast */
+  border-color: #fecaca;
+}
+.uscan-feedback-bubble[data-type="timeup"] {
+  background: #f8fafc;
+  border-color: #e5e7eb;
+}
+
+/* Little arrow that points to the option */
+.uscan-feedback-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+}
+
+/* Arrow when bubble sits to the RIGHT of the option */
+.uscan-feedback-bubble[data-side="right"] .uscan-feedback-arrow { left: -9px; }
+.uscan-feedback-bubble[data-side="right"][data-type="correct"] .uscan-feedback-arrow { border-right: 9px solid #a7f3d0; }
+.uscan-feedback-bubble[data-side="right"][data-type="wrong"]   .uscan-feedback-arrow { border-right: 9px solid #fecaca; }
+.uscan-feedback-bubble[data-side="right"][data-type="timeup"]  .uscan-feedback-arrow { border-right: 9px solid #e5e7eb; }
+
+/* Arrow when bubble sits to the LEFT of the option */
+.uscan-feedback-bubble[data-side="left"] .uscan-feedback-arrow { right: -9px; }
+.uscan-feedback-bubble[data-side="left"][data-type="correct"] .uscan-feedback-arrow { border-left: 9px solid #a7f3d0; }
+.uscan-feedback-bubble[data-side="left"][data-type="wrong"]   .uscan-feedback-arrow { border-left: 9px solid #fecaca; }
+.uscan-feedback-bubble[data-side="left"][data-type="timeup"]  .uscan-feedback-arrow { border-left: 9px solid #e5e7eb; }
+
+/* Content */
+.uscan-feedback-title {
+  font-weight: 800;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.uscan-feedback-body {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+.uscan-feedback-ans {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* Action row */
+.uscan-feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.uscan-feedback-actions button {
+  background: #2563eb;
+  color: #fff;
+  padding: 6px 11px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.uscan-feedback-actions button:hover { filter: brightness(1.06); }

@@ -24,13 +24,16 @@ import LoadingScreen from "./components/LoadingScreen";
 
 // ✅ Admin quiz pages
 import AdminAddQuiz from "./pages/AdminAddQuiz";
-import AdminQuizView from "./pages/AdminQuizView";   // ← NEW
-import AdminQuizEdit from "./pages/AdminQuizEdit";   // ← NEW
+import AdminQuizView from "./pages/AdminQuizView";
+import AdminQuizEdit from "./pages/AdminQuizEdit";
 
 // Firebase
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import Live from './pages/Live';
+import AllScores from './pages/AllScores';
+import About from './pages/About';
+import FAQ from './pages/FAQ';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBqimiOH3KBud7bjAy1qfZ9im16hhdJYYs",
@@ -112,10 +115,16 @@ const router = createBrowserRouter([
   { path: "/profile", element: <Profile /> },
   { path: "/leaderboard", element: <Leaderboard /> },
   { path: "/live", element: <Live /> },
+  { path: "/about", element: <About /> },
+  { path: "/faq", element: <FAQ /> },
   // ✅ Admin quiz routes
   { path: "/admin-add-quiz", element: <AdminAddQuiz /> },
-  { path: "/admin/quizzes/:region/:quizId", element: <AdminQuizView /> },       // ← NEW
-  { path: "/admin/quizzes/:region/:quizId/edit", element: <AdminQuizEdit /> },  // ← NEW
+  { path: "/admin/quizzes/:region/:quizId", element: <AdminQuizView /> },
+  { path: "/admin/quizzes/:region/:quizId/edit", element: <AdminQuizEdit /> },
+
+  // ✅ AllScores (register BOTH paths so Region.jsx → /allscores works)
+  { path: "/allscores", element: <AllScores /> },
+  { path: "/admin/allscores", element: <AllScores /> },
 
   { path: "*", element: <ErrorPage /> },
 ]);

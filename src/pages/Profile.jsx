@@ -30,6 +30,9 @@ const Profile = () => {
 
   const navigate = useNavigate();
 
+  const listItemHeight = 84; 
+  const maxVisible = 5;
+
   useEffect(() => {
     const fetchUserScores = async () => {
       const currentUser = JSON.parse(localStorage.getItem("currentUser"));
@@ -46,7 +49,8 @@ const Profile = () => {
         const userData = userSnap.data();
         let extractedFirstName = "";
         if (userData.firstname) extractedFirstName = userData.firstname;
-        else if (userData.fullName) extractedFirstName = userData.fullName.split(" ")[0];
+        else if (userData.fullName)
+          extractedFirstName = userData.fullName.split(" ")[0];
         else extractedFirstName = currentUser.username.split("@")[0];
 
         setFirstName(extractedFirstName);
@@ -62,7 +66,9 @@ const Profile = () => {
       setQLoading(true);
       try {
         const fetches = REGIONS.map(async (rk) => {
-          const snap = await getDocs(query(collection(db, rk), orderBy("launchAt", "desc")));
+          const snap = await getDocs(
+            query(collection(db, rk), orderBy("launchAt", "desc"))
+          );
           return snap.docs.map((d) => {
             const data = d.data();
             return {
@@ -70,14 +76,16 @@ const Profile = () => {
               region: rk,
               title: data.title || "Untitled",
               launchAt: data.launchAt,
-              createdBy: data.createdBy || "Unknown", // kept in state, but hidden from UI
+              createdBy: data.createdBy || "Unknown",
               status: data.status,
             };
           });
         });
         const flat = (await Promise.all(fetches)).flat();
         setAllQuizzes(
-          flat.sort((a, b) => (b.launchAt?.seconds || 0) - (a.launchAt?.seconds || 0))
+          flat.sort(
+            (a, b) => (b.launchAt?.seconds || 0) - (a.launchAt?.seconds || 0)
+          )
         );
       } catch (e) {
         console.error("Failed to load quizzes across regions:", e);
@@ -105,7 +113,9 @@ const Profile = () => {
       const results = await Promise.all(
         allQuizzes.map(async (q) => {
           try {
-            const direct = await getDoc(doc(db, `quizScores_${q.id}`, currentUser.username));
+            const direct = await getDoc(
+              doc(db, `quizScores_${q.id}`, currentUser.username)
+            );
             if (direct.exists()) return q.id;
 
             const fallback = await getDocs(
@@ -155,13 +165,63 @@ const Profile = () => {
   const getFeedback = (score) =>
     score > 9 ? "Excellent" : score >= 8 ? "Impressive" : "Needs Improvement";
 
-  const getFeedbackIcon = (score) =>
-    score > 9 ? "🌟" : score >= 8 ? "👍" : "📈";
+  const getFeedbackIcon = (score) => (score > 9 ? "🌟" : score >= 8 ? "👍" : "📈");
 
   const openQuizRegion = (q) => navigate(`/region/${q.region}`);
 
+  const PendingIcon = () => (
+    <span className="quiz-pending-icon" title="Pending" aria-label="Pending">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" strokeWidth="2"></circle>
+        <path d="M12 6v6l4 2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+      </svg>
+    </span>
+  );
+
+  const CompletedIcon = () => (
+    <span className="quiz-completed-icon" title="Completed" aria-label="Completed">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" strokeWidth="2"></circle>
+        <path d="M8 12l3 3 5-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
+      </svg>
+    </span>
+  );
+
   return (
     <>
+      <style>{`
+        .scroll-thin {
+          overflow-y: auto;
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,.35) transparent;
+          max-height: ${listItemHeight * maxVisible}px;
+        }
+        .scroll-thin::-webkit-scrollbar { width: 8px; }
+        .scroll-thin::-webkit-scrollbar-track { background: transparent; }
+        .scroll-thin::-webkit-scrollbar-thumb {
+          background-clip: padding-box;
+          border: 2px solid transparent;
+          border-radius: 8px;
+          background-color: rgba(255,255,255,.28);
+        }
+        .scroll-thin::-webkit-scrollbar-thumb:hover {
+          background-color: rgba(255,255,255,.45);
+        }
+        .quiz-item.clickable {
+          cursor: pointer;
+          transition: transform .06s ease, background-color .12s ease, border-color .12s ease;
+        }
+        .quiz-item.clickable:active { transform: scale(.995); }
+        .quiz-item .right-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 32px;
+          margin-left: 12px;
+          opacity: .95;
+        }
+      `}</style>
+
       <div className="profile-banner">
         <div className="banner-overlay">
           <h1 className="banner-title">Generalist</h1>
@@ -176,9 +236,8 @@ const Profile = () => {
         </div>
       </div>
 
-      {/* TWO-COLUMN LAYOUT */}
       <div className="profile-two-col">
-        {/* LEFT: Pending + Completed */}
+        {/* LEFT */}
         <aside className="profile-left">
           <div className="left-header">
             <h2 className="left-title">Quizzes</h2>
@@ -192,77 +251,71 @@ const Profile = () => {
               </select>
             </div>
           </div>
-
+          {/* Pending */}
           <section className="quiz-section">
-            <h3 className="quiz-section-title">Pending Quizzes</h3>
+            <h3 className="quiz-section-title">
+              Pending Quizzes <span className="count-chip">({pendingQuizzes.length})</span>
+            </h3>
             {qLoading ? (
               <p className="tiny-loading">Loading…</p>
             ) : pendingQuizzes.length === 0 ? (
-              <p className="empty-state">
-                No pending quizzes{regionFilter !== "all" ? ` for ${regionFilter.toUpperCase()}` : ""}.
-              </p>
+              <p className="empty-state">No pending quizzes{regionFilter !== "all" ? ` for ${regionFilter.toUpperCase()}` : ""}.</p>
             ) : (
-              <ul className="quiz-list">
-                {pendingQuizzes.map((q) => (
-                  <li key={`p_${q.region}_${q.id}`} className="quiz-item">
-                    <div className="quiz-meta">
-                      <strong>{q.title}</strong>
-                      <div className="quiz-sub">
-                        <span className="chip">{q.region.toUpperCase()}</span>
-                        <span className="dot">•</span>
-                        <span>{q.launchAt?.toDate ? q.launchAt.toDate().toLocaleString() : "—"}</span>
-                        {/* creator hidden */}
+              <div className="scroll-thin">
+                <ul className="quiz-list">
+                  {pendingQuizzes.map((q) => (
+                    <li key={`p_${q.region}_${q.id}`} className="quiz-item clickable" onClick={() => openQuizRegion(q)} title="Open quiz">
+                      <div className="quiz-meta">
+                        <strong>{q.title}</strong>
+                        <div className="quiz-sub">
+                          <span className="chip">{q.region.toUpperCase()}</span>
+                          <span className="dot">•</span>
+                          <span>{q.launchAt?.toDate ? q.launchAt.toDate().toLocaleString() : "—"}</span>
+                        </div>
                       </div>
-                    </div>
-                    <button className="quiz-open-btn" onClick={() => openQuizRegion(q)}>Open</button>
-                  </li>
-                ))}
-              </ul>
+                      <div className="right-icon"><PendingIcon /></div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </section>
-
+          {/* Completed */}
           <section className="quiz-section">
-            <h3 className="quiz-section-title">Completed Quizzes</h3>
+            <h3 className="quiz-section-title">
+              Completed Quizzes <span className="count-chip">({completedQuizzes.length})</span>
+            </h3>
             {qLoading ? (
               <p className="tiny-loading">Loading…</p>
             ) : completedQuizzes.length === 0 ? (
-              <p className="empty-state">
-                No completed quizzes{regionFilter !== "all" ? ` for ${regionFilter.toUpperCase()}` : ""}.
-              </p>
+              <p className="empty-state">No completed quizzes{regionFilter !== "all" ? ` for ${regionFilter.toUpperCase()}` : ""}.</p>
             ) : (
-              <ul className="quiz-list">
-                {completedQuizzes.slice(0, 6).map((q) => (
-                  <li key={`c_${q.region}_${q.id}`} className="quiz-item">
-                    <div className="quiz-meta">
-                      <strong>{q.title}</strong>
-                      <div className="quiz-sub">
-                        <span className="chip">{q.region.toUpperCase()}</span>
-                        <span className="dot">•</span>
-                        <span>{q.launchAt?.toDate ? q.launchAt.toDate().toLocaleString() : "—"}</span>
-                        {/* creator hidden */}
+              <div className="scroll-thin">
+                <ul className="quiz-list">
+                  {completedQuizzes.map((q) => (
+                    <li key={`c_${q.region}_${q.id}`} className="quiz-item" title="Completed">
+                      <div className="quiz-meta">
+                        <strong>{q.title}</strong>
+                        <div className="quiz-sub">
+                          <span className="chip">{q.region.toUpperCase()}</span>
+                          <span className="dot">•</span>
+                          <span>{q.launchAt?.toDate ? q.launchAt.toDate().toLocaleString() : "—"}</span>
+                        </div>
                       </div>
-                    </div>
-                    {/* Replace Open button with green tick icon (non-clickable) */}
-                    <span className="quiz-completed-icon" title="Completed" aria-label="Completed">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                        <circle cx="12" cy="12" r="10" strokeWidth="2"></circle>
-                        <path d="M8 12l3 3 5-6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
-                      </svg>
-                    </span>
-                  </li>
-                ))}
-              </ul>
+                      <div className="right-icon"><CompletedIcon /></div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </section>
         </aside>
-
-        {/* RIGHT: User performance table */}
+        {/* RIGHT */}
         <main className="profile-right">
           <div className="profile-header">
             <h2 className="animated-name">{firstName}'s Performance</h2>
             <p className="subtitle">Here is your region-wise analysis:</p>
           </div>
-
           {loading ? (
             <div className="loading-container">
               <div className="spinner"></div>
@@ -295,10 +348,7 @@ const Profile = () => {
                       <td>{data.score}</td>
                       <td className="feedback-cell">
                         {getFeedback(data.score)}
-                        <span
-                          className="feedback-icon"
-                          style={{ animationDelay: `${index * 0.1 + 0.5}s` }}
-                        >
+                        <span className="feedback-icon" style={{ animationDelay: `${index * 0.1 + 0.5}s` }}>
                           {getFeedbackIcon(data.score)}
                         </span>
                       </td>
@@ -312,6 +362,11 @@ const Profile = () => {
           )}
         </main>
       </div>
+
+      {/* Footer Bar */}
+      <footer className="profile-footer">
+        <p>© {new Date().getFullYear()} Generalist App. All rights reserved.</p>
+      </footer>
     </>
   );
 };

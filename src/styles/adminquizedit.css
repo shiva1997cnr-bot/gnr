@@ -1,10 +1,326 @@
-/* Reuse the whole AdminAddQuiz styling */
-@import "./adminaddquiz.css";
+/* -------------------------------------------------------
+   Admin Quiz Edit (SCOPED + Infinite Background Fix)
+   Scope root: .aaq-edit-root
+   Light theme • Modern form UI • Questions editor
+------------------------------------------------------- */
 
+/* Optional: local font */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap");
 
-/* Optional, page-specific tweaks */
-.aaq-edit-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
+/* ---------- Scope tokens (LOCAL, not global :root) ---------- */
+.aaq-edit-root{
+  --ink:#0b1220;
+  --muted:#667085;
+  --card:#ffffff;
+  --bg:#f7f8fb;
+  --stroke:#e7eaf0;
+  --shadow:0 10px 30px rgba(2,6,23,.08);
+  --blue:#2563eb;
+  --green:#16a34a;
+  --red:#dc2626;
+  --amber:#f59e0b;
+
+  position: relative;
+  min-height: 100vh;                 /* ensure wrapper at least fills viewport */
+  color: var(--ink);
+  font-family:"Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
 }
+
+/* ---------- FIX: Infinite, fixed background bound to viewport ----------
+   This layer sits behind everything on this page only.
+   It prevents any underlying app/body color from peeking through when scrolling.
+----------------------------------------------------------------------- */
+.aaq-edit-root::before{
+  content:"";
+  position: fixed;                   /* viewport-bound */
+  inset: 0;
+  z-index: -1;
+  /* Soft light backdrop (no brown) */
+  background:
+    radial-gradient(60% 60% at 15% 25%, rgba(255,255,255,.95), transparent 60%),
+    radial-gradient(55% 55% at 85% 20%, rgba(245,248,255,.95), transparent 60%),
+    radial-gradient(50% 50% at 70% 80%, rgba(255,250,245,.92), transparent 60%),
+    radial-gradient(40% 40% at 30% 80%, rgba(244,247,255,.9), transparent 60%),
+    radial-gradient(35% 35% at 45% 55%, rgba(255,255,255,.85), transparent 60%),
+    var(--bg);
+  background-blend-mode: normal;
+  filter: saturate(108%) blur(0px);
+}
+
+/* ---------- Page layout ---------- */
+.aaq-edit-root .aaq-admin-container{
+  display:grid;
+  grid-template-columns: minmax(320px, 860px) minmax(0, 1fr);
+  gap: 24px;
+  width:min(1200px, 96vw);
+  margin: 24px auto;
+  padding: 8px;
+}
+
+.aaq-edit-root .aaq-admin-form-section{
+  background: var(--card);
+  border: 1px solid var(--stroke);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 20px;
+  animation: aaqEditFadeIn .2s ease-out;
+}
+@keyframes aaqEditFadeIn{
+  from{ opacity:0; transform: translateY(4px); }
+  to  { opacity:1; transform: none; }
+}
+
+/* Right side placeholder */
+.aaq-edit-root .aaq-admin-list-section{
+  border: 1px dashed var(--stroke);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff, #fafcff);
+  min-height: 120px;
+}
+
+/* ---------- Header / Back ---------- */
+.aaq-edit-root .aaq-back-button{
+  appearance:none;
+  border:1px solid var(--stroke);
+  background:#ffffffc8;
+  color:var(--ink);
+  padding:8px 12px;
+  border-radius:999px;
+  cursor:pointer;
+  transition: transform .12s ease, box-shadow .18s ease, background .15s ease, border-color .15s ease;
+  box-shadow:0 4px 12px rgba(2,6,23,.06);
+}
+.aaq-edit-root .aaq-back-button:hover{ transform: translateY(-1px); background:#fff; border-color:#d3d8e1; }
+.aaq-edit-root .aaq-back-button:active{ transform: scale(.98); }
+
+.aaq-edit-root .aaq-admin-form-section h2{
+  margin: 12px 0 16px 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+
+/* ---------- Form grids ---------- */
+.aaq-edit-root .aaq-form-group{
+  display:grid;
+  grid-template-columns: 1fr 220px;
+  gap: 14px;
+}
+@media (max-width: 820px){
+  .aaq-edit-root .aaq-form-group{ grid-template-columns: 1fr; }
+}
+
+.aaq-edit-root .aaq-form-2col{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+@media (max-width: 820px){
+  .aaq-edit-root .aaq-form-2col{ grid-template-columns: 1fr; }
+}
+
+/* ---------- Fields ---------- */
+.aaq-edit-root .aaq-form-field{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.aaq-edit-root .aaq-form-field label{
+  font-weight:700;
+  font-size:.92rem;
+}
+.aaq-edit-root .aaq-form-field .aaq-hint{
+  color: var(--muted);
+  font-size: .85rem;
+}
+.aaq-edit-root .aaq-form-field-flex input[type="datetime-local"]{ width: 100%; }
+
+/* Region box */
+.aaq-edit-root .aaq-form-field-region input[readonly]{ background:#f9fafb; }
+
+/* Inputs / Textareas */
+.aaq-edit-root .aaq-admin-form-section input[type="text"],
+.aaq-edit-root .aaq-admin-form-section input[type="number"],
+.aaq-edit-root .aaq-admin-form-section input[type="datetime-local"],
+.aaq-edit-root .aaq-admin-form-section textarea{
+  appearance:none;
+  border:1px solid var(--stroke);
+  background:#fff;
+  color:var(--ink);
+  border-radius:12px;
+  padding:10px 12px;
+  font: inherit;
+  box-shadow: 0 1px 0 rgba(2,6,23,.02) inset;
+  transition: border-color .15s ease, box-shadow .2s ease, background .15s ease;
+}
+.aaq-edit-root .aaq-admin-form-section textarea{ resize: vertical; }
+
+.aaq-edit-root .aaq-admin-form-section input:focus,
+.aaq-edit-root .aaq-admin-form-section textarea:focus{
+  outline:none;
+  border-color:#cfd6e3;
+  box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+  background:#fff;
+}
+
+/* Checkboxes */
+.aaq-edit-root .aaq-admin-form-section input[type="checkbox"]{ transform: translateY(1px); }
+
+/* ---------- Questions ---------- */
+.aaq-edit-root .aaq-questions{
+  margin-top: 16px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.aaq-edit-root .aaq-qhdr{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding: 6px 0 2px;
+}
+.aaq-edit-root .aaq-qhdr h3{
+  margin:0;
+  font-size:1.1rem;
+  font-weight:800;
+}
+
+.aaq-edit-root .aaq-add{
+  appearance:none;
+  border:1px solid var(--stroke);
+  background:#ffffff;
+  color:var(--blue);
+  padding:8px 12px;
+  border-radius:10px;
+  font-weight:800;
+  cursor:pointer;
+  transition: transform .12s ease, box-shadow .18s ease, background .15s ease, border-color .15s ease;
+  box-shadow:0 4px 12px rgba(2,6,23,.06);
+}
+.aaq-edit-root .aaq-add:hover{ transform: translateY(-1px); border-color:#cfd6e3; background:#f9fbff; }
+.aaq-edit-root .aaq-add.tiny{ padding:6px 10px; border-radius:9px; font-weight:700; }
+
+/* Question card */
+.aaq-edit-root .aaq-qcard{
+  background:#fff;
+  border:1px solid var(--stroke);
+  border-radius:14px;
+  padding:12px;
+  box-shadow: var(--shadow);
+}
+.aaq-edit-root .aaq-qtop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:8px;
+}
+.aaq-edit-root .aaq-qtop strong{ font-weight:800; letter-spacing:.01em; }
+
+.aaq-edit-root .aaq-qactions{ display:flex; gap:6px; }
+.aaq-edit-root .aaq-qactions button{
+  appearance:none;
+  border:1px solid var(--stroke);
+  background:#f8fafc;
+  color:#0b1220;
+  padding:6px 10px;
+  border-radius:9px;
+  cursor:pointer;
+  transition: transform .12s ease, background .15s ease, border-color .15s ease;
+}
+.aaq-edit-root .aaq-qactions button:hover{ transform: translateY(-1px); border-color:#cfd6e3; background:#fff; }
+.aaq-edit-root .aaq-qactions .danger{
+  color:#fff; background:linear-gradient(180deg, #ef4444, #dc2626);
+  border-color:#fecaca;
+}
+.aaq-edit-root .aaq-qactions .danger:hover{ filter: brightness(1.05); }
+
+/* Options block */
+.aaq-edit-root .aaq-options{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin-top:8px;
+}
+.aaq-edit-root .aaq-option-row{
+  display:grid;
+  grid-template-columns: 22px 1fr 36px;
+  align-items:center;
+  gap:8px;
+}
+.aaq-edit-root .aaq-option-input{
+  width:100%;
+  border:1px solid var(--stroke);
+  background:#fff;
+  color:var(--ink);
+  border-radius:10px;
+  padding:8px 10px;
+  font: inherit;
+  box-shadow: 0 1px 0 rgba(2,6,23,.02) inset;
+  transition: border-color .15s ease, box-shadow .2s ease, background .15s ease;
+}
+.aaq-edit-root .aaq-option-input:focus{
+  outline:none;
+  border-color:#cfd6e3;
+  box-shadow: 0 0 0 4px rgba(37,99,235,.12);
+}
+/* correct radio */
+.aaq-edit-root .aaq-option-row input[type="radio"]{
+  width:16px; height:16px; accent-color: var(--blue);
+}
+/* delete option */
+.aaq-edit-root .aaq-option-del{
+  appearance:none;
+  border:1px solid var(--stroke);
+  background:#fff;
+  color:#111827;
+  padding:6px 6px;
+  border-radius:8px;
+  cursor:pointer;
+  transition: transform .12s ease, background .15s ease, border-color .15s ease, color .15s ease;
+}
+.aaq-edit-root .aaq-option-del:hover{
+  transform: translateY(-1px);
+  border-color:#f8d2d2;
+  background:#fff5f5;
+  color:#b91c1c;
+}
+
+/* ---------- Save bar ---------- */
+.aaq-edit-root .aaq-save-btn-container{
+  position: sticky;
+  bottom: -16px;
+  display:flex;
+  justify-content:flex-end;
+  padding-top: 8px;
+  margin-top: 8px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.85) 40%, #fff 80%);
+  border-top: 1px solid var(--stroke);
+  border-bottom-left-radius: 14px;
+  border-bottom-right-radius: 14px;
+}
+.aaq-edit-root .aaq-save-btn-container button{
+  appearance:none;
+  border:1px solid #bbf7d0;
+  background: linear-gradient(180deg, #34d399, #22c55e);
+  color:#052e16;
+  padding:10px 16px;
+  border-radius:999px;
+  font-weight:900;
+  letter-spacing:.02em;
+  cursor:pointer;
+  transition: transform .08s ease, box-shadow .18s ease, filter .18s ease, opacity .18s ease;
+  box-shadow: 0 14px 28px rgba(16,185,129,.25);
+}
+.aaq-edit-root .aaq-save-btn-container button:hover{
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 18px 34px rgba(16,185,129,.35);
+}
+.aaq-edit-root .aaq-save-btn-container button:disabled{
+  opacity:.55; cursor:not-allowed; transform:none; box-shadow:none;
+}
+
+/* ---------- Utilities (scoped) ---------- */
+.aaq-edit-root button:disabled{ opacity:.6; cursor:not-allowed; }

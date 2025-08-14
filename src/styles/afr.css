@@ -1,241 +1,92 @@
-/* src/styles/afr.css */
+/* =========================================================
+   AFR PAGE STYLES — MATCHED TO USCAN/WE/SA
+   Z-index stack:
+     0  = .bg-fade-layer (images)
+     1  = .afr-overlay-layer (darkener)
+     2+ = Content (.afr-container/.afr-box)
+========================================================= */
 
-/* ===== AFR REGION STYLES ===== */
+/* ---------- Background layers ---------- */
 
-/*
-  Full-screen container for the background images.
-  It is fixed to the viewport and placed behind all other content.
-*/
+/* Wrapper holds everything */
 .afr-background-wrapper {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: -1;
-    overflow: hidden;
-  }
-  
-  /*
-    A semi-transparent overlay that sits on top of the background images
-    to improve the readability of the quiz content.
-  */
-  .afr-overlay-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    z-index: 1;
-  }
-  
-  /*
-    Individual layer for each background image.
-    They are stacked on top of each other. The 'opacity' transition
-    creates the fading effect.
-  */
-  .bg-fade-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    opacity: 0;
-    transition: opacity 1.5s ease-in-out;
-    z-index: -1;
-  }
-  
-  /*
-    This class is dynamically added to the current background layer to
-    make it visible.
-  */
-  .bg-fade-layer.visible {
-    opacity: 1;
-  }
-  
-  /*
-    Main container for the AFR quiz content.
-    It's centered on the page and placed above the background and overlay.
-  */
-  .afr-container {
-    text-align: center;
-    min-height: 100vh;
-    width: 100%;
-    padding: 2rem;
-    background-color: transparent; /* Changed to transparent to show background */
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    position: relative; /* Needed for z-index to work */
-    z-index: 2; /* Ensures content is on top of the overlay */
-  }
-  
-  /* The central quiz box */
-  .afr-box {
-    background-color: rgba(26, 24, 24, 0.75);
-    padding: 2rem;
-    border-radius: 2rem;
-    max-width: 700px;
-    width: 100%;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Added a subtle shadow */
-  }
-  
-  /* The box for a blocked quiz attempt */
-  .afr-box.afr-blocked {
-    background-color: rgba(100, 0, 0, 0.8); /* Dark red background for the blocked message */
-    border: 2px solid #e50914; /* Red border */
-  }
-  
-  /* Styles for the question text */
-  .afr-question {
-    font-size: 1.25rem;
-    font-weight: bold;
-    margin-bottom: 1.5rem;
-  }
-  
-  /* Container for the answer options */
-  .afr-options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.7rem;
-  }
-  
-  /* Individual answer option button/div */
-  .afr-option {
-    padding: 0.8rem;
-    background-color: white;
-    color: black;
-    border-radius: 4rem;
-    border-left: 6px solid transparent;
-    text-align: left;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-  }
-  
-  /* Hover effect for options */
-  .afr-option:hover {
-    background-color: #2196f3;
-    color: white;
-  }
-  
-  /* Style for the correct answer when selected */
-  .afr-option.correct {
-    background-color: #4caf50;
-    color: white;
-    border-left-color: #4caf50;
-  }
-  
-  /* Style for an incorrect answer when selected */
-  .afr-option.incorrect {
-    background-color: #f44336;
-    color: white;
-    border-left-color: #f44336;
-  }
-  
-  /* Footer section */
-  .afr-footer {
-    margin-top: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    color: #ccc;
-  }
-  
-  /* Styles for buttons */
-  .afr-footer button,
-  .afr-blocked button,
-  .afr-result button {
-    background-color: #2563eb;
-    color: white;
-    padding: 0.5rem 1.5rem;
-    border-radius: 0.4rem;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  
-  .afr-footer button:hover,
-  .afr-blocked button:hover,
-  .afr-result button:hover {
-    background-color: #1a4a9f;
-  }
-  
-  /* Heading for the quiz result section */
-  .afr-result h2 {
-    color: #e50914;
-  }
-  
-  /* Style for the score display */
-  .afr-score {
-    font-size: 1.25rem;
-    margin: 1rem 0;
-  }
-  
-  /* Responsive tweaks for smaller screens */
-  @media screen and (max-width: 640px) {
-    .afr-box {
-      padding: 1.5rem;
-    }
-  
-    .afr-option {
-      font-size: 0.95rem;
-    }
-  
-    .afr-footer {
-      flex-direction: column;
-      gap: 1rem;
-    }
-  }
-
-  /* Center the box on the page (keeps your background untouched) */
-.afr-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
+  position: relative;
+  width: 100%;
+  min-height: 100vh; /* avoid mobile shrink */
+  overflow: hidden;
+  background: #2e2b2b; /* fallback if no images found */
 }
 
-/* Glassy box */
+/* Each background image layer (React sets inline backgroundImage) */
+.bg-fade-layer {
+  position: absolute;
+  inset: 0;
+  background-color: #3d3a3a; /* fallback color */
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 12s ease-in-out; /* slow crossfade */
+  z-index: 0;
+  pointer-events: none;
+  will-change: opacity;
+}
+
+/* Current visible image */
+.bg-fade-layer.visible { opacity: 1; }
+
+/* Dark overlay (above images, below content) */
+.afr-overlay-layer,
+.bg-overlay { /* keep old class compatibility if used */
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1;
+  pointer-events: none;
+  mix-blend-mode: normal;
+}
+
+/* ---------- Main content container ---------- */
+
+.afr-container {
+  position: relative;
+  z-index: 2; /* above bg + overlay */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: 24px;
+  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #ffffff;
+}
+
+/* Glassy quiz box */
 .afr-box {
   width: 100%;
   max-width: 720px;
   padding: 24px 28px;
   border-radius: 16px;
-  color: #e5e7eb; /* light text */
+  color: #e5e7eb;
   background: rgba(0, 0, 0, 0.45);
   border: 1px solid rgba(255, 255, 255, 0.18);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-}
-
-/* Blocked/simple state inside the box */
-.afr-box.afr-blocked {
   text-align: center;
 }
 
+/* Blocked/simple state */
+.afr-box.afr-blocked { text-align: center; }
 .afr-box.afr-blocked h2 {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #fca5a5; /* soft red heading */
+  color: #fca5a5;
   margin-bottom: 8px;
 }
+.afr-box.afr-blocked p { margin: 4px 0; opacity: 0.9; }
 
-.afr-box.afr-blocked p {
-  margin: 4px 0;
-  opacity: 0.9;
-}
-
-/* Buttons in the box (including your "Return to Region") */
+/* Buttons inside box (and shared footer-style button) */
 .afr-box button,
 .afr-footer-button {
   margin-top: 12px;
@@ -250,25 +101,197 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
-
 .afr-box button:hover,
 .afr-footer-button:hover {
   transform: translateY(-1px);
   background: rgba(255, 255, 255, 0.14);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.32);
 }
-
 .afr-box button:active,
-.afr-footer-button:active {
-  transform: translateY(0);
-}
-
+.afr-footer-button:active { transform: translateY(0); }
 .afr-box button:focus-visible,
 .afr-footer-button:focus-visible {
   outline: 2px solid #ffffff;
   outline-offset: 2px;
 }
 
-/* Optional: pass/fail text if you show it in AFR results */
-.pass { color: #16a34a; font-weight: 600; }  /* green */
-.fail { color: #dc2626; font-weight: 600; }  /* red */
+/* ---------- Question + options ----------
+   (Grouped selectors so AFR/USCAN class names both work)
+*/
+
+.uscan-question,
+.afr-question {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  color: #f9fafb;
+}
+
+.uscan-options,
+.afr-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+/* Option buttons */
+.uscan-option,
+.afr-option {
+  padding: 0.8rem 1rem;
+  background-color: #ffffff;
+  color: #111827;
+  border-radius: 999px;
+  text-align: left;
+  font-weight: 600;
+  transition: transform 0.15s ease, background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
+  cursor: pointer;
+  border: none;
+}
+.uscan-option:hover,
+.afr-option:hover {
+  background-color: #2196f3;
+  color: #ffffff;
+}
+.uscan-option.correct,
+.afr-option.correct {
+  background-color: #4caf50;
+  color: #ffffff;
+}
+.uscan-option.incorrect,
+.afr-option.incorrect {
+  background-color: #f44336;
+  color: #ffffff;
+}
+
+/* Disabled/locked look */
+.uscan-option[disabled],
+.afr-option[disabled],
+.uscan-option.locked,
+.afr-option.locked {
+  opacity: 0.75;
+  cursor: not-allowed;
+}
+
+/* Footer area (timer + navigation) */
+.uscan-footer,
+.afr-footer {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #d1d5db;
+}
+.uscan-footer button,
+.afr-footer button {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.6rem;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+}
+
+/* ---------- Floating Feedback Bubble (same as USCAN) ---------- */
+
+.uscan-feedback-bubble {
+  position: fixed;                 /* anchored near picked option */
+  transform: translateY(-50%);
+  z-index: 10000;                  /* above overlay + box */
+  max-width: 340px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f8fafc;            /* neutral light */
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 12px 28px rgba(0,0,0,.22);
+  color: #0f172a;
+  line-height: 1.35;
+  white-space: normal;             /* wrap long lines */
+}
+
+/* Ensure children text inherits */
+.uscan-feedback-bubble * { color: inherit; }
+
+/* Variants by type */
+.uscan-feedback-bubble[data-type="correct"] {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+.uscan-feedback-bubble[data-type="wrong"] {
+  background: #fff1f2;
+  border-color: #fecaca;
+}
+.uscan-feedback-bubble[data-type="timeup"] {
+  background: #f8fafc;
+  border-color: #e5e7eb;
+}
+
+/* Little arrow that points to the option */
+.uscan-feedback-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+}
+
+/* Arrow when bubble sits to the RIGHT of the option */
+.uscan-feedback-bubble[data-side="right"] .uscan-feedback-arrow { left: -9px; }
+.uscan-feedback-bubble[data-side="right"][data-type="correct"] .uscan-feedback-arrow { border-right: 9px solid #a7f3d0; }
+.uscan-feedback-bubble[data-side="right"][data-type="wrong"]   .uscan-feedback-arrow { border-right: 9px solid #fecaca; }
+.uscan-feedback-bubble[data-side="right"][data-type="timeup"]  .uscan-feedback-arrow { border-right: 9px solid #e5e7eb; }
+
+/* Arrow when bubble sits to the LEFT of the option */
+.uscan-feedback-bubble[data-side="left"] .uscan-feedback-arrow { right: -9px; }
+.uscan-feedback-bubble[data-side="left"][data-type="correct"] .uscan-feedback-arrow { border-left: 9px solid #a7f3d0; }
+.uscan-feedback-bubble[data-side="left"][data-type="wrong"]   .uscan-feedback-arrow { border-left: 9px solid #fecaca; }
+.uscan-feedback-bubble[data-side="left"][data-type="timeup"]  .uscan-feedback-arrow { border-left: 9px solid #e5e7eb; }
+
+/* Bubble content */
+.uscan-feedback-title { font-weight: 800; font-size: 15px; margin-bottom: 6px; }
+.uscan-feedback-body  { font-size: 14px; margin-bottom: 6px; }
+.uscan-feedback-ans   { font-size: 13px; opacity: 0.9; }
+
+.uscan-feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+.uscan-feedback-actions button {
+  background: #2563eb;
+  color: #fff;
+  padding: 6px 11px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.uscan-feedback-actions button:hover { filter: brightness(1.06); }
+
+/* ---------- Results ---------- */
+.uscan-result h2,
+.afr-result h2 { color: #e50914; }
+.uscan-score,
+.afr-score { font-size: 1.25rem; margin: 1rem 0; }
+.pass { color: #16a34a; font-weight: 600; }
+.fail { color: #dc2626; font-weight: 600; }
+.we-result { text-align: center; } /* reused in some pages */
+
+/* ---------- Loading state (simple centered) ---------- */
+.afr-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  color: #fff;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* ---------- Responsive ---------- */
+@media screen and (max-width: 640px) {
+  .afr-box { padding: 18px; }
+  .uscan-option, .afr-option { font-size: 0.95rem; }
+  .uscan-footer, .afr-footer { flex-direction: column; gap: 1rem; }
+}

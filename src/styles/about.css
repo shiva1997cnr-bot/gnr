@@ -1,0 +1,295 @@
+/* ============================================
+   Generalist — About page (Microsoft Fluent look)
+   Blue theme, high contrast, subtle depth
+   ============================================ */
+
+   .about-page {
+    /* Fluent palette (blues + neutrals) */
+    --ms-blue-10: #eff6fc;
+    --ms-blue-20: #cfe8fa;
+    --ms-blue-30: #a7d1f7;
+    --ms-blue-40: #5aaae7;
+    --ms-blue-50: #3b8fd6;
+    --ms-blue-60: #2b7cd3;
+    --ms-blue-70: #106ebe; /* hover/strong */
+    --ms-blue-80: #0f6cbd;
+    --ms-blue-90: #0b5aa5;
+    --ms-blue-100: #005a9e;
+    --ms-blue: #0078d4;    /* Microsoft primary */
+  
+    --neutral-0: #ffffff;
+    --neutral-5: #faf9f8;
+    --neutral-10: #f3f2f1;
+    --neutral-20: #edebe9;
+    --neutral-30: #e1dfdd;
+    --neutral-60: #605e5c;
+    --neutral-80: #323130;
+    --ink: #201f1e;
+  
+    --shadow-2: 0 2px 6px rgba(0,0,0,.08);
+    --shadow-4: 0 4px 14px rgba(0,0,0,.10);
+    --shadow-8: 0 8px 28px rgba(0,0,0,.12);
+  
+    --radius: 10px;
+    --radius-lg: 14px;
+  
+    --container-w: 1100px;
+  
+    color: var(--ink);
+    background: linear-gradient(135deg, var(--ms-blue-10), #e6f0fb);
+    min-height: 100vh;
+    font-family: "Segoe UI", SegoeUI, system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+  
+  /* ---------- Banner ---------- */
+  .about-banner {
+    position: relative;
+    height: 320px;
+    width: 100%;
+    background: url('/profile/banner-image.jpeg') center center / cover no-repeat;
+    display: grid;
+    place-items: center;
+    isolation: isolate; /* so overlay z-index works cleanly */
+  }
+  
+  .about-banner::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,.25) 0%, rgba(0,0,0,.45) 100%),
+      linear-gradient(90deg, rgba(0,120,212,.35), rgba(0,120,212,.15));
+    z-index: 0;
+  }
+  
+  .about-banner__overlay {
+    width: min(var(--container-w), 92%);
+    margin: 0 auto;
+    color: #fff;
+    text-align: left;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .about-title {
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 800;
+    margin: 0;
+    text-shadow: 0 3px 16px rgba(0,0,0,.28);
+    letter-spacing: .2px;
+  }
+  
+  .about-tagline {
+    margin: 8px 0 18px;
+    font-size: clamp(18px, 2vw, 22px);
+    opacity: .96;
+  }
+  
+  /* ---------- Sections ---------- */
+  .about-section {
+    background: transparent;
+    padding: 32px 0;
+  }
+  
+  .about-section.muted {
+    background: var(--neutral-5);
+    border-top: 1px solid var(--neutral-20);
+    border-bottom: 1px solid var(--neutral-20);
+  }
+  
+  .container {
+    width: min(var(--container-w), 92%);
+    margin: 0 auto;
+  }
+  
+  .section-title {
+    font-size: clamp(22px, 2.4vw, 30px);
+    font-weight: 800;
+    margin: 0 0 10px;
+    color: var(--ms-blue-90);
+    letter-spacing: .2px;
+  }
+  
+  .section-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--neutral-80);
+    margin: 6px 0 0;
+  }
+  
+  /* ---------- CTAs / Buttons ---------- */
+  .about-cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .btn {
+    border: 1px solid transparent;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: var(--shadow-2);
+    transition: transform .12s ease, box-shadow .18s ease, background-color .15s ease, border-color .15s ease, color .15s ease;
+    outline: none;
+  }
+  
+  .btn:focus-visible {
+    box-shadow: 0 0 0 3px rgba(0,120,212,.25), var(--shadow-4);
+  }
+  
+  .btn-primary {
+    background: var(--ms-blue);
+    color: #fff;
+  }
+  
+  .btn-primary:hover { background: var(--ms-blue-70); }
+  .btn-primary:active { background: var(--ms-blue-100); }
+  
+  .btn-secondary {
+    background: var(--neutral-0);
+    color: var(--ink);
+    border-color: var(--neutral-30);
+  }
+  
+  .btn-secondary:hover {
+    background: var(--neutral-10);
+    border-color: var(--neutral-30);
+  }
+  .btn-secondary:active {
+    background: var(--neutral-20);
+  }
+  
+  /* ---------- How it works grid ---------- */
+  .how-grid {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  
+  .how-card {
+    background: var(--neutral-0);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow-2);
+    border: 1px solid var(--neutral-20);
+    transition: transform .12s ease, box-shadow .18s ease, border-color .15s ease;
+  }
+  
+  .how-card:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-4);
+    border-color: var(--neutral-30);
+  }
+  
+  .how-card h3 {
+    margin: 6px 0 8px;
+    font-size: 1.05rem;
+    color: var(--neutral-80);
+  }
+  
+  .how-card p {
+    margin: 0;
+    color: var(--neutral-60);
+    line-height: 1.5;
+  }
+  
+  .how-icon {
+    font-size: 20px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  
+  /* ---------- Bulleted facts ---------- */
+  .bullets {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0 0;
+    display: grid;
+    gap: 10px;
+  }
+  
+  .bullets li {
+    background: var(--neutral-0);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    box-shadow: var(--shadow-2);
+    border: 1px solid var(--neutral-20);
+    color: var(--neutral-80);
+  }
+  
+  .bullets strong { color: var(--ink); }
+  
+  /* ---------- Split section (Data/Tech) ---------- */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr;
+    gap: 18px;
+  }
+  
+  .badges {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 0;
+    display: grid;
+    gap: 10px;
+  }
+  
+  .badges li {
+    background: var(--neutral-0);
+    border-left: 4px solid var(--ms-blue);
+    border-radius: 8px;
+    padding: 10px 12px;
+    box-shadow: var(--shadow-2);
+    color: var(--neutral-80);
+    border: 1px solid var(--neutral-20);
+  }
+  
+  /* ---------- CTA block ---------- */
+  .cta-block {
+    background: linear-gradient(135deg, var(--neutral-0), var(--neutral-5));
+    border-top: 1px solid var(--neutral-20);
+    border-bottom: 1px solid var(--neutral-20);
+  }
+  
+  .ctas-stack { text-align: center; }
+  .ctas-stack .section-title { color: var(--neutral-80); }
+  
+  /* ---------- Footer ---------- */
+  .about-footer {
+    background: linear-gradient(135deg, var(--ms-blue-90), var(--ms-blue-70));
+    color: #fff;
+    padding: 16px 0;
+    text-align: center;
+    box-shadow: var(--shadow-4);
+  }
+  
+  .about-footer p {
+    margin: 0;
+    font-size: .95rem;
+    opacity: .98;
+  }
+  
+  /* ---------- Accessibility & Motion ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .btn,
+    .how-card {
+      transition: none !important;
+    }
+  }
+  
+  /* ---------- Responsive ---------- */
+  @media (max-width: 980px) {
+    .two-col { grid-template-columns: 1fr; }
+  }
+  
+  @media (max-width: 640px) {
+    .about-banner { height: 280px; }
+    .about-cta { gap: 10px; }
+  }
+  
